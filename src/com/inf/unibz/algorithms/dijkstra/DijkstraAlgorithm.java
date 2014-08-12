@@ -1,4 +1,4 @@
-package com.inf.unnibz.algorithms.dijkstra;
+package com.inf.unibz.algorithms.dijkstra;
 
 import java.util.ArrayList;
 import java.util.Collections;
