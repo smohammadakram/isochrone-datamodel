@@ -3,8 +3,15 @@ package com.inf.unibz.main;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.List;
+import java.util.Random;
 import java.util.Scanner;
 
+import com.inf.unibz.algorithms.dijkstra.DijkstraAlgorithm;
+import com.inf.unibz.database.DBConnector;
+import com.inf.unibz.entity.Edge;
+import com.inf.unibz.entity.Graph;
+import com.inf.unibz.entity.Vertex;
 import com.inf.unibz.kml.KmlReader;
 
 public class Main {
@@ -24,6 +31,21 @@ public class Main {
 			kml.updateValues(getDBConnection());
 			break;
 		case 3:
+			DBConnector db = new DBConnector("routing");
+			System.out.println("Fetching verteces...");
+			List<Vertex> v = db.getPedestrianNodes();
+			System.out.println("Fetching edges...");
+			List<Edge> e = db.getPedestrianEdges();
+			Graph g = new Graph(v, e);
+			DijkstraAlgorithm dijkstra = new DijkstraAlgorithm(g);
+			System.out.println("Executing Dijkstra's shortest path...");
+			long start = System.currentTimeMillis();
+			dijkstra.execute(v.get(getRandomNodes(v.size())), v.get(getRandomNodes(v.size())));
+			long end = System.currentTimeMillis();
+			long timeSpent = end-start;
+			System.out.println("Time spent: " + timeSpent + "ms");
+			DBConnector.closeConnection();
+			System.gc();
 			break;
 		}
 	}
@@ -37,6 +59,11 @@ public class Main {
 				e.printStackTrace();
 			}
 		return connection;
+	}
+	
+	public static int getRandomNodes(int max){
+		Random r = new Random();
+		return r.nextInt(max);
 	}
 
 }
