@@ -1,4 +1,4 @@
-package com.inf.unibz.street_parser;
+package com.inf.unibz.parser;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
