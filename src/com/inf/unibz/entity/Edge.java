@@ -7,6 +7,7 @@ public class Edge  {
 	  private final Vertex source;
 	  private final Vertex destination;
 	  private final double weight; 
+	  private int type;
 	  
 	  public Edge(int id, Vertex source, Vertex destination, double weight) {
 	    this.id = id;
@@ -37,5 +38,13 @@ public class Edge  {
 	  public void setSourceNeighbours(List<Vertex> n){
 		  source.setAdjacentNodes(n);
 	  }
+	  
+	  public void setType(int type){
+			this.type = type;
+		}
+		
+		public int getType(){
+			return type;
+		}
 	  
 	} 

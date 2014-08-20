@@ -79,7 +79,7 @@ public class Main {
 				
 				for(int i = 0; i <= 50; i++){
 					
-					def = new DijkstraAlgorithm(g);
+					def = new DijkstraAlgorithm(g, db.getAllTripConnections());
 					matx = new DijkstraAlgorithm(matrix);
 					lst = new DijkstraAlgorithm(list, e); 
 					def.setVertecesIndexes(vertecesIndexes);

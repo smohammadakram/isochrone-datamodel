@@ -1,6 +1,7 @@
 package com.inf.unibz.algorithms.dijkstra;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -16,6 +17,7 @@ import com.inf.unibz.data_structure.adjacency.AdjacencyList;
 import com.inf.unibz.data_structure.adjacency.AdjacencyMatrix;
 import com.inf.unibz.entity.Edge;
 import com.inf.unibz.entity.Graph;
+import com.inf.unibz.entity.TripConnection;
 import com.inf.unibz.entity.Vertex;
 
 public class DijkstraAlgorithm {
@@ -35,12 +37,17 @@ public class DijkstraAlgorithm {
 	  private Hashtable<Integer, Integer> vertecesIndexes;
 	  private Edge[][] matrixWithoutTime;
 	  private Hashtable<Integer, ArrayList<Vertex>> listWithoutTime;
+	  private Hashtable<Integer, ArrayList<TripConnection>> timetable;
+	  private ArrayList<TripConnection> connections;
+	  private int currentTime;
+	  private Calendar c;
 	
-	  public DijkstraAlgorithm(Graph graph) {
+	  public DijkstraAlgorithm(Graph graph, ArrayList<TripConnection> connections) {
 	    // create a copy of the array so that we can operate on this array
 	    this.nodes = new ArrayList<Vertex>(graph.getVertexes());
 	    this.edges = new ArrayList<Edge>(graph.getEdges());
 	    settledNodes = new HashSet<Vertex>();
+	    this.connections = connections; 
 	    availableNodes = new PriorityQueue<Vertex>(1, new Comparator<Vertex>() {
 	    	
 			@Override
@@ -56,9 +63,11 @@ public class DijkstraAlgorithm {
 	  
 	  public DijkstraAlgorithm(AdjacencyMatrix matrix){
 		  settledNodes = new HashSet<Vertex>();
-		  matrixWithoutTime = matrix.getMatrixWithoutTime();
+		  matrixWithoutTime = matrix.getMatrix();
+		  timetable = matrix.getTimetable();
+		  c = Calendar.getInstance();
+		  setCalendarToMidnight();
 		  availableNodes = new PriorityQueue<Vertex>(1, new Comparator<Vertex>() {
-				
 			  @Override
 			  public int compare(Vertex o1, Vertex o2) {
 				  if(distance.get(o1) < distance.get(o2))
@@ -314,5 +323,11 @@ public class DijkstraAlgorithm {
 
 	  public void setVertecesIndexes(Hashtable<Integer, Integer> verIdx){
 			vertecesIndexes = verIdx;
+	  }
+	  
+	  private void setCalendarToMidnight(){
+		  c.set(Calendar.HOUR_OF_DAY, 0);
+		  c.set(Calendar.MINUTE, 0);
+		  c.set(Calendar.MILLISECOND, 0);
 	  }
 } 
