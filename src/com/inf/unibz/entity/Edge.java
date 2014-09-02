@@ -8,6 +8,7 @@ public class Edge  {
 	  private final Vertex destination;
 	  private final double weight; 
 	  private int type;
+	  private String adjacencySubgraph;
 	  
 	  public Edge(int id, Vertex source, Vertex destination, double weight) {
 	    this.id = id;

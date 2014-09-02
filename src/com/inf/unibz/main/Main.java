@@ -19,6 +19,7 @@ import com.inf.unibz.entity.Edge;
 import com.inf.unibz.entity.Graph;
 import com.inf.unibz.entity.Vertex;
 import com.inf.unibz.kml.KmlReader;
+import com.inf.unibz.parser.BusDataParser;
 import com.inf.unibz.parser.SFDatabaseParser;
 
 public class Main {
@@ -121,8 +122,10 @@ public class Main {
 					
 					if(defaultPath.equals(matrixPath) && defaultPath.equals(listPath))
 						bw.write("Paths are equal.");
-					else
+					else{
 						bw.write("Paths are not equal.");
+						
+					}
 					bw.write("\n\n");
 					bw.flush();
 					System.out.println("Query nr. " + i);
@@ -148,6 +151,9 @@ public class Main {
 			SFDatabaseParser parser = new SFDatabaseParser();
 			parser.writeFile();
 			System.out.println("File parsed.");
+			
+		case 6:
+			BusDataParser bdp = new BusDataParser();
 		}
 			
 	}

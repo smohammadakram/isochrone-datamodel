@@ -36,7 +36,7 @@ public class DijkstraAlgorithm {
 	  private int[] verteces;
 	  private Hashtable<Integer, Integer> vertecesIndexes;
 	  private Edge[][] matrixWithoutTime;
-	  private Hashtable<Integer, ArrayList<Vertex>> listWithoutTime;
+	  private Hashtable<Integer, ArrayList<Edge>> listWithoutTime;
 	  private Hashtable<Integer, ArrayList<TripConnection>> timetable;
 	  private ArrayList<TripConnection> connections;
 	  private int currentTime;
@@ -190,13 +190,13 @@ public class DijkstraAlgorithm {
 	  }
 	  
 	  private void findMinimalDistancesList(Vertex node) {
-		  List<Vertex> adjacentNodes = getNeighborsList(node);
+		  List<Edge> adjacentNodes = getNeighborsList(node);
 		  if(adjacentNodes.size() > 0){
-			  for (Vertex target : adjacentNodes) {
-				  if (getShortestDistance(target) > getShortestDistance(node) + getDistanceList(edges, node, target)) {
-					  distance.put(target, getShortestDistance(node) + getDistanceList(edges, node, target));
-					  predecessors.put(target, node);
-					  availableNodes.add(target);
+			  for (Edge target : adjacentNodes) {
+				  if (getShortestDistance(target.getDestination()) > getShortestDistance(node) + getDistanceList(edges, node, target.getDestination())) {
+					  distance.put(target.getDestination(), getShortestDistance(node) + getDistanceList(edges, node, target.getDestination()));
+					  predecessors.put(target.getDestination(), node);
+					  availableNodes.add(target.getDestination());
 				  }
 			  }
 		  }
@@ -207,7 +207,7 @@ public class DijkstraAlgorithm {
 		      if (edge.getSource().getId() == node.getId() && edge.getDestination().getId() == target.getId()) {
 		        return edge.getWeight();
 		      }
-		    }
+		  }
 		    throw new RuntimeException("Should not happen");
 	  }
 	  
@@ -241,14 +241,18 @@ public class DijkstraAlgorithm {
 		    int id = vertecesIndexes.get(nodeID);
 		    for(int i =  0; i < vertecesIndexes.size(); i++){
 		    	Edge e = matrixWithoutTime[id][i];
-		    	if(e != null)
+		    	if(e != null && !isSettled(e.getDestination()))
 		    		neighbors.add(e.getDestination());
 		    }
 		    return neighbors;
 	  }
 	  
-	  private List<Vertex> getNeighborsList(Vertex node) {
-		    return listWithoutTime.get(node.getId());
+	  private List<Edge> getNeighborsList(Vertex node) {
+		  List<Edge> neighbors = new ArrayList<Edge>();
+		  for(Edge e : listWithoutTime.get(node.getId()))
+			  if(!isSettled(e.getDestination()))
+				  neighbors.add(e);
+		  return neighbors;
 	  }
 		
 	
