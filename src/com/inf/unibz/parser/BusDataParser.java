@@ -11,6 +11,7 @@ import java.util.StringTokenizer;
 import javax.print.attribute.HashAttributeSet;
 
 import com.inf.unibz.database.DBConnector;
+import com.inf.unibz.entity.BusRoute;
 import com.inf.unibz.entity.BusStop;
 import com.inf.unibz.entity.Route;
 import com.inf.unibz.entity.Trip;
@@ -24,6 +25,7 @@ public class BusDataParser {
 	private Hashtable<Integer, ArrayList<Trip>> trips;
 	private Hashtable<Integer, ArrayList<TripConnection>> connections;
 	private DBConnector db;
+	private Hashtable<Integer, ArrayList<BusRoute>> stopCount;
 	
 	public BusDataParser(){
 		db = new DBConnector("maps");
@@ -184,6 +186,30 @@ public class BusDataParser {
 			else
 				trips.get(t.getRoute()).add(t);
 		}
-	} 
+	}
+	
+	public void groupStop(){
+		ArrayList<BusRoute> routes = db.getBusRoute();
+		ArrayList<BusRoute> stopRoutes = null;
+		stopCount = new Hashtable<Integer, ArrayList<BusRoute>>();
+		for(BusRoute br : routes){
+			if(stopCount.get(br.getStop()) == null){
+				stopRoutes = new ArrayList<BusRoute>();
+				stopRoutes.add(br);
+				stopCount.put(br.getStop(), stopRoutes);
+			}
+			else
+				stopCount.get(br.getStop()).add(br);
+		}
+	}
+	
+	public void createBusNodes(){
+		for(BusRoute br : db.getBusRoute()){
+			BusStop bs = db.getStop(br.getStop());
+			System.out.println(br.getStop());
+			System.out.println(bs);
+			db.insertBusNode(bs.getLatitude(), bs.getLongitude(), br.getRoute());
+		}
+	}
 	
 }

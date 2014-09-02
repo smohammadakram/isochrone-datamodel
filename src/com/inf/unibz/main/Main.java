@@ -154,6 +154,7 @@ public class Main {
 			
 		case 6:
 			BusDataParser bdp = new BusDataParser();
+			bdp.createBusNodes();
 		}
 			
 	}

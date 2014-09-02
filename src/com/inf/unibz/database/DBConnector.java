@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 
+import com.inf.unibz.entity.BusRoute;
+import com.inf.unibz.entity.BusStop;
 import com.inf.unibz.entity.Edge;
 import com.inf.unibz.entity.TripConnection;
 import com.inf.unibz.entity.Vertex;
@@ -413,5 +415,63 @@ public class DBConnector {
 			e.printStackTrace();
 		}
 	}
+	
+	public ArrayList<BusRoute> getBusRoute(){
+		PreparedStatement stmt;
+		BusRoute br = null;
+		ArrayList<BusRoute> routes = null;
+		try {
+			stmt = conn.prepareStatement("SELECT * FROM vdv_gtfs_tmp.route_and_stop", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+			ResultSet rs = stmt.executeQuery();
+			if(rs.first()){
+				routes = new ArrayList<BusRoute>();
+				while(rs.next()){
+					br = new BusRoute(rs.getInt(1), rs.getInt(2));
+					routes.add(br);
+				}
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return routes;
+	}
+	
+	public void insertBusNode( double latitude, double longitude, int route){
+		PreparedStatement stmt;
+		BusRoute br = null;
+		ArrayList<BusRoute> routes = null;
+		try {
+			stmt = conn.prepareStatement("INSERT INTO bz_isochrones_2014.bz_bus_nodes(node_mode, node_route_id, node_geometry)"
+					+ " VALUES (?,?,ST_AsEWKT(ST_SetSRID(ST_Makepoint(?,?), ?)));");
+			stmt.setInt(1, 0);
+			stmt.setInt(2, route);
+			stmt.setDouble(3, latitude);
+			stmt.setDouble(4, longitude);
+			stmt.setInt(5, 82344);
+			stmt.execute();
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public BusStop getStop(int id){
+		PreparedStatement stmt;
+		try {
+			stmt = conn.prepareStatement("SELECT * FROM vdv_gtfs_tmp.stops WHERE stop_id = ?", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+			stmt.setInt(1, id);
+			ResultSet rs = stmt.executeQuery();
+			if(rs.first()) {
+				return new BusStop(id, null, rs.getDouble(3), rs.getDouble(4));
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
 	
 }
