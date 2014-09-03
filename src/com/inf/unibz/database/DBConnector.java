@@ -5,6 +5,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
@@ -389,29 +390,30 @@ public class DBConnector {
 		}
 	}
 	
-	public void insertTrip(int routeID, int tripID){
+	public void insertTrip(int routeID, int tripID, int serviceID){
 		PreparedStatement stmt;
 		try {
-			stmt = conn.prepareStatement("INSERT INTO vdv_gtfs_tmp.trips VALUES (?,?);");
+			stmt = conn.prepareStatement("INSERT INTO vdv_gtfs_tmp.trips VALUES (?,?,?);");
 			stmt.setInt(1, routeID);
 			stmt.setInt(2, tripID);
+			stmt.setInt(3, serviceID);
 			stmt.execute();
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 	
-	public void insertStopTime(int tripID, int stopID, int seqNr){
+	public void insertStopTime(int tripID, int stopID, String arrivalTime, String departureTime, int seqNr){
 		PreparedStatement stmt;
 		try {
-			stmt = conn.prepareStatement("INSERT INTO vdv_gtfs_tmp.stop_times VALUES (?,?,?);");
+			stmt = conn.prepareStatement("INSERT INTO vdv_gtfs_tmp.stop_times VALUES (?,?,?,?,?);");
 			stmt.setInt(1, tripID);
 			stmt.setInt(2, stopID);
 			stmt.setInt(3, seqNr);
+			stmt.setString(4, arrivalTime);
+			stmt.setString(5, departureTime);
 			stmt.execute();
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -446,13 +448,12 @@ public class DBConnector {
 					+ " VALUES (?,?,ST_AsEWKT(ST_SetSRID(ST_Makepoint(?,?), ?)));");
 			stmt.setInt(1, 0);
 			stmt.setInt(2, route);
-			stmt.setDouble(3, latitude);
-			stmt.setDouble(4, longitude);
+			stmt.setDouble(3, longitude);
+			stmt.setDouble(4, latitude);
 			stmt.setInt(5, 82344);
 			stmt.execute();
 			
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -473,5 +474,55 @@ public class DBConnector {
 		return null;
 	}
 	
+	public void insertRoute(int id, String longName, String shortName){
+		PreparedStatement stmt;
+		BusRoute br = null;
+		ArrayList<BusRoute> routes = null;
+		try {
+			stmt = conn.prepareStatement("INSERT INTO vdv_gtfs_tmp.routes VALUES(?,?,?);");
+			stmt.setInt(1, id);
+			stmt.setString(2, longName);
+			stmt.setString(3, shortName);
+			stmt.execute();
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public void insertCalendar(int service, boolean[] validity, String startDate, String endDate){
+		PreparedStatement stmt;
+		try {
+			stmt = conn.prepareStatement("INSERT INTO vdv_gtfs_tmp.calendar VALUES(?,?,?,?,?,?,?,?,?,?);");
+			stmt.setInt(1, service);
+			for(int i = 2; i < 9; i++)
+				stmt.setBoolean(i, validity[i-2]);
+			stmt.setString(9, startDate);
+			stmt.setString(10, endDate);
+			stmt.execute();
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void emptyTmpDatabase(){
+		Statement stmt;
+		try {
+//			stmt = conn.prepareStatement("DELETE FROM vdv_gtfs_tmp.stops;");
+//			stmt.execute();
+			stmt = conn.createStatement();
+			stmt.execute("DELETE FROM vdv_gtfs_tmp.stop_times;");
+//			stmt = conn.prepareStatement("DELETE FROM vdv_gtfs_tmp.routes;");
+//			stmt.execute();
+//			stmt = conn.prepareStatement("DELETE FROM vdv_gtfs_tmp.calendar;");
+//			stmt.execute();
+//			stmt = conn.prepareStatement("DELETE FROM vdv_gtfs_tmp.trips;");
+//			stmt.execute();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
 	
 }

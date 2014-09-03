@@ -153,8 +153,15 @@ public class Main {
 			System.out.println("File parsed.");
 			
 		case 6:
+			db = new DBConnector("maps");
+//			db.emptyTmpDatabase();
 			BusDataParser bdp = new BusDataParser();
 			bdp.createBusNodes();
+//			bdp.parseRoutes();
+//			bdp.parseTrips();
+//			bdp.parseTripSequence();
+//			bdp.parseCalendar();
+//			bdp.parseStops();
 		}
 			
 	}

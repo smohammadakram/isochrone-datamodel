@@ -5,6 +5,8 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.Hashtable;
 import java.util.StringTokenizer;
 
@@ -31,7 +33,7 @@ public class BusDataParser {
 		db = new DBConnector("maps");
 	}
 	
-	public void createStopsFromFile(){
+	public void parseStops(){
 		setFile("C:\\Users\\Luca\\Dropbox\\Uni\\Thesis\\SASA\\output\\output\\stops.txt");
 		try {
 			BufferedReader br = new BufferedReader(new FileReader(file));
@@ -79,23 +81,21 @@ public class BusDataParser {
 	public void parseRoutes(){
 		setFile("C:\\Users\\Luca\\Dropbox\\Uni\\Thesis\\SASA\\output\\output\\routes.txt");
 		BufferedReader br;
-		Route r = null;
 		try {
 			br = new BufferedReader(new FileReader(file));
 			br.readLine();
 			String s = br.readLine();
-			StringTokenizer st = new StringTokenizer(s, "\t");
+			StringTokenizer st = new StringTokenizer(s, ",");
 			while(s != null){
-				r = new Route(Integer.parseInt(st.nextToken()));
-				routes.add(r);
+				st = new StringTokenizer(s, ",");
+				st.nextToken();
+				db.insertRoute(Integer.parseInt(st.nextToken()), st.nextToken(), st.nextToken());
 				s = br.readLine();
 			}
 			br.close();
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -105,22 +105,18 @@ public class BusDataParser {
 		setFile("C:\\Users\\Luca\\Dropbox\\Uni\\Thesis\\SASA\\output\\output\\trips.txt");
 		try {
 			BufferedReader br = new BufferedReader(new FileReader(file));
-			ArrayList<Trip> all = new ArrayList<Trip>();
 			br.readLine();
 			String s = br.readLine();
 			StringTokenizer st;
-			Trip t = null;
 			while(s != null){
 				st = new StringTokenizer(s, ",");
-				db.insertTrip(Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken()));
+				db.insertTrip(Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken()));
 				s = br.readLine();
 			}
 			br.close();
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -128,9 +124,6 @@ public class BusDataParser {
 	
 	public void parseTripSequence(){
 		setFile("C:\\Users\\Luca\\Dropbox\\Uni\\Thesis\\SASA\\output\\output\\stop_times.txt");
-		ArrayList<TripConnection> conns = new ArrayList<TripConnection>();
-		BusStop bs = null;
-		TripConnection tc = null;
 		try {
 			BufferedReader br = new BufferedReader(new FileReader(file));
 			StringTokenizer st = null;
@@ -138,22 +131,39 @@ public class BusDataParser {
 			String s = br.readLine();
 			while(s != null){
 				st = new StringTokenizer(s, ",");
-				int t = Integer.parseInt(st.nextToken());
-				int s1 = Integer.parseInt(st.nextToken());
-				st.nextToken();
-				st.nextToken();
-				int seq = Integer.parseInt(st.nextToken());
-				db.insertStopTime(t, s1, seq);
+				db.insertStopTime(Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken()), st.nextToken(), st.nextToken(), Integer.parseInt(st.nextToken()));
 				s = br.readLine();
-				conns.add(tc);
 			} 
 			br.close();
-			populateConnections(conns);
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public void parseCalendar(){
+		setFile("C:\\Users\\Luca\\Dropbox\\Uni\\Thesis\\SASA\\output\\output\\calendar.txt");
+		try {
+			BufferedReader br = new BufferedReader(new FileReader(file));
+			StringTokenizer st = null;
+			br.readLine();
+			String s = br.readLine();
+			while(s != null){
+				st = new StringTokenizer(s, ",");
+				db.insertCalendar(Integer.parseInt(st.nextToken()), new boolean[] {isValidDay(st.nextToken()), 
+					isValidDay(st.nextToken()), 
+					isValidDay(st.nextToken()), 
+					isValidDay(st.nextToken()), 
+					isValidDay(st.nextToken()), 
+					isValidDay(st.nextToken()), 
+					isValidDay(st.nextToken())}, parseDate(st.nextToken()), parseDate(st.nextToken()));
+				s = br.readLine();
+			} 
+			br.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
@@ -210,6 +220,22 @@ public class BusDataParser {
 			System.out.println(bs);
 			db.insertBusNode(bs.getLatitude(), bs.getLongitude(), br.getRoute());
 		}
+	}
+	
+	public boolean isValidDay(String valid){
+		if(valid.equals("0"))
+			return false;
+		else
+			return true;
+	}
+	
+	public String parseDate(String d){
+		return d.substring(0, 4) + "-" + d.substring(4, 6) + "-" + d.substring(6, 8); 
+	}
+	
+	public long parseDateToMillis(String d){
+		Calendar c = new GregorianCalendar(Integer.parseInt(d.substring(0, 4)), Integer.parseInt(d.substring(4, 6)), Integer.parseInt(d.substring(6, 8)));
+		return c.getTimeInMillis();
 	}
 	
 }
