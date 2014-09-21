@@ -2,13 +2,8 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
-	<classpathentry kind="lib" path="C:/Users/Luca/Downloads/ojdbc7.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Luca/Downloads/postgresql-9.3-1102.jdbc41.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Luca/Downloads/JavaAPIforKml-2.2.1-javadoc.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Luca/Downloads/JavaAPIforKml-2.2.1.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
-	<classpathentry kind="lib" path="C:/Users/Luca/workspace/sasabus-opendata-lib-1.0.20140825.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Luca/workspace/SASAbusOpenDataClient/libs/org-json-parser-2013-12-13.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Luca/workspace/SASAbusOpenDataClient/libs/dm-xml-json-lib-1.0.20140329.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/ojdbc7.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Luca/Downloads/postgresql-9.3-1102.jdbc4.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Luca/git/SasaImporter/libs/postgis.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
