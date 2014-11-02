@@ -3,6 +3,10 @@ package sasa_importer;
 import java.io.File;
 import java.util.StringTokenizer;
 
+import org.w3c.dom.NodeList;
+
+import sasa_importer.street_network.XMLParser;
+
 
 public class Main {
 	
@@ -10,6 +14,8 @@ public class Main {
 		System.gc();
 		DBConnector db = null;
 		switch (Integer.parseInt(args[0])){
+		
+		//Renaming the vdv file from *.x10 to *.X10
 		case 1:
 			System.out.println("File rename.");
 			File vdv = new File("/var/lib/postgresql/bz_database/vdv/");
@@ -22,6 +28,8 @@ public class Main {
 //				f.renameTo(new File("C:\\Users\\Luca\\Dropbox\\Uni\\Thesis\\Isochrones\\vdv\\" + name + ".x10"));
 			}
 			break;
+			
+		//Populating the temporary database fro bus data	
 		case 2:
 			db = new DBConnector();
 			db.emptyTmpDatabase();
@@ -73,6 +81,7 @@ public class Main {
 			t5.start();
 			break;
 			
+		//Creating link network
 		case 3:
 			db = new DBConnector();
 			final LinkNetwork ln = new LinkNetwork(db);
@@ -87,6 +96,12 @@ public class Main {
 			
 			t6.start();
 			break;
+			
+		//Parsing Openstreetmap data for building the street network	
+		case 4:
+			XMLParser aParser = new XMLParser("C:\\Users\\Luca\\Dropbox\\Uni\\Bachelor\\Thesis\\Isochrones\\new schema\\street_network\\mebo_street.osm");
+			aParser.separateSourceFile();
+			aParser.readWayTag();
 		}
 	}
 
