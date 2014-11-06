@@ -5,6 +5,7 @@ import java.util.StringTokenizer;
 
 import org.w3c.dom.NodeList;
 
+import sasa_importer.street_network.PBFParser;
 import sasa_importer.street_network.XMLParser;
 
 
@@ -99,9 +100,11 @@ public class Main {
 			
 		//Parsing Openstreetmap data for building the street network	
 		case 4:
-			XMLParser aParser = new XMLParser("C:\\Users\\Luca\\Dropbox\\Uni\\Bachelor\\Thesis\\Isochrones\\new schema\\street_network\\mebo_street.osm");
-			aParser.separateSourceFile();
-			aParser.readWayTag();
+//			XMLParser aParser = new XMLParser("C:\\Users\\Luca\\Dropbox\\Uni\\Bachelor\\Thesis\\Isochrones\\new schema\\street_network\\mebo_street.osm");
+//			aParser.separateSourceFile();
+//			aParser.readWayTag();
+			PBFParser parser = new PBFParser("/home/user/Dropbox/Uni/Bachelor/Thesis/Isochrones/new schema/street_network/mebo_street.pbf");
+			parser.parsePBF();
 		}
 	}
 

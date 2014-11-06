@@ -12,9 +12,15 @@ import crosby.binary.Osmformat.PrimitiveBlock;
 
 public class PBFParser {
 	
+	String file;
+	
+	public PBFParser(String file){
+		this.file = file;
+	}
+	
 	public void parsePBF(){
 		try {
-			FileInputStream fis = new FileInputStream("us-pacific.osm.pbf");
+			FileInputStream fis = new FileInputStream(file);
 			DataInputStream dis = new DataInputStream(fis);
 			
 			for (;;) {
@@ -41,7 +47,7 @@ public class PBFParser {
 				} else if (h.getType().equals("OSMData")) {
 					PrimitiveBlock pb = PrimitiveBlock.parseFrom(blobData);
 					System.out.println("pb: " + pb.getGranularity());
-				}
+				} 
 			}
 			
 			fis.close();
