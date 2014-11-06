@@ -5,5 +5,10 @@
 	<classpathentry exported="true" kind="lib" path="libs/ojdbc7.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Luca/Downloads/postgresql-9.3-1102.jdbc4.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Luca/git/SasaImporter/libs/postgis.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Luca/git/SasaImporter/libs/osm-tools-pbf-1.0.m7.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Luca/git/SasaImporter/libs/osm-tools-api-1.0.m3.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Luca/git/SasaImporter/libs/osm-tools-formats-1.0.m3.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Luca/git/SasaImporter/libs/osm-tools-process-1.0.m3.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Luca/git/SasaImporter/libs/osm-tools-ra-1.0.m3.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
