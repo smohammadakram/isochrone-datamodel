@@ -3,10 +3,7 @@ package sasa_importer;
 import java.io.File;
 import java.util.StringTokenizer;
 
-import org.w3c.dom.NodeList;
-
 import sasa_importer.street_network.PBFParser;
-import sasa_importer.street_network.XMLParser;
 
 
 public class Main {
@@ -103,7 +100,7 @@ public class Main {
 //			XMLParser aParser = new XMLParser("C:\\Users\\Luca\\Dropbox\\Uni\\Bachelor\\Thesis\\Isochrones\\new schema\\street_network\\mebo_street.osm");
 //			aParser.separateSourceFile();
 //			aParser.readWayTag();
-			PBFParser parser = new PBFParser("/home/user/Dropbox/Uni/Bachelor/Thesis/Isochrones/new schema/street_network/mebo_street.pbf");
+			PBFParser parser = new PBFParser("/home/user/Dropbox/Uni/Bachelor/Thesis/Isochrones/new schema/street_network/mebo_street.osm.pbf");
 			parser.parsePBF();
 		}
 	}

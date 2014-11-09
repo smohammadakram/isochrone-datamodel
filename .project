@@ -16,7 +16,17 @@
 	</natures>
 	<linkedResources>
 		<link>
-			<name>protobuf-2.5.0-java</name>
+			<name>crosby</name>
+			<type>2</type>
+			<location>/home/user/OSM-binary-master/crosby</location>
+		</link>
+		<link>
+			<name>crosby_test</name>
+			<type>2</type>
+			<location>/home/user/OSM-binary-master/src.java/crosby</location>
+		</link>
+		<link>
+			<name>java</name>
 			<type>2</type>
 			<location>/home/user/protobuf-2.5.0/java/src/main/java</location>
 		</link>
