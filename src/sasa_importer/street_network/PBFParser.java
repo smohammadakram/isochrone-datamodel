@@ -31,7 +31,6 @@ public class PBFParser {
 			BlockReaderAdapter brad = new TestBinaryParser();
 			new BlockInputStream(input, brad).process();
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
