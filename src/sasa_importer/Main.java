@@ -100,7 +100,7 @@ public class Main {
 //			XMLParser aParser = new XMLParser("C:\\Users\\Luca\\Dropbox\\Uni\\Bachelor\\Thesis\\Isochrones\\new schema\\street_network\\mebo_street.osm");
 //			aParser.separateSourceFile();
 //			aParser.readWayTag();
-			PBFParser parser = new PBFParser("/home/user/Dropbox/Uni/Bachelor/Thesis/Isochrones/new schema/street_network/mebo_street.osm.pbf");
+			PBFParser parser = new PBFParser(args[1].replace("\\", "\\\\"));
 			parser.parsePBF();
 		}
 	}

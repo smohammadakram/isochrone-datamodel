@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>SasaImporter</name>
+	<name>TimeExpandedSpatialData</name>
 	<comment></comment>
 	<projects>
 	</projects>
@@ -16,19 +16,14 @@
 	</natures>
 	<linkedResources>
 		<link>
-			<name>crosby</name>
+			<name>crosby_1</name>
 			<type>2</type>
-			<location>/home/user/OSM-binary-master/crosby</location>
-		</link>
-		<link>
-			<name>crosby_test</name>
-			<type>2</type>
-			<location>/home/user/OSM-binary-master/src.java/crosby</location>
+			<location>C:/Users/Luca/git/SasaImporter/linked sources/crosby_1</location>
 		</link>
 		<link>
 			<name>java</name>
 			<type>2</type>
-			<location>/home/user/protobuf-2.5.0/java/src/main/java</location>
+			<location>C:/Users/Luca/git/SasaImporter/linked sources/java</location>
 		</link>
 	</linkedResources>
 </projectDescription>
