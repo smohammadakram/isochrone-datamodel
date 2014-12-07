@@ -1,19 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="src" path="crosby_test"/>
-	<classpathentry kind="src" path="crosby"/>
+	<classpathentry kind="src" path="crosby_1"/>
 	<classpathentry kind="src" path="java"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
 	<classpathentry exported="true" kind="lib" path="libs/ojdbc7.jar"/>
-	<classpathentry kind="lib" path="/home/user/git/SasaImporter/libs/postgresql-9.3-1102.jdbc41.jar"/>
-	<classpathentry kind="lib" path="/home/user/git/SasaImporter/libs/postgis.jar"/>
-	<classpathentry kind="lib" path="/home/user/git/SasaImporter/libs/osmpbf.jar"/>
-	<classpathentry kind="lib" path="/home/user/git/SasaImporter/libs/osm-tools-formats-1.0.m3.jar"/>
-	<classpathentry kind="lib" path="/home/user/git/SasaImporter/libs/osm-tools-pbf-1.0.m7.jar"/>
-	<classpathentry kind="lib" path="/home/user/git/SasaImporter/libs/osm-tools-process-1.0.m3.jar"/>
-	<classpathentry kind="lib" path="/home/user/git/SasaImporter/libs/osm-tools-ra-1.0.m3.jar"/>
-	<classpathentry kind="lib" path="/home/user/git/SasaImporter/libs/osm-tools-api-1.0.m3.jar"/>
-	<classpathentry kind="lib" path="/home/user/git/SasaImporter/libs/osm-descriptor.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Luca/git/SasaImporter/libs/postgresql-9.3-1102.jdbc41.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Luca/git/SasaImporter/libs/postgis.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Luca/git/SasaImporter/libs/osmpbf.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Luca/git/SasaImporter/libs/osm-tools-formats-1.0.m3.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Luca/git/SasaImporter/libs/osm-tools-pbf-1.0.m7.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Luca/git/SasaImporter/libs/osm-tools-process-1.0.m3.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Luca/git/SasaImporter/libs/osm-tools-ra-1.0.m3.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Luca/git/SasaImporter/libs/osm-tools-api-1.0.m3.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Luca/git/SasaImporter/libs/osm-descriptor.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

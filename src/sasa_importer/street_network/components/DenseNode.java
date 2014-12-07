@@ -8,6 +8,11 @@ public class DenseNode {
 	DenseInfo dInfo;
 	Hashtable<String, String> keyValuePairs;
 	
+	public DenseNode(long id, DenseInfo dInfo){
+		this.id = id;
+		this.dInfo = dInfo;
+	}
+	
 	public DenseNode(long id, DenseInfo dInfo, Hashtable<String, String> keyValuePairs) {
 		this.id = id;
 		this.dInfo = dInfo;
