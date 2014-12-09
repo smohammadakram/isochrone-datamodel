@@ -3,7 +3,9 @@ package sasa_importer;
 import java.io.File;
 import java.util.StringTokenizer;
 
+import sasa_importer.street_network.GraphBuilder;
 import sasa_importer.street_network.PBFParser;
+import sasa_importer.street_network.components.Graph;
 
 
 public class Main {
@@ -102,6 +104,8 @@ public class Main {
 //			aParser.readWayTag();
 			PBFParser parser = new PBFParser(args[1].replace("\\", "\\\\"));
 			parser.parsePBF();
+			Graph g = new Graph(new GraphBuilder(parser.getAllNodes(), parser.getAllWays()));
+			g.buildGraph();
 		}
 	}
 

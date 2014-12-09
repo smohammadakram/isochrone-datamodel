@@ -9,20 +9,25 @@ public class Graph {
 	
 	private HashMap<Long, RealNode> nodes;
 	private HashMap<Long, Edge> edges;
+	private GraphBuilder builder;
 	
-	public void buildGraph(GraphBuilder gb){
-		buildNodes(gb);
+	public Graph(GraphBuilder gb){
+		builder = gb;
 	}
 	
-	public void buildNodes(GraphBuilder gb){
-		List<RealNode> nodes = gb.getRealStreetNodes();
-		for(RealNode rn : nodes)
-			this.nodes.put(rn.getId(), rn);
+	public void buildGraph(){
+		nodes = builder.buildNodes();
+		edges = builder.buildEdges();
 	}
 	
-	public void buildEdges(GraphBuilder gb,  HashMap<Long, OSMWay> allWays){
-		//TODO 
-		edges = new HashMap<Long, Edge>();
+	public RealNode getNodeByID(Long id){
+		RealNode result = nodes.get(id);
+		return result;
+	}
+	
+	public Edge getEdgeByID(Long id){
+		Edge result = edges.get(id);
+		return result;
 	}
 
 }

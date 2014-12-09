@@ -9,6 +9,7 @@ import org.postgis.PGgeometry;
 import org.postgis.Point;
 
 import sasa_importer.street_network.components.DenseNode;
+import sasa_importer.street_network.components.Edge;
 import sasa_importer.street_network.components.OSMWay;
 import sasa_importer.street_network.components.RealNode;
 
@@ -16,14 +17,16 @@ public class GraphBuilder {
 	
 	private HashMap<Long, DenseNode> denseNodes;
 	private HashMap<Long, OSMWay> ways;
+	private HashMap<Long, List<Long>> crosses;
 	
 	public GraphBuilder(HashMap<Long, DenseNode> allNodes,  HashMap<Long, OSMWay> allWays){
 		denseNodes = allNodes;
 		ways = allWays;
+		crosses = new HashMap<Long, List<Long>>();
 	}
 	
 	//find all crosses given the list of nodes of each way
-    public HashMap<Long, List<Long>> findCross(){
+    public void findCross(){
     	HashMap<Long, List<Long>> result = new HashMap<Long, List<Long>>();
     	Set<Long> keys = denseNodes.keySet();
     	for(OSMWay osmw : ways.values()){
@@ -41,7 +44,7 @@ public class GraphBuilder {
     			}
     		}
     	}
-    	return result;
+    	crosses = result;
     }
     
   //checks if two way intersect by finding the same node in the lists of nodes describing the ways
@@ -71,6 +74,23 @@ public class GraphBuilder {
     	}
     	System.out.println("Real nodes: " + result.size());
     	return result;
+    }
+    
+    public HashMap<Long, RealNode> buildNodes(){
+    	HashMap<Long, RealNode> realNodes = new HashMap<Long, RealNode>();
+		List<RealNode> nodes = getRealStreetNodes();
+		for(RealNode rn : nodes)
+			realNodes.put(rn.getId(), rn);
+		return realNodes;
+	}
+    
+    public HashMap<Long, Edge> buildEdges(){
+    	HashMap<Long, Edge> edges = new HashMap<Long, Edge>();
+    	Set<Long> crossesKeys = crosses.keySet();
+    	for(Long cross : crossesKeys){
+    		//TODO generate edges
+    	}
+    	return edges;
     }
 
 }
