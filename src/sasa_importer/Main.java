@@ -3,6 +3,7 @@ package sasa_importer;
 import java.io.File;
 import java.util.StringTokenizer;
 
+import sasa_importer.database.DBConnector;
 import sasa_importer.street_network.GraphBuilder;
 import sasa_importer.street_network.PBFParser;
 import sasa_importer.street_network.components.Graph;
@@ -29,7 +30,7 @@ public class Main {
 			}
 			break;
 			
-		//Populating the temporary database fro bus data	
+		//Populating the temporary database for bus data	
 		case 2:
 			db = new DBConnector();
 			db.emptyTmpDatabase();
@@ -97,15 +98,17 @@ public class Main {
 			t6.start();
 			break;
 			
-		//Parsing Openstreetmap data for building the street network	
+		//Parsing Openstreetmap data and inserting nodes + edges into the database
 		case 4:
-//			XMLParser aParser = new XMLParser("C:\\Users\\Luca\\Dropbox\\Uni\\Bachelor\\Thesis\\Isochrones\\new schema\\street_network\\mebo_street.osm");
-//			aParser.separateSourceFile();
-//			aParser.readWayTag();
+			if(db == null)
+				db = new DBConnector();
 			PBFParser parser = new PBFParser(args[1].replace("\\", "\\\\"));
 			parser.parsePBF();
-			Graph g = new Graph(new GraphBuilder(parser.getAllNodes(), parser.getAllWays()));
+			GraphBuilder gb = new GraphBuilder(parser.getAllNodes(), parser.getAllWays(), db);
+			Graph g = new Graph(gb);
+			db.emptyStreetNodesTable();
 			g.buildGraph();
+			g.printGraph();
 		}
 	}
 

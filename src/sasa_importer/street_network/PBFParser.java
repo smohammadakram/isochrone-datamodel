@@ -64,7 +64,7 @@ public class PBFParser extends BinaryParser{
             lastId += nodes.getId(i);
             lastLat += nodes.getLat(i);
             lastLon += nodes.getLon(i);
-            DenseInfo di = new DenseInfo(nodes.getDenseinfo().getVersion(i), nodes.getDenseinfo().getTimestamp(i), nodes.getDenseinfo().getChangeset(i), (long) parseLat(lastLat), (long) parseLon(lastLon));
+            DenseInfo di = new DenseInfo(nodes.getDenseinfo().getVersion(i), nodes.getDenseinfo().getTimestamp(i), nodes.getDenseinfo().getChangeset(i), parseLat(lastLat), parseLon(lastLon));
             DenseNode dn = new DenseNode(lastId, di);
             allNodes.put(lastId, dn);
 //            System.out.printf("Dense node, ID %d @ %.6f,%.6f\n", lastId, parseLat(lastLat), parseLon(lastLon));
@@ -82,28 +82,18 @@ public class PBFParser extends BinaryParser{
     @Override
     protected void parseWays(List<Way> ways) {
         for (Way w : ways) {
-//    	for(int i = 0; i < ways.size(); i++){
-//    		Way w = ways.get(i);
+        	System.out.println("RefsList: " + w.getRefsList());
         	Info in = w.getInfo();
         	OSMWay aWay = new sasa_importer.street_network.components.OSMWay(in.getVersion(),
         			w.getId(), in.getTimestamp(), in.getChangeset(), w.getRefsList());
-//        	System.out.println(aWay.getWayNodes().get(0));
+        	System.out.print("Nodes: ");
+        	System.out.println("#1: " + w.getRefs(1));
+        	for(Long l : w.getRefsList())
+        		System.out.print(l + " ");
+        	System.out.println();
+        	System.out.println("Way: " + aWay.getId() + ", " + aWay.getWayNodes().toString());
+        	System.out.println();
         	allWays.put(w.getId(), aWay);
-//            System.out.println("Way ID " + w.getId());
-//            StringBuilder sb = new StringBuilder();
-//            sb.append("  Nodes: ");
-//            long lastRef = 0;
-//            for (Long ref : w.getRefsList()) {
-//                lastRef+= ref;
-//                sb.append(lastRef).append(" ");
-//            }
-//            sb.append("\n  Key=value pairs: ");
-//            for (int i=0 ; i<w.getKeysCount() ; i++) {
-//                sb.append(getStringById(w.getKeys(i))).append("=")
-//                        .append(getStringById(w.getVals(i))).append(" ");
-                
-//            }
-//            System.out.println(sb.toString());
         }
     }
 

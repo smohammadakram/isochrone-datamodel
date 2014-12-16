@@ -1,5 +1,8 @@
-package sasa_importer;
+package sasa_importer.database;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -7,12 +10,17 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+
+import sasa_importer.Service;
+import sasa_importer.street_network.components.Edge;
+import sasa_importer.street_network.components.RealNode;
 
 public class DBConnector {
 	
-	private final static String MAPS_DB = "jdbc:postgresql://localhost:5432/isochrones2014";
-//	private final static String MAPS_DB = "jdbc:postgresql://maps.inf.unibz.it:5432/isochrones2014";
+//	private final static String MAPS_DB = "jdbc:postgresql://localhost:5432/isochrones2014";
+	private final static String MAPS_DB = "jdbc:postgresql://maps.inf.unibz.it:5432/isochrones2014";
 	private final static String MAPS_USER = "postgres";
 	private final static String MAPS_PWD = "AifaXub2";
 //	private final static String MAPS_PWD = "postgres";
@@ -203,6 +211,101 @@ public class DBConnector {
 		return services;
 	}
 	
+	public boolean emptyStreetNodesTable(){
+		boolean result = false;
+		try {
+			PreparedStatement stmt = conn.prepareStatement("DELETE FROM bz_isochrones_2014.bz_pedestrian_nodes CASCADE;");
+			result = stmt.execute();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return result;
+	}
+	
+	public boolean insertStreetNode(RealNode aNode){
+		boolean result = false;
+		try {
+			PreparedStatement stmt = conn.prepareStatement("INSERT INTO bz.isochrones_2014.bz_pedestrian_nodes (node_id, node_geometry) "
+					+ "VALUES (?, ST_GeomFromText(?));");
+			stmt.setLong(1, aNode.getId());
+			stmt.setString(2, aNode.getGeometry().toString());
+			result = stmt.execute();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return result;
+	}
+	
+	public boolean insertMultipleStreetNodes(Collection<RealNode> nodes){
+		boolean result = false;
+		try {
+			BufferedWriter bw = new BufferedWriter(new FileWriter("bz_street_nodes_import.sql"));
+			for(RealNode rn : nodes){
+				PreparedStatement stmt = conn.prepareStatement("DELETE FROM bz_isochrones_2014.bz_pedestrian_nodes");
+				stmt.execute();
+				stmt = conn.prepareStatement("INSERT INTO bz_isochrones_2014.bz_pedestrian_nodes (node_id, node_geometry) "
+						+ "VALUES (?, ST_GeomFromText(?));");
+				stmt.setLong(1, rn.getId());
+				stmt.setString(2, rn.getGeometry().toString());
+//				result = stmt.execute();
+				bw.write(stmt.toString());
+				bw.write(";\n");
+				bw.flush();
+			}
+			bw.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} 
+		catch (IOException e) {
+			e.printStackTrace();
+		}
+		return result;
+	}
+	
+	public boolean insertMultipleStreetEdges(Collection<Edge> edges){
+		boolean result = false;
+		try {
+			BufferedWriter bw = new BufferedWriter(new FileWriter("bz_street_edges_import.sql"));
+			for(Edge anEdge : edges){
+				PreparedStatement stmt = conn.prepareStatement("DELETE FROM bz_isochrones_2014.bz_pedestrian_edges");
+				stmt.execute();
+				stmt = conn.prepareStatement("INSERT INTO bz_isochrones_2014.bz_pedestrian_edges (edge_id, edge_source, edge_destination,edge_geometry) "
+						+ "VALUES (?, ?, ?, ST_GeomFromText(?));");
+				stmt.setLong(1, anEdge.getId());
+				stmt.setLong(2, anEdge.getSource());
+				stmt.setLong(3, anEdge.getDestination());
+				stmt.setString(4, anEdge.getGeometry().toString());
+//				result = stmt.execute();
+				bw.write(stmt.toString());
+				bw.write(";\n");
+				bw.flush();
+			}
+			bw.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} 
+		catch (IOException e) {
+			e.printStackTrace();
+		}
+		return result;
+	}	
+	
+	public boolean insertStreetEdge(Edge anEdge){
+		boolean result = false;
+		try {
+			PreparedStatement stmt = conn.prepareStatement("INSERT INTO bz.isochrones_2014.bz_pedestrian_edges (edge_id, edge_source, edge_destination,edge_geometry) "
+					+ "VALUES (?, ?, ?, ST_GeomFromText(?)));");
+			stmt.setLong(1, anEdge.getId());
+			stmt.setLong(2, anEdge.getSource());
+			stmt.setLong(3, anEdge.getDestination());
+			stmt.setString(4, anEdge.getGeometry().toString());
+			result = stmt.execute();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return result;
+	}
+	
 	public int getLastPedestrianNodeID(){
 		try {
 			PreparedStatement stmt = conn.prepareStatement("SELECT node_id FROM bz_isochrones_2014.bz_pedestrian_nodes ORDER BY node_id;", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
@@ -228,8 +331,6 @@ public class DBConnector {
 		}
 		return -1;
 	}
-	
-	
 	
 	public ResultSet executeSimpleQuery(String sql){
 		System.out.println(sql);

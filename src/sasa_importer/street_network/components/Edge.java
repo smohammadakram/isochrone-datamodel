@@ -4,13 +4,15 @@ import org.postgis.PGgeometry;
 
 public class Edge {
 	
+	long id;
 	long source;
 	long destination;
 	PGgeometry geometry;
 	int length;
 	
-	public Edge(long source, long destination, PGgeometry geometry, int length) {
+	public Edge(long id, long source, long destination, PGgeometry geometry, int length) {
 		super();
+		this.id = id;
 		this.source = source;
 		this.destination = destination;
 		this.geometry = geometry;
@@ -47,6 +49,14 @@ public class Edge {
 
 	public void setLength(int length) {
 		this.length = length;
+	}
+	
+	public long getId(){
+		return id;
+	}
+	
+	public void setId(long id){
+		this.id = id;
 	}
 	
 }

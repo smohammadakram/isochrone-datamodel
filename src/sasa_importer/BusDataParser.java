@@ -11,6 +11,8 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import sasa_importer.database.DBConnector;
+
 public class BusDataParser {
 	
 	private String file;

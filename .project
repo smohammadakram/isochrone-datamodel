@@ -16,14 +16,24 @@
 	</natures>
 	<linkedResources>
 		<link>
-			<name>crosby_1</name>
+			<name>java</name>
+			<type>2</type>
+			<location>C:/Users/Luca/git/SasaImporter/linked sources/java</location>
+		</link>
+		<link>
+			<name>osm-binary</name>
 			<type>2</type>
 			<location>C:/Users/Luca/git/SasaImporter/linked sources/crosby_1</location>
 		</link>
 		<link>
-			<name>java</name>
+			<name>osmosis</name>
 			<type>2</type>
-			<location>C:/Users/Luca/git/SasaImporter/linked sources/java</location>
+			<location>C:/Users/Luca/git/OSM-Osmosis/pbf/src/crosby/binary/osmosis</location>
+		</link>
+		<link>
+			<name>osmosis-pbf</name>
+			<type>2</type>
+			<location>C:/Users/Luca/git/OSM-Osmosis/pbf/src/crosby</location>
 		</link>
 	</linkedResources>
 </projectDescription>

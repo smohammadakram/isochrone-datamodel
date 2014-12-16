@@ -5,6 +5,8 @@ import java.sql.SQLException;
 
 import org.postgis.PGgeometry;
 
+import sasa_importer.database.DBConnector;
+
 public class LinkNetwork {
 	
 	private DBConnector db;

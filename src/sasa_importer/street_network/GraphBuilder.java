@@ -1,13 +1,18 @@
 package sasa_importer.street_network;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
+import org.postgis.LineString;
+import org.postgis.MultiPoint;
 import org.postgis.PGgeometry;
 import org.postgis.Point;
 
+import sasa_importer.database.DBConnector;
 import sasa_importer.street_network.components.DenseNode;
 import sasa_importer.street_network.components.Edge;
 import sasa_importer.street_network.components.OSMWay;
@@ -18,11 +23,13 @@ public class GraphBuilder {
 	private HashMap<Long, DenseNode> denseNodes;
 	private HashMap<Long, OSMWay> ways;
 	private HashMap<Long, List<Long>> crosses;
+	private DBConnector db;
 	
-	public GraphBuilder(HashMap<Long, DenseNode> allNodes,  HashMap<Long, OSMWay> allWays){
+	public GraphBuilder(HashMap<Long, DenseNode> allNodes,  HashMap<Long, OSMWay> allWays, DBConnector conn){
 		denseNodes = allNodes;
 		ways = allWays;
 		crosses = new HashMap<Long, List<Long>>();
+		db = conn;
 	}
 	
 	//find all crosses given the list of nodes of each way
@@ -63,11 +70,11 @@ public class GraphBuilder {
     	for(Long l : denseNodes.keySet()){
     		if(l > 0 && String.valueOf(l).length() >= 7){
 	    		DenseNode dn = denseNodes.get(l);
-	    		Point p = new Point(dn.getdInfo().getLognitude(), dn.getdInfo().getLatitude());
+	    		Point p = new Point(dn.getdInfo().getLognitude(),dn.getdInfo().getLatitude());
 	    		p.setSrid(4326);
 	    		RealNode aNode = new RealNode(l, new PGgeometry(p));
 	    		result.add(aNode);
-	    		System.out.println(aNode.toString());
+//	    		System.out.println(aNode.toString());
     		}
     		else
     			continue;
@@ -84,13 +91,84 @@ public class GraphBuilder {
 		return realNodes;
 	}
     
+    public void insertNodes(Collection<RealNode> nodes){
+    	boolean result = db.insertMultipleStreetNodes(nodes);
+    	if(result)
+    		System.out.println("Street nodes correctly inserted.");
+    }
+    
     public HashMap<Long, Edge> buildEdges(){
     	HashMap<Long, Edge> edges = new HashMap<Long, Edge>();
-    	Set<Long> crossesKeys = crosses.keySet();
-    	for(Long cross : crossesKeys){
-    		//TODO generate edges
+    	for(Long l : ways.keySet()){
+    		OSMWay way = ways.get(l);
+    		Edge e = new Edge(l, way.getWayNodes().get(0), way.getWayNodes().get(way.getWayNodes().size()-1), buildEdgeGeometry(way.getWayNodes()), 0);
+//    		System.out.println("Geom: " + e.getGeometry().toString());
+    		edges.put(l, e);
+//    		edges.put(destination, reverseEdge(edgePoint, destination, source));
     	}
+//    	Set<Long> crossesKeys = crosses.keySet();
+//    	System.out.println("Crosses: " + crossesKeys.size());
+//    	ArrayList<Point> edgePoint = new ArrayList<Point>();
+//    	Long source = null; 
+//    	Long destination = null;
+//    	
+//    	//creating an edge for each node that is a crosses
+//    	for(Long cross : crossesKeys){
+//    		source = cross;
+//    		for(Long way : crosses.get(cross)){
+//	    		OSMWay aWay = ways.get(way);
+//				DenseNode aNode = denseNodes.get(cross);
+//		    		
+//		    		//search for the nodes forming the edge and the destination
+//		    		for(Long node : aWay.getWayNodes()){
+//		    			if(node != cross)
+//		    				continue;
+//		    			Point aPoint = new Point(aNode.getdInfo().getLognitude(), aNode.getdInfo().getLatitude());
+//		    			edgePoint.add(aPoint);
+//		    			if(crosses.get(node) == null){
+//		    				aPoint = new Point(aNode.getdInfo().getLognitude(), aNode.getdInfo().getLatitude());
+//		    				edgePoint.add(aPoint);
+//		    			}
+//		    			else{
+//			    			aPoint = new Point(aNode.getdInfo().getLognitude(), aNode.getdInfo().getLatitude());
+//		    				edgePoint.add(aPoint);
+//		    				destination = node;
+//		    				break;
+//		    			}
+//		    		}
+//	    	}
+//	    	PGgeometry edge = new PGgeometry(new LineString(edgePoint.toArray(new Point[]{})));
+//	    	Edge e = new Edge(source, destination, edge, 0);
+//	    	if(edges.get(source) == null){
+//	    		edges.put(source, e);
+//	    		edges.put(destination, reverseEdge(edgePoint, destination, source));
+//	    	}
+//    	}
     	return edges;
+    }
+    
+    public Edge reverseEdge(ArrayList<Point> points, long id, long source, long destination){
+    	Collections.reverse(points);
+    	PGgeometry edge = new PGgeometry(new LineString(points.toArray(new Point[] {})));
+    	return new Edge(id, source, destination, edge, 0);
+    }
+    
+    public PGgeometry buildEdgeGeometry(List<Long> nodes){
+    	ArrayList<Point> points = new ArrayList<Point>();
+    	for(Long l : nodes){
+    		DenseNode aNode = denseNodes.get(l);
+    		if(aNode != null){
+	    		Point p = new Point(aNode.getdInfo().getLognitude(), aNode.getdInfo().getLatitude());
+	    		points.add(p);
+    		}
+    	}
+    	return new PGgeometry(new MultiPoint(points.toArray(new Point[]{})));
+    }
+    
+    public void insertEdges(Collection<Edge>edges){
+    	boolean result = db.insertMultipleStreetEdges(edges);
+    	if(result)
+    		System.out.println("Street nodes correctly inserted.");
     }
 
 }
