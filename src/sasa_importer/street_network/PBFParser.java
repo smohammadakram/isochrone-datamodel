@@ -4,8 +4,14 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
+import org.openstreetmap.osmosis.core.domain.v0_6.CommonEntityData;
+import org.openstreetmap.osmosis.core.domain.v0_6.OsmUser;
+import org.openstreetmap.osmosis.core.domain.v0_6.Tag;
+import org.openstreetmap.osmosis.core.domain.v0_6.WayNode;
 
 import sasa_importer.street_network.components.DenseInfo;
 import sasa_importer.street_network.components.DenseNode;
@@ -17,6 +23,7 @@ import crosby.binary.Osmformat.Node;
 import crosby.binary.Osmformat.Relation;
 import crosby.binary.Osmformat.Way;
 import crosby.binary.BinaryParser;
+import crosby.binary.Osmformat;
 import crosby.binary.file.BlockInputStream;
 import crosby.binary.file.BlockReaderAdapter;
 
@@ -24,12 +31,12 @@ public class PBFParser extends BinaryParser{
 	
 	String file;
 	HashMap<Long, DenseNode> allNodes;
-	HashMap<Long, OSMWay> allWays;
+	HashMap<Long, org.openstreetmap.osmosis.core.domain.v0_6.Way> allWays;
 	
 	public PBFParser(String file){
 		this.file = file;
 		allNodes = new HashMap<Long, DenseNode>();
-		allWays = new HashMap<Long, OSMWay>();
+		allWays = new HashMap<Long, org.openstreetmap.osmosis.core.domain.v0_6.Way>();
 	}
 	
 	public void parsePBF(){
@@ -45,6 +52,26 @@ public class PBFParser extends BinaryParser{
 		}
 	}
 	
+	   /** Get the osmosis object representing a the user in a given Info protobuf.
+     * @param info The info protobuf.
+     * @return The OsmUser object */
+    OsmUser getUser(Osmformat.Info info) {
+        // System.out.println(info);
+        if (info.hasUid() && info.hasUserSid()) {
+            if (info.getUid() < 0) {
+              return OsmUser.NONE;
+            }
+            return new OsmUser(info.getUid(), getStringById(info.getUserSid()));
+        } else {
+            return OsmUser.NONE;
+        }
+    }
+
+    /** The magic number used to indicate no version number metadata for this entity. */
+    static final int NOVERSION = -1;
+    /** The magic number used to indicate no changeset metadata for this entity. */
+    static final int NOCHANGESET = -1;
+	
 
     @Override
     protected void parseRelations(List<Relation> rels) {
@@ -56,6 +83,7 @@ public class PBFParser extends BinaryParser{
 
     @Override
     protected void parseDense(DenseNodes nodes) {
+    	System.out.println("Parsing dense nodes.");
         long lastId=0;
         long lastLat=0;
         long lastLon=0;
@@ -67,7 +95,6 @@ public class PBFParser extends BinaryParser{
             DenseInfo di = new DenseInfo(nodes.getDenseinfo().getVersion(i), nodes.getDenseinfo().getTimestamp(i), nodes.getDenseinfo().getChangeset(i), parseLat(lastLat), parseLon(lastLon));
             DenseNode dn = new DenseNode(lastId, di);
             allNodes.put(lastId, dn);
-//            System.out.printf("Dense node, ID %d @ %.6f,%.6f\n", lastId, parseLat(lastLat), parseLon(lastLon));
         }
     }
 
@@ -81,19 +108,49 @@ public class PBFParser extends BinaryParser{
 
     @Override
     protected void parseWays(List<Way> ways) {
-        for (Way w : ways) {
-        	System.out.println("RefsList: " + w.getRefsList());
-        	Info in = w.getInfo();
-        	OSMWay aWay = new sasa_importer.street_network.components.OSMWay(in.getVersion(),
-        			w.getId(), in.getTimestamp(), in.getChangeset(), w.getRefsList());
-        	System.out.print("Nodes: ");
-        	System.out.println("#1: " + w.getRefs(1));
-        	for(Long l : w.getRefsList())
-        		System.out.print(l + " ");
-        	System.out.println();
-        	System.out.println("Way: " + aWay.getId() + ", " + aWay.getWayNodes().toString());
-        	System.out.println();
-        	allWays.put(w.getId(), aWay);
+    	System.out.println("Parsing ways.");
+    	boolean street = false;
+    	
+    	 for (Osmformat.Way i : ways) {
+    		 street = false;
+             List<Tag> tags = new ArrayList<Tag>();
+             for (int j = 0; j < i.getKeysCount(); j++) {
+            	 String tag = getStringById(i.getKeys(j));
+            	 Tag t = new Tag(tag, getStringById(i.getVals(j)));
+                 tags.add(t);
+                 if(tag.equals("highway"))
+                	 street = true;
+             }
+             
+             //check if the current way is a street 
+             if(!street)
+            	 continue;
+                 
+             long lastId = 0;
+             List<WayNode> nodes = new ArrayList<WayNode>();
+             for (long j : i.getRefsList()) {
+                 nodes.add(new WayNode(j + lastId));
+                 lastId = j + lastId;
+             }
+
+             long id = i.getId();
+
+             // long id, int version, Date timestamp, OsmUser user,
+             // long changesetId, Collection<Tag> tags,
+             // List<WayNode> wayNodes
+             org.openstreetmap.osmosis.core.domain.v0_6.Way tmp;
+             if (i.hasInfo()) {
+                 Osmformat.Info info = i.getInfo();
+                 tmp = new org.openstreetmap.osmosis.core.domain.v0_6.Way(new CommonEntityData(id, info.getVersion(), getDate(info),
+                         getUser(info), info.getChangeset(), tags), nodes);
+             } else {
+            	 tmp = new org.openstreetmap.osmosis.core.domain.v0_6.Way(new CommonEntityData(id, NOVERSION, NODATE,
+            			 OsmUser.NONE, NOCHANGESET, tags), nodes);
+
+             }
+             
+             allWays.put(id, tmp);
+   
         }
     }
 
@@ -110,7 +167,7 @@ public class PBFParser extends BinaryParser{
     	return allNodes;
     }
     
-	public  HashMap<Long, OSMWay> getAllWays(){
+	public  HashMap<Long, org.openstreetmap.osmosis.core.domain.v0_6.Way> getAllWays(){
 		return allWays;
 	}
   

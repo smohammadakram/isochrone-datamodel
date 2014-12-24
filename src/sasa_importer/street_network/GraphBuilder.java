@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
+import org.openstreetmap.osmosis.core.domain.v0_5.WayNode;
 import org.postgis.LineString;
 import org.postgis.MultiPoint;
 import org.postgis.PGgeometry;
@@ -21,38 +22,18 @@ import sasa_importer.street_network.components.RealNode;
 public class GraphBuilder {
 	
 	private HashMap<Long, DenseNode> denseNodes;
-	private HashMap<Long, OSMWay> ways;
+	private HashMap<Long, RealNode> realNodes;
+	private HashMap<Long, org.openstreetmap.osmosis.core.domain.v0_6.Way> ways;
 	private HashMap<Long, List<Long>> crosses;
 	private DBConnector db;
 	
-	public GraphBuilder(HashMap<Long, DenseNode> allNodes,  HashMap<Long, OSMWay> allWays, DBConnector conn){
+	public GraphBuilder(HashMap<Long, DenseNode> allNodes,  HashMap<Long, org.openstreetmap.osmosis.core.domain.v0_6.Way> allWays, DBConnector conn){
 		denseNodes = allNodes;
+		realNodes = new HashMap<Long, RealNode>();
 		ways = allWays;
 		crosses = new HashMap<Long, List<Long>>();
 		db = conn;
 	}
-	
-	//find all crosses given the list of nodes of each way
-    public void findCross(){
-    	HashMap<Long, List<Long>> result = new HashMap<Long, List<Long>>();
-    	Set<Long> keys = denseNodes.keySet();
-    	for(OSMWay osmw : ways.values()){
-    		List<Long> outer = osmw.getWayNodes();
-    		for(Long l : outer){
-    			if(keys.contains(l)){
-	    			List<Long> nodes = result.get(l);
-	    			if(nodes == null){
-	    				nodes = new ArrayList<Long>();
-	    				nodes.add(osmw.getId());
-	    			}
-	    			else
-	    				nodes.add(osmw.getId());
-	    			result.put(l, nodes);
-    			}
-    		}
-    	}
-    	crosses = result;
-    }
     
   //checks if two way intersect by finding the same node in the lists of nodes describing the ways
     public long intersect(List<Long> outer, List<Long> inner){
@@ -64,86 +45,65 @@ public class GraphBuilder {
     	return -1;
     }
     
-    public List<RealNode> getRealStreetNodes(){
+    /**
+     * 
+     * @return The real node representing crosses in the street network. The nodes between each couple of source-destination node are discarded in this phase.
+     */
+    public Collection<RealNode> getRealStreetNodes(){
 //    	System.out.println("Nodes: " + nodes);
-    	List<RealNode> result = new ArrayList<RealNode>();
-    	for(Long l : denseNodes.keySet()){
-    		if(l > 0 && String.valueOf(l).length() >= 7){
-	    		DenseNode dn = denseNodes.get(l);
+    	for(org.openstreetmap.osmosis.core.domain.v0_6.Way way : ways.values()){
+    		//getting source and destination of the way, which are real nodes
+    		Long source = way.getWayNodes().get(0).getNodeId();
+    		Long destination = way.getWayNodes().get(way.getWayNodes().size()-1).getNodeId();
+    		
+    		//add the source to the list if it is not there yet
+    		if(realNodes.get(source) == null){
+	    		DenseNode dn = denseNodes.get(source);
 	    		Point p = new Point(dn.getdInfo().getLognitude(),dn.getdInfo().getLatitude());
 	    		p.setSrid(4326);
-	    		RealNode aNode = new RealNode(l, new PGgeometry(p));
-	    		result.add(aNode);
-//	    		System.out.println(aNode.toString());
+	    		RealNode aNode = new RealNode(source, new PGgeometry(p));
+	    		realNodes.put(source, aNode);
     		}
-    		else
-    			continue;
+    		
+    		//same for the destination
+    		if(realNodes.get(destination) == null){
+    			DenseNode dn = denseNodes.get(destination);
+	    		Point p = new Point(dn.getdInfo().getLognitude(),dn.getdInfo().getLatitude());
+	    		p.setSrid(4326);
+	    		RealNode aNode = new RealNode(destination, new PGgeometry(p));
+	    		realNodes.put(destination, aNode);
+    		}
     	}
-    	System.out.println("Real nodes: " + result.size());
-    	return result;
+    	
+    	System.out.println("Real nodes: " + realNodes.values().size());
+    	Collection<RealNode> result = realNodes.values();
+    	return result; 
     }
     
     public HashMap<Long, RealNode> buildNodes(){
+    	System.out.println("Bulding real nodes.");
     	HashMap<Long, RealNode> realNodes = new HashMap<Long, RealNode>();
-		List<RealNode> nodes = getRealStreetNodes();
+		Collection<RealNode> nodes = getRealStreetNodes();
 		for(RealNode rn : nodes)
 			realNodes.put(rn.getId(), rn);
 		return realNodes;
 	}
     
     public void insertNodes(Collection<RealNode> nodes){
-    	boolean result = db.insertMultipleStreetNodes(nodes);
-    	if(result)
-    		System.out.println("Street nodes correctly inserted.");
+    	System.out.println("Creating real nodes insertions script.");
+    	db.insertMultipleStreetNodes(nodes);
+		System.out.println("Street nodes correctly inserted.");
     }
     
     public HashMap<Long, Edge> buildEdges(){
+    	System.out.println("Building edges.");
     	HashMap<Long, Edge> edges = new HashMap<Long, Edge>();
     	for(Long l : ways.keySet()){
-    		OSMWay way = ways.get(l);
-    		Edge e = new Edge(l, way.getWayNodes().get(0), way.getWayNodes().get(way.getWayNodes().size()-1), buildEdgeGeometry(way.getWayNodes()), 0);
-//    		System.out.println("Geom: " + e.getGeometry().toString());
+    		org.openstreetmap.osmosis.core.domain.v0_6.Way way = ways.get(l);
+    		Edge e = new Edge(l, way.getWayNodes().get(0).getNodeId(), (way.getWayNodes().get(way.getWayNodes().size()-1).getNodeId()), buildEdgeGeometry(way.getWayNodes()), 0);
     		edges.put(l, e);
 //    		edges.put(destination, reverseEdge(edgePoint, destination, source));
     	}
-//    	Set<Long> crossesKeys = crosses.keySet();
-//    	System.out.println("Crosses: " + crossesKeys.size());
-//    	ArrayList<Point> edgePoint = new ArrayList<Point>();
-//    	Long source = null; 
-//    	Long destination = null;
-//    	
-//    	//creating an edge for each node that is a crosses
-//    	for(Long cross : crossesKeys){
-//    		source = cross;
-//    		for(Long way : crosses.get(cross)){
-//	    		OSMWay aWay = ways.get(way);
-//				DenseNode aNode = denseNodes.get(cross);
-//		    		
-//		    		//search for the nodes forming the edge and the destination
-//		    		for(Long node : aWay.getWayNodes()){
-//		    			if(node != cross)
-//		    				continue;
-//		    			Point aPoint = new Point(aNode.getdInfo().getLognitude(), aNode.getdInfo().getLatitude());
-//		    			edgePoint.add(aPoint);
-//		    			if(crosses.get(node) == null){
-//		    				aPoint = new Point(aNode.getdInfo().getLognitude(), aNode.getdInfo().getLatitude());
-//		    				edgePoint.add(aPoint);
-//		    			}
-//		    			else{
-//			    			aPoint = new Point(aNode.getdInfo().getLognitude(), aNode.getdInfo().getLatitude());
-//		    				edgePoint.add(aPoint);
-//		    				destination = node;
-//		    				break;
-//		    			}
-//		    		}
-//	    	}
-//	    	PGgeometry edge = new PGgeometry(new LineString(edgePoint.toArray(new Point[]{})));
-//	    	Edge e = new Edge(source, destination, edge, 0);
-//	    	if(edges.get(source) == null){
-//	    		edges.put(source, e);
-//	    		edges.put(destination, reverseEdge(edgePoint, destination, source));
-//	    	}
-//    	}
     	return edges;
     }
     
@@ -153,22 +113,22 @@ public class GraphBuilder {
     	return new Edge(id, source, destination, edge, 0);
     }
     
-    public PGgeometry buildEdgeGeometry(List<Long> nodes){
+    public PGgeometry buildEdgeGeometry(List<org.openstreetmap.osmosis.core.domain.v0_6.WayNode> nodes){
     	ArrayList<Point> points = new ArrayList<Point>();
-    	for(Long l : nodes){
-    		DenseNode aNode = denseNodes.get(l);
+    	for(org.openstreetmap.osmosis.core.domain.v0_6.WayNode wn : nodes){
+    		DenseNode aNode = denseNodes.get(wn.getNodeId());
     		if(aNode != null){
 	    		Point p = new Point(aNode.getdInfo().getLognitude(), aNode.getdInfo().getLatitude());
 	    		points.add(p);
     		}
     	}
-    	return new PGgeometry(new MultiPoint(points.toArray(new Point[]{})));
+    	return new PGgeometry(new LineString(points.toArray(new Point[]{})));
     }
     
     public void insertEdges(Collection<Edge>edges){
-    	boolean result = db.insertMultipleStreetEdges(edges);
-    	if(result)
-    		System.out.println("Street nodes correctly inserted.");
+    	System.out.println( "Creating edges population script.");
+    	db.insertMultipleStreetEdges(edges);
+		System.out.println("Street nodes correctly inserted.");
     }
 
 }

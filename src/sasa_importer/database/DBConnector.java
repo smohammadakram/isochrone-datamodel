@@ -236,60 +236,6 @@ public class DBConnector {
 		return result;
 	}
 	
-	public boolean insertMultipleStreetNodes(Collection<RealNode> nodes){
-		boolean result = false;
-		try {
-			BufferedWriter bw = new BufferedWriter(new FileWriter("bz_street_nodes_import.sql"));
-			for(RealNode rn : nodes){
-				PreparedStatement stmt = conn.prepareStatement("DELETE FROM bz_isochrones_2014.bz_pedestrian_nodes");
-				stmt.execute();
-				stmt = conn.prepareStatement("INSERT INTO bz_isochrones_2014.bz_pedestrian_nodes (node_id, node_geometry) "
-						+ "VALUES (?, ST_GeomFromText(?));");
-				stmt.setLong(1, rn.getId());
-				stmt.setString(2, rn.getGeometry().toString());
-//				result = stmt.execute();
-				bw.write(stmt.toString());
-				bw.write(";\n");
-				bw.flush();
-			}
-			bw.close();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} 
-		catch (IOException e) {
-			e.printStackTrace();
-		}
-		return result;
-	}
-	
-	public boolean insertMultipleStreetEdges(Collection<Edge> edges){
-		boolean result = false;
-		try {
-			BufferedWriter bw = new BufferedWriter(new FileWriter("bz_street_edges_import.sql"));
-			for(Edge anEdge : edges){
-				PreparedStatement stmt = conn.prepareStatement("DELETE FROM bz_isochrones_2014.bz_pedestrian_edges");
-				stmt.execute();
-				stmt = conn.prepareStatement("INSERT INTO bz_isochrones_2014.bz_pedestrian_edges (edge_id, edge_source, edge_destination,edge_geometry) "
-						+ "VALUES (?, ?, ?, ST_GeomFromText(?));");
-				stmt.setLong(1, anEdge.getId());
-				stmt.setLong(2, anEdge.getSource());
-				stmt.setLong(3, anEdge.getDestination());
-				stmt.setString(4, anEdge.getGeometry().toString());
-//				result = stmt.execute();
-				bw.write(stmt.toString());
-				bw.write(";\n");
-				bw.flush();
-			}
-			bw.close();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} 
-		catch (IOException e) {
-			e.printStackTrace();
-		}
-		return result;
-	}	
-	
 	public boolean insertStreetEdge(Edge anEdge){
 		boolean result = false;
 		try {
@@ -305,6 +251,74 @@ public class DBConnector {
 		}
 		return result;
 	}
+	
+	public boolean insertMultipleStreetNodes(Collection<RealNode> nodes){
+		boolean result = false;
+		int count = 0;
+		try {
+			BufferedWriter bw = new BufferedWriter(new FileWriter("bz_street_nodes_import.sql"));
+			String script = "DELETE FROM bz_isochrones_2014.bz_pedestrian_nodes;\n";
+			bw.write(script);
+			bw.flush();
+			for(RealNode rn : nodes){
+//				PreparedStatement stmt = conn.prepareStatement("DELETE FROM bz_isochrones_2014.bz_pedestrian_nodes");
+//				stmt.execute();
+//				stmt = conn.prepareStatement("INSERT INTO bz_isochrones_2014.bz_pedestrian_nodes (node_id, node_geometry) "
+//						+ "VALUES (?, ST_GeomFromEWKT(?));");
+//				stmt.setLong(1, rn.getId());
+//				stmt.setString(2, rn.getGeometry().toString());
+//				result = stmt.execute();
+				script = "INSERT INTO bz_isochrones_2014.bz_pedestrian_nodes (node_id, node_geometry) "
+						+ "VALUES ('" + rn.getId() + "', ST_GeomFromEWKT('" + rn.getGeometry().toString() + "'))";
+				bw.write(script);
+				bw.write(";\n");
+				bw.flush();
+				if(count % 50 == 0)
+					System.out.println("Checkpoint " + count);
+				count++;
+			}
+			bw.close();
+		} 
+		catch (IOException e) {
+			e.printStackTrace();
+		}
+		return result;
+	}
+	
+	public boolean insertMultipleStreetEdges(Collection<Edge> edges){
+		boolean result = false;
+		int count = 0;
+		try {
+			BufferedWriter bw = new BufferedWriter(new FileWriter("bz_street_edges_import.sql"));
+			String script = "DELETE FROM bz_isochrones_2014.bz_pedestrian_edges;\n";
+			bw.write(script);
+			bw.flush();
+			for(Edge anEdge : edges){
+//				PreparedStatement stmt = conn.prepareStatement("DELETE FROM bz_isochrones_2014.bz_pedestrian_edges");
+//				stmt.execute();
+//				stmt = conn.prepareStatement("INSERT INTO bz_isochrones_2014.bz_pedestrian_edges (edge_id, edge_source, edge_destination,edge_geometry) "
+//						+ "VALUES (?, ?, ?, ST_GeomFromEWKT(?));");
+//				stmt.setLong(1, anEdge.getId());
+//				stmt.setLong(2, anEdge.getSource());
+//				stmt.setLong(3, anEdge.getDestination());
+//				stmt.setString(4, anEdge.getGeometry().toString());
+				script = "INSERT INTO bz_isochrones_2014.bz_pedestrian_edges (edge_source, edge_destination,edge_geometry) "
+						+ "VALUES ('"+ anEdge.getSource() +"', '" + anEdge.getDestination() +"', ST_GeomFromEWKT('" + anEdge.getGeometry().toString() + "'))";
+//				result = stmt.execute();
+				bw.write(script);
+				bw.write(";\n");
+				bw.flush();
+				if(count % 50 == 0)
+					System.out.println("Checkpoint " + count);
+				count++;
+			}
+			bw.close();
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+		}
+		return result;
+	}	
 	
 	public int getLastPedestrianNodeID(){
 		try {

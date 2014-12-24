@@ -16,7 +16,9 @@ public class Main {
 		DBConnector db = null;
 		switch (Integer.parseInt(args[0])){
 		
-		//Renaming the vdv file from *.x10 to *.X10
+		/**
+		 * Renaming the vdv file from *.x10 to *.X10.
+		 */
 		case 1:
 			System.out.println("File rename.");
 			File vdv = new File("/var/lib/postgresql/bz_database/vdv/");
@@ -30,7 +32,9 @@ public class Main {
 			}
 			break;
 			
-		//Populating the temporary database for bus data	
+		/**
+		 * Populating temporary bus database.
+		 */
 		case 2:
 			db = new DBConnector();
 			db.emptyTmpDatabase();
@@ -82,7 +86,9 @@ public class Main {
 			t5.start();
 			break;
 			
-		//Creating link network
+		/**
+		 * Creating link network.
+		 */
 		case 3:
 			db = new DBConnector();
 			final LinkNetwork ln = new LinkNetwork(db);
@@ -98,7 +104,9 @@ public class Main {
 			t6.start();
 			break;
 			
-		//Parsing Openstreetmap data and inserting nodes + edges into the database
+		/**
+		 * Parsing Openstreetmap data; inserting nodes and edges into the database.
+		 */
 		case 4:
 			if(db == null)
 				db = new DBConnector();
@@ -109,6 +117,14 @@ public class Main {
 			db.emptyStreetNodesTable();
 			g.buildGraph();
 			g.printGraph();
+			break;
+			
+		/**
+		 * Generate the script to add only street network for a city.
+		 */
+		case 5:
+			String 
+			break;
 		}
 	}
 
