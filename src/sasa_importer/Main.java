@@ -123,7 +123,7 @@ public class Main {
 		 * Generate the script to add only street network for a city.
 		 */
 		case 5:
-			String 
+			
 			break;
 		}
 	}
