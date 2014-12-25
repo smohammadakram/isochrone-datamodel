@@ -14,41 +14,4 @@
 	<natures>
 		<nature>org.eclipse.jdt.core.javanature</nature>
 	</natures>
-	<linkedResources>
-		<link>
-			<name>java</name>
-			<type>2</type>
-			<location>/home/luca/eclipse/C::/Users/Luca/git/SasaImporter/linked sources/java</location>
-		</link>
-		<link>
-			<name>org</name>
-			<type>2</type>
-			<location>/home/luca/git/SasaImporter/linked sources/org</location>
-		</link>
-		<link>
-			<name>osm-binary</name>
-			<type>2</type>
-			<location>/home/luca/eclipse/C::/Users/Luca/git/SasaImporter/linked sources/crosby_1</location>
-		</link>
-		<link>
-			<name>osmosis</name>
-			<type>2</type>
-			<location>/home/luca/eclipse/C::/Users/Luca/git/OSM-Osmosis/pbf/src/crosby/binary/osmosis</location>
-		</link>
-		<link>
-			<name>osmosis-core-source</name>
-			<type>2</type>
-			<location>/home/luca/eclipse/C::/Users/Luca/git/SasaImporter/linked sources/org</location>
-		</link>
-		<link>
-			<name>osmosis-core-sources</name>
-			<type>2</type>
-			<location>/home/luca/eclipse/C::/Users/Luca/git/SasaImporter/libs/org</location>
-		</link>
-		<link>
-			<name>osmosis-pbf</name>
-			<type>2</type>
-			<location>/home/luca/eclipse/C::/Users/Luca/git/OSM-Osmosis/pbf/src/crosby</location>
-		</link>
-	</linkedResources>
 </projectDescription>

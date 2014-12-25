@@ -285,11 +285,11 @@ public class DBConnector {
 		return result;
 	}
 	
-	public boolean insertMultipleStreetEdges(Collection<Edge> edges){
+	public boolean insertMultipleStreetEdges(Collection<Edge> edges, String city){
 		boolean result = false;
 		int count = 0;
 		try {
-			BufferedWriter bw = new BufferedWriter(new FileWriter("bz_street_edges_import.sql"));
+			BufferedWriter bw = new BufferedWriter(new FileWriter(city + "_street_edges_import.sql"));
 			String script = "DELETE FROM bz_isochrones_2014.bz_pedestrian_edges;\n";
 			bw.write(script);
 			bw.flush();

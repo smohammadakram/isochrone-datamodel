@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
+import org.openstreetmap.osmosis.core.domain.v0_6.Way;
 import org.postgis.LineString;
 import org.postgis.PGgeometry;
 import org.postgis.Point;
@@ -19,7 +20,7 @@ public class GraphBuilder {
 	
 	private HashMap<Long, DenseNode> denseNodes;
 	private HashMap<Long, RealNode> realNodes;
-	private HashMap<Long, org.openstreetmap.osmosis.core.domain.v0_6.Way> ways;
+	private HashMap<Long, Way> ways;
 	private String city;
 	private DBConnector db;
 	
@@ -27,6 +28,7 @@ public class GraphBuilder {
 		denseNodes = allNodes;
 		realNodes = new HashMap<Long, RealNode>();
 		ways = allWays;
+		this.city = city;
 		db = conn;
 	}
     
@@ -122,7 +124,7 @@ public class GraphBuilder {
     
     public void insertEdges(Collection<Edge>edges){
     	System.out.println( "Creating edges population script.");
-    	db.insertMultipleStreetEdges(edges);
+    	db.insertMultipleStreetEdges(edges, city);
 		System.out.println("Street nodes correctly inserted.");
     }
 
@@ -133,6 +135,5 @@ public class GraphBuilder {
 	public void setCity(String city) {
 		this.city = city;
 	}
-    
 
 }
