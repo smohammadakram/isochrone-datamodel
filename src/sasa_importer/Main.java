@@ -112,7 +112,7 @@ public class Main {
 				db = new DBConnector();
 			PBFParser parser = new PBFParser(args[1].replace("\\", "\\\\"));
 			parser.parsePBF();
-			GraphBuilder gb = new GraphBuilder(parser.getAllNodes(), parser.getAllWays(), db);
+			GraphBuilder gb = new GraphBuilder(parser.getAllNodes(), parser.getAllWays(), args[3], db);
 			Graph g = new Graph(gb);
 			db.emptyStreetNodesTable();
 			g.buildGraph();

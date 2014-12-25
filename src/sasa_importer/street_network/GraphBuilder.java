@@ -5,18 +5,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
 
-import org.openstreetmap.osmosis.core.domain.v0_5.WayNode;
 import org.postgis.LineString;
-import org.postgis.MultiPoint;
 import org.postgis.PGgeometry;
 import org.postgis.Point;
 
 import sasa_importer.database.DBConnector;
 import sasa_importer.street_network.components.DenseNode;
 import sasa_importer.street_network.components.Edge;
-import sasa_importer.street_network.components.OSMWay;
 import sasa_importer.street_network.components.RealNode;
 
 public class GraphBuilder {
@@ -24,14 +20,13 @@ public class GraphBuilder {
 	private HashMap<Long, DenseNode> denseNodes;
 	private HashMap<Long, RealNode> realNodes;
 	private HashMap<Long, org.openstreetmap.osmosis.core.domain.v0_6.Way> ways;
-	private HashMap<Long, List<Long>> crosses;
+	private String city;
 	private DBConnector db;
 	
-	public GraphBuilder(HashMap<Long, DenseNode> allNodes,  HashMap<Long, org.openstreetmap.osmosis.core.domain.v0_6.Way> allWays, DBConnector conn){
+	public GraphBuilder(HashMap<Long, DenseNode> allNodes,  HashMap<Long, org.openstreetmap.osmosis.core.domain.v0_6.Way> allWays, String city, DBConnector conn){
 		denseNodes = allNodes;
 		realNodes = new HashMap<Long, RealNode>();
 		ways = allWays;
-		crosses = new HashMap<Long, List<Long>>();
 		db = conn;
 	}
     
@@ -91,7 +86,7 @@ public class GraphBuilder {
     
     public void insertNodes(Collection<RealNode> nodes){
     	System.out.println("Creating real nodes insertions script.");
-    	db.insertMultipleStreetNodes(nodes);
+    	db.insertMultipleStreetNodes(nodes, city);
 		System.out.println("Street nodes correctly inserted.");
     }
     
@@ -130,5 +125,14 @@ public class GraphBuilder {
     	db.insertMultipleStreetEdges(edges);
 		System.out.println("Street nodes correctly inserted.");
     }
+
+	public String getCity() {
+		return city;
+	}
+
+	public void setCity(String city) {
+		this.city = city;
+	}
+    
 
 }

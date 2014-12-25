@@ -252,11 +252,11 @@ public class DBConnector {
 		return result;
 	}
 	
-	public boolean insertMultipleStreetNodes(Collection<RealNode> nodes){
+	public boolean insertMultipleStreetNodes(Collection<RealNode> nodes, String city){
 		boolean result = false;
 		int count = 0;
 		try {
-			BufferedWriter bw = new BufferedWriter(new FileWriter("bz_street_nodes_import.sql"));
+			BufferedWriter bw = new BufferedWriter(new FileWriter(city + "_street_nodes_import.sql"));
 			String script = "DELETE FROM bz_isochrones_2014.bz_pedestrian_nodes;\n";
 			bw.write(script);
 			bw.flush();

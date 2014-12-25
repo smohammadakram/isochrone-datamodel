@@ -15,10 +15,8 @@ import org.openstreetmap.osmosis.core.domain.v0_6.WayNode;
 
 import sasa_importer.street_network.components.DenseInfo;
 import sasa_importer.street_network.components.DenseNode;
-import sasa_importer.street_network.components.OSMWay;
 import crosby.binary.Osmformat.DenseNodes;
 import crosby.binary.Osmformat.HeaderBlock;
-import crosby.binary.Osmformat.Info;
 import crosby.binary.Osmformat.Node;
 import crosby.binary.Osmformat.Relation;
 import crosby.binary.Osmformat.Way;
