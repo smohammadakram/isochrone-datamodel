@@ -19,11 +19,11 @@ import sasa_importer.street_network.components.RealNode;
 
 public class DBConnector {
 	
-//	private final static String MAPS_DB = "jdbc:postgresql://localhost:5432/isochrones2014";
-	private final static String MAPS_DB = "jdbc:postgresql://maps.inf.unibz.it:5432/isochrones2014";
+	private final static String MAPS_DB = "jdbc:postgresql://localhost:5432/isochrones2014";
+//	private final static String MAPS_DB = "jdbc:postgresql://maps.inf.unibz.it:5432/isochrones2014";
 	private final static String MAPS_USER = "postgres";
-	private final static String MAPS_PWD = "AifaXub2";
-//	private final static String MAPS_PWD = "postgres";
+//	private final static String MAPS_PWD = "AifaXub2";
+	private final static String MAPS_PWD = "postgres";
 	private static Connection conn;
 
 	public DBConnector(){
@@ -222,10 +222,10 @@ public class DBConnector {
 		return result;
 	}
 	
-	public boolean insertStreetNode(RealNode aNode){
+	public boolean insertStreetNode(RealNode aNode, String city){
 		boolean result = false;
 		try {
-			PreparedStatement stmt = conn.prepareStatement("INSERT INTO bz.isochrones_2014.bz_pedestrian_nodes (node_id, node_geometry) "
+			PreparedStatement stmt = conn.prepareStatement("INSERT INTO isochrones_2014." + city + "_street_nodes (node_id, node_geometry) "
 					+ "VALUES (?, ST_GeomFromText(?));");
 			stmt.setLong(1, aNode.getId());
 			stmt.setString(2, aNode.getGeometry().toString());
@@ -236,10 +236,10 @@ public class DBConnector {
 		return result;
 	}
 	
-	public boolean insertStreetEdge(Edge anEdge){
+	public boolean insertStreetEdge(Edge anEdge, String city){
 		boolean result = false;
 		try {
-			PreparedStatement stmt = conn.prepareStatement("INSERT INTO bz.isochrones_2014.bz_pedestrian_edges (edge_id, edge_source, edge_destination,edge_geometry) "
+			PreparedStatement stmt = conn.prepareStatement("INSERT INTO isochrones_2014." + city + "_street_edges (edge_id, edge_source, edge_destination,edge_geometry) "
 					+ "VALUES (?, ?, ?, ST_GeomFromText(?)));");
 			stmt.setLong(1, anEdge.getId());
 			stmt.setLong(2, anEdge.getSource());
@@ -257,7 +257,7 @@ public class DBConnector {
 		int count = 0;
 		try {
 			BufferedWriter bw = new BufferedWriter(new FileWriter(city + "_street_nodes_import.sql"));
-			String script = "DELETE FROM bz_isochrones_2014.bz_pedestrian_nodes;\n";
+			String script = "DELETE FROM isochrones_2014." + city + "_street_nodes;\n";
 			bw.write(script);
 			bw.flush();
 			for(RealNode rn : nodes){
@@ -268,7 +268,7 @@ public class DBConnector {
 //				stmt.setLong(1, rn.getId());
 //				stmt.setString(2, rn.getGeometry().toString());
 //				result = stmt.execute();
-				script = "INSERT INTO bz_isochrones_2014.bz_pedestrian_nodes (node_id, node_geometry) "
+				script = "INSERT INTO isochrones_2014." + city + "_street_nodes (node_id, node_geometry) "
 						+ "VALUES ('" + rn.getId() + "', ST_GeomFromEWKT('" + rn.getGeometry().toString() + "'))";
 				bw.write(script);
 				bw.write(";\n");
@@ -290,7 +290,7 @@ public class DBConnector {
 		int count = 0;
 		try {
 			BufferedWriter bw = new BufferedWriter(new FileWriter(city + "_street_edges_import.sql"));
-			String script = "DELETE FROM bz_isochrones_2014.bz_pedestrian_edges;\n";
+			String script = "DELETE FROM isochrones_2014." + city + "_street_edges;\n";
 			bw.write(script);
 			bw.flush();
 			for(Edge anEdge : edges){
@@ -302,7 +302,7 @@ public class DBConnector {
 //				stmt.setLong(2, anEdge.getSource());
 //				stmt.setLong(3, anEdge.getDestination());
 //				stmt.setString(4, anEdge.getGeometry().toString());
-				script = "INSERT INTO bz_isochrones_2014.bz_pedestrian_edges (edge_source, edge_destination,edge_geometry) "
+				script = "INSERT INTO isochrones_2014." + city + "_street_edges (edge_source, edge_destination,edge_geometry) "
 						+ "VALUES ('"+ anEdge.getSource() +"', '" + anEdge.getDestination() +"', ST_GeomFromEWKT('" + anEdge.getGeometry().toString() + "'))";
 //				result = stmt.execute();
 				bw.write(script);

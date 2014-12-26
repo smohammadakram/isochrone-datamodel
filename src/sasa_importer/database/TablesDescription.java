@@ -8,29 +8,29 @@ package sasa_importer.database;
 public  final class TablesDescription {
 	
 	/**
-	 * Definition of attributes for street nodes.
+	 * Definition of attributes for street nodes table.
 	 * @author Luca
 	 *
 	 */
 	public static final class StreetNodes{
-		public static final String NODE_ID = "node_id bigserial not null";
-		public static final String NODE_MODE = "node_mode integer default 0 not null";
-		public static final String NODE_GEOMETRY = "node_geometry geometry not null";
-		public static final String NODE_IN_DEGREE = "node_in_degree integer";
-		public static final String NODE_OUT_DEGREE = "node_out_degree integer";
+		public static final String NODE_ID = "bigserial";
+		public static final String NODE_MODE = "integer default 0 not null";
+		public static final String NODE_GEOMETRY = "geometry not null";
+		public static final String NODE_IN_DEGREE = "integer";
+		public static final String NODE_OUT_DEGREE = "integer";
 	}
 	
 	/**
-	 * Definition of attrinbutes of street edges.
+	 * Definition of attrinbutes of street edges table.
 	 * @author Luca
 	 *
 	 */
 	public static final class StreetEdges{
-		public static final String EDGE_ID = "edge_id bigserial not null";
-		public static final String EDGE_SOURCE = "edge_source bigint not null";
-		public static final String EDGE_DESTINATION = "edge_destiantion bigint not null";
-		public static final String EDGE_LENGTH ="edge_lenght numeric(16,12) default 0 not null";
-		public static final String EDGE_GEOMETRY = "edge_geometry geometry";
+		public static final String EDGE_ID = "bigserial not null";
+		public static final String EDGE_SOURCE = "bigint not null";
+		public static final String EDGE_DESTINATION = "bigint not null";
+		public static final String EDGE_LENGTH ="numeric(16,12) default 0 not null";
+		public static final String EDGE_GEOMETRY = "geometry";
 	}
 
 }

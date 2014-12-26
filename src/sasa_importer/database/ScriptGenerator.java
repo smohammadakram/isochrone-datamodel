@@ -2,6 +2,7 @@ package sasa_importer.database;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.StringTokenizer;
 
 public class ScriptGenerator {
 	
@@ -79,12 +80,32 @@ public class ScriptGenerator {
 		return CREATE_SCHEMA + schemaName + ";\n";
 	}
 	
-	private String createPrimaryKey(){
-		return null;
+	private String createPrimaryKey(Table t){
+		String primary = "\tprimary key(";
+		boolean comma = false;
+		for(String s : t.getPrimaryKeys()){
+			if(comma)
+				primary += ", ";
+			comma = true;
+			primary += s;
+		}
+		primary += ")";
+		return primary;
 	}
 	
-	private String createForeignKey(){
-		return null;
+	private String createForeignKey(Table t){
+		String keys = "";
+		String foreign1 = "\tforeign key(";
+		String foreign2 = "references";
+		for(String s : t.getForeignKeys()){
+			StringTokenizer st = new StringTokenizer(s, ";");
+			foreign1 += st.nextToken();
+			foreign2 += BLANK + st.nextToken() + SCHEMA_DIVIDER + st.nextToken() + "(" + st.nextToken();
+			foreign1 += ")";
+			foreign2 += ")";
+			keys += foreign1 + BLANK + foreign2;
+		}
+		return keys;
 	}
 	
 	public String createTable(Table t){
@@ -92,13 +113,20 @@ public class ScriptGenerator {
 		s += t.getSchemaName() + SCHEMA_DIVIDER + t.getTableName() + "(\n";
 		boolean comma = false;
 		for(String attr : t.getAttributes().keySet()){
-			if(comma)
-				s += ",\n";
-			comma = true;
-			s += attr + BLANK + t.getAttributes().get(attr);
+			if(!attr.equals("")){
+				if(comma)
+					s += ",\n";
+				comma = true;
+				s += "\t" + attr + BLANK + t.getAttributes().get(attr);
+			}
 		}
-		s += createPrimaryKey() + "," + BLANK_LINE;
-		s += createForeignKey() + "," + BLANK_LINE;
+		s += ",\n";
+		if(t.getPrimaryKeys().size() != 0){
+			s += createPrimaryKey(t)  ;
+			if(t.getForeignKeys().size() != 0)
+			s += "," + BLANK_LINE + createForeignKey(t) + ",";
+		}
+		s += BLANK_LINE;
 		s += ");\n" + BLANK_LINE;
 		return s;
 	}
