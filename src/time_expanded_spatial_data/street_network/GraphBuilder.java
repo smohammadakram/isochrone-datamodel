@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.openstreetmap.osmosis.core.domain.v0_6.Way;
+import org.openstreetmap.osmosis.core.domain.v0_6.WayNode;
 import org.postgis.LineString;
 import org.postgis.PGgeometry;
 import org.postgis.Point;
@@ -81,26 +82,50 @@ public class GraphBuilder {
     	System.out.println("Bulding real nodes.");
     	HashMap<Long, RealNode> realNodes = new HashMap<Long, RealNode>();
 		Collection<RealNode> nodes = getRealStreetNodes();
-		for(RealNode rn : nodes)
+		db.openWriter(city + "_street_nodes_import.sql");
+		db.deleteClause(city + "_street_nodes_import");
+		db.resetCheckpoint();
+		int counter = 0;
+		for(RealNode rn : nodes){
+			if(counter == 999){
+				insertNodes(nodes);
+				realNodes = new HashMap<Long, RealNode>();
+			}
 			realNodes.put(rn.getId(), rn);
+			counter++;
+		}
+		db.closeWriter();
 		return realNodes;
 	}
     
     public void insertNodes(Collection<RealNode> nodes){
-    	System.out.println("Creating real nodes insertions script.");
     	db.insertMultipleStreetNodes(nodes, city);
-		System.out.println("Street nodes correctly inserted.");
     }
     
-    public HashMap<Long, Edge> buildEdges(){
+    public ArrayList<Edge> buildEdges(){
     	System.out.println("Building edges.");
-    	HashMap<Long, Edge> edges = new HashMap<Long, Edge>();
+//    	HashMap<Long, Edge> edges = new HashMap<Long, Edge>();
+    	ArrayList<Edge> edges = new ArrayList<Edge>();
+    	db.openWriter(city + "_street_edges_import.sql");
+    	db.deleteClause(city + "_street_edges_import");
+    	db.resetCheckpoint();
+    	int counter = 0;
     	for(Long l : ways.keySet()){
+    		if(counter == 999){
+    			insertEdges(edges);
+    			edges = new ArrayList<Edge>();
+    		}
     		org.openstreetmap.osmosis.core.domain.v0_6.Way way = ways.get(l);
-    		Edge e = new Edge(l, way.getWayNodes().get(0).getNodeId(), (way.getWayNodes().get(way.getWayNodes().size()-1).getNodeId()), buildEdgeGeometry(way.getWayNodes()), 0);
-    		edges.put(l, e);
+    		List<WayNode> tmp = way.getWayNodes();
+    		Edge e = new Edge(l, tmp.get(0).getNodeId(), (tmp.get(way.getWayNodes().size()-1).getNodeId()), buildEdgeGeometry(tmp), 0);
+    		edges.add(e);
+    		Collections.reverse(tmp);
+    		e = new Edge(l, tmp.get(0).getNodeId(), (tmp.get(way.getWayNodes().size()-1).getNodeId()), buildEdgeGeometry(tmp), 0);
+    		edges.add(e);
 //    		edges.put(destination, reverseEdge(edgePoint, destination, source));
+    		counter += 2;
     	}
+    	db.closeWriter();
     	return edges;
     }
     
@@ -123,9 +148,7 @@ public class GraphBuilder {
     }
     
     public void insertEdges(Collection<Edge>edges){
-    	System.out.println( "Creating edges population script.");
     	db.insertMultipleStreetEdges(edges, city);
-		System.out.println("Street nodes correctly inserted.");
     }
 
 	public String getCity() {

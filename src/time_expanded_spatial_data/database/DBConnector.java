@@ -25,6 +25,8 @@ public class DBConnector {
 	private final static String MAPS_PWD_REMOTE = "AifaXub2";
 	private final static String MAPS_PWD_LOCAL = "postgres";
 	private static Connection conn;
+	private BufferedWriter bw;
+	private int checkpoint = 0;
 
 	public DBConnector(){
 		try {
@@ -260,12 +262,8 @@ public class DBConnector {
 	
 	public boolean insertMultipleStreetNodes(Collection<RealNode> nodes, String city){
 		boolean result = false;
-		int count = 0;
 		try {
-			BufferedWriter bw = new BufferedWriter(new FileWriter(city + "_street_nodes_import.sql"));
-			String script = "DELETE FROM isochrones_2014." + city + "_street_nodes;\n";
-			bw.write(script);
-			bw.flush();
+			String script = "";
 			for(RealNode rn : nodes){
 //				PreparedStatement stmt = conn.prepareStatement("DELETE FROM bz_isochrones_2014.bz_pedestrian_nodes");
 //				stmt.execute();
@@ -279,9 +277,9 @@ public class DBConnector {
 				bw.write(script);
 				bw.write(";\n");
 				bw.flush();
-				if(count % 50 == 0)
-					System.out.println("Checkpoint " + count);
-				count++;
+				if(checkpoint % 50 == 0)
+					System.out.println("Checkpoint " + checkpoint);
+				checkpoint++;
 			}
 			bw.close();
 		} 
@@ -293,13 +291,9 @@ public class DBConnector {
 	
 	public boolean insertMultipleStreetEdges(Collection<Edge> edges, String city){
 		boolean result = false;
-		int count = 0;
 		try {
-			BufferedWriter bw = new BufferedWriter(new FileWriter(city + "_street_edges_import.sql"));
-			String script = "DELETE FROM isochrones_2014." + city + "_street_edges;\n";
-			bw.write(script);
-			bw.flush();
 			for(Edge anEdge : edges){
+				String script ="";
 //				PreparedStatement stmt = conn.prepareStatement("DELETE FROM bz_isochrones_2014.bz_pedestrian_edges");
 //				stmt.execute();
 //				stmt = conn.prepareStatement("INSERT INTO bz_isochrones_2014.bz_pedestrian_edges (edge_id, edge_source, edge_destination,edge_geometry) "
@@ -314,9 +308,9 @@ public class DBConnector {
 				bw.write(script);
 				bw.write(";\n");
 				bw.flush();
-				if(count % 50 == 0)
-					System.out.println("Checkpoint " + count);
-				count++;
+				if(checkpoint % 50 == 0)
+					System.out.println("Checkpoint " + checkpoint);
+				checkpoint++;
 			}
 			bw.close();
 		}
@@ -362,6 +356,36 @@ public class DBConnector {
 			e.printStackTrace();
 		}
 		return null;
+	}
+	
+	public void openWriter(String file){
+		try {
+			bw = new BufferedWriter(new FileWriter(file));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void closeWriter(){
+		try {
+			bw.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void deleteClause(String table){
+		String script = "DELETE FROM isochrones_2014." +table + ";\n";
+		try {
+			bw.write(script);
+			bw.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void resetCheckpoint(){
+		checkpoint = 0;
 	}
 	
 }
