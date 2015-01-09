@@ -1,6 +1,7 @@
 package time_expanded_spatial_data.bus_network;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -17,17 +18,16 @@ public class BusDataParser {
 	
 	private String file;
 	private DBConnector db;
+	static String GTFS = "gtfs/";
 	
 	public BusDataParser(DBConnector conn){
 		db = conn;
 	}
 	
 	public void parseStops(){
-//		setFile("C:\\Users\\Luca\\Dropbox\\Uni\\Thesis\\SASA\\output\\output\\stops.txt");
 		try {
-//			BufferedReader br = new BufferedReader(new FileReader(file));
-			BufferedReader br = new BufferedReader(new FileReader("/var/lib/postgresql/gtfs/stops.txt"));
-//			BufferedReader br = new BufferedReader(new FileReader("C:\\Users\\Luca\\Dropbox\\Uni\\Thesis\\Isochrones\\output\\stops.txt"));
+			System.out.println("Parsing bus stops.");
+			BufferedReader br = new BufferedReader(new FileReader(new File(GTFS + "stops.txt")));
 			br.readLine(); //next line skipped
 			String line = br.readLine();
 			StringTokenizer st = null;
@@ -71,6 +71,7 @@ public class BusDataParser {
 	}
 	
 	public double parseCoordinates(String s){
+		System.out.println("Parsing coordinates.");
 		StringTokenizer st = new StringTokenizer(s, ",");
 		s = st.nextToken() + "." + st.nextToken() + st.nextToken();
 		return Double.parseDouble(s);
@@ -85,12 +86,11 @@ public class BusDataParser {
 	}
 	
 	public void parseRoutes(){
-//		setFile("C:\\Users\\Luca\\Dropbox\\Uni\\Thesis\\SASA\\output\\output\\routes.txt");
+		System.out.println("Parsing routes.");
 		BufferedReader br;
 		try {
-//			br = new BufferedReader(new FileReader(file));
-			br = new BufferedReader(new FileReader("/var/lib/postgresql/bz_database/gtfs/routes.txt"));
-//			br = new BufferedReader(new FileReader("C:\\Users\\Luca\\Dropbox\\Un1i\\Thesis\\Isochrones\\output\\routes.txt"));
+			br = new BufferedReader(new FileReader(new File(GTFS + "routes.txt")));
+
 			br.readLine();
 			String s = br.readLine();
 			StringTokenizer st = new StringTokenizer(s, ",");
@@ -121,11 +121,9 @@ public class BusDataParser {
 	}
 	
 	public void parseTrips(){
-//		setFile("C:\\Users\\Luca\\Dropbox\\Uni\\Thesis\\SASA\\output\\output\\trips.txt");
+		System.out.println("Parsing trips.");
 		try {
-//			BufferedReader br = new BufferedReader(new FileReader(file));
-			BufferedReader br = new BufferedReader(new FileReader("/var/lib/postgresql/bz_database/gtfs/trips.txt"));
-//			BufferedReader br = new BufferedReader(new FileReader("C:\\Users\\Luca\\Dropbox\\Uni\\Thesis\\Isochrones\\output\\trips.txt"));
+			BufferedReader br = new BufferedReader(new FileReader(new File(GTFS + "trips.txt")));
 			br.readLine();
 			String s = br.readLine();
 			StringTokenizer st;
@@ -134,7 +132,6 @@ public class BusDataParser {
 			while(s != null){
 				st = new StringTokenizer(s, ",");
 				script += "('" + Integer.parseInt(st.nextToken()) + "', '" + Integer.parseInt(st.nextToken()) + "', '" + Integer.parseInt(st.nextToken()) + "')";
-//				db.insertTrip(Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken()));
 				s = br.readLine();
 				if(s != null)
 					script += ",\n";
@@ -155,11 +152,9 @@ public class BusDataParser {
 
 	
 	public void parseTripSequence(){
-//		setFile("C:\\Users\\Luca\\Dropbox\\Uni\\Thesis\\SASA\\output\\output\\stop_times.txt");
+		System.out.println("Parsing trips sequence.");
 		try {
-//			BufferedReader br = new BufferedReader(new FileReader(file));
-			BufferedReader br = new BufferedReader(new FileReader("/var/lib/postgresql/bz_database/gtfs/stop_times.txt"));
-//			BufferedReader br = new BufferedReader(new FileReader("C:\\Users\\Luca\\Dropbox\\Uni\\Thesis\\Isochrones\\output\\stop_times.txt"));
+			BufferedReader br = new BufferedReader(new FileReader(new File(GTFS + "stop_times.txt")));
 			StringTokenizer st = null;
 			br.readLine();
 			String s = br.readLine();
@@ -168,7 +163,6 @@ public class BusDataParser {
 			while(s != null){
 				st = new StringTokenizer(s, ",");
 				script += "('" + Integer.parseInt(st.nextToken()) + "', '" + Integer.parseInt(st.nextToken()) + "', '" + st.nextToken() + "', '" + st.nextToken() + "', '" + Integer.parseInt(st.nextToken()) + "')";
-//				System.out.println(db.insertStopTime(Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken()), st.nextToken(), st.nextToken(), Integer.parseInt(st.nextToken())));
 				s = br.readLine();
 				if(s != null)
 					script += ",\n";
@@ -188,11 +182,9 @@ public class BusDataParser {
 	}
 	
 	public void parseCalendar(){
-//		setFile("C:\\Users\\Luca\\Dropbox\\Uni\\Thesis\\SASA\\output\\output\\calendar.txt");
+		System.out.println("Parsing calendar.");
 		try {
-//			BufferedReader br = new BufferedReader(new FileReader(file));
-			BufferedReader br = new BufferedReader(new FileReader("/var/lib/postgresql/bz_database/gtfs/calendar.txt"));
-//			BufferedReader br = new BufferedReader(new FileReader("C:\\Users\\Luca\\Dropbox\\Uni\\Thesis\\Isochrones\\output\\calendar.txt"));
+			BufferedReader br = new BufferedReader(new FileReader(new File(GTFS + "calendar.txt")));
 			StringTokenizer st = null;
 			br.readLine();
 			String s = br.readLine();
@@ -218,21 +210,11 @@ public class BusDataParser {
 						"', '" + isValidDay(st.nextToken()) +
 						"', '" + isValidDay(st.nextToken()) + 
 						"', '" + st.nextToken() + "', '" + st.nextToken() + "'),\n";
-//				db.insertCalendar(Integer.parseInt(st.nextToken()), new boolean[] {isValidDay(st.nextToken()), 
-//					isValidDay(st.nextToken()), 
-//					isValidDay(st.nextToken()), 
-//					isValidDay(st.nextToken()), 
-//					isValidDay(st.nextToken()), 
-//					isValidDay(st.nextToken()), 
-//					isValidDay(st.nextToken())}, st.nextToken(), st.nextToken());
 				s = br.readLine();
 			} 
 			br.close();
 			
-//			setFile("C:\\Users\\Luca\\Dropbox\\Uni\\Thesis\\SASA\\output\\output\\calendar_dates.txt");
-//			br = new BufferedReader(new FileReader(file));
-			br = new BufferedReader(new FileReader("/var/lib/postgresql/bz_database/gtfs/calendar_dates.txt"));
-//			br = new BufferedReader(new FileReader("C:\\Users\\Luca\\Dropbox\\Uni\\Thesis\\Isochrones\\output\\calendar_dates.txt"));
+			br = new BufferedReader(new FileReader(new File(GTFS + "calendar_dates.txt")));
 			br.readLine();
 			s = br.readLine();
 			Calendar c = null;
@@ -254,7 +236,6 @@ public class BusDataParser {
 						"', '" + validity[5] +
 						"', '" + validity[6] + 
 						"', '" + date + "', '" + date + "')";
-//				db.insertCalendar(id, validity, date, date);
 				s = br.readLine();
 				if(s != null)
 					script += ",\n";
@@ -327,7 +308,6 @@ public class BusDataParser {
 			}
 			for(int i = 0; i < 366; i++)
 				dbVector += validityVector[i];
-//			System.out.println(dbVector);
 			db.insertService(s.getId(), s.getStartDate(), s.getEndDate(), dbVector);
 		}
 	}
