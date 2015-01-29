@@ -118,7 +118,13 @@ public class Main {
 		case "pbfparser":
 			if(db == null)
 				db = new DBConnector();
-			PBFParser parser = new PBFParser(args[1].replace("\\", "\\\\"));
+			
+			System.out.println("[INFO] Command: parse PBF file. (\"" + args[0] + "\")");
+			System.out.println("[INFO] Source file: " + args[1]);
+			System.out.println("[INFO] City: " + args[2]);
+			
+			//parse the file for the corresponding city
+			PBFParser parser = new PBFParser(args[1]);
 			parser.parsePBF();
 			GraphBuilder gb = new GraphBuilder(parser.getAllNodes(), parser.getAllWays(), args[2], db);
 			Graph g = new Graph(gb);
@@ -134,12 +140,17 @@ public class Main {
 			if(db == null)
 				db = new DBConnector(true);
 			
+			System.out.println("[INFO] Command: script generator. (\"" + args[0] + "\")");
+			System.out.println("[INFO] Output directory: " + args[1]);
+			System.out.println("[INFO] City: " + args[2]);
+			
 			//generate the script to create the table for the city typed.
 			ScriptGenerator sg = new ScriptGenerator(generateTables(args[2]), null);
 			sg.setSchemaName("isochrones_2014");
 			sg.createScript();
 			try {
-				BufferedWriter bw = new BufferedWriter(new FileWriter(args[2] + "_street_network.sql"));
+				BufferedWriter bw = new BufferedWriter(new FileWriter(args[1] + "/" + args[2] + "_street_network.sql"));
+				System.out.println("SQL directory: " + args[1]);
 				bw.write(sg.getScript());
 				bw.flush();
 				bw.close();
@@ -148,12 +159,12 @@ public class Main {
 			}
 			
 			//parse the file for the corresponding city
-			parser = new PBFParser(args[1].replace("\\", "\\\\"));
-			parser.parsePBF();
-			gb = new GraphBuilder(parser.getAllNodes(), parser.getAllWays(), args[2], db);
-			g = new Graph(gb);
-			g.buildGraph();
-			g.printGraph();
+//			parser = new PBFParser(args[3]);
+//			parser.parsePBF();
+//			gb = new GraphBuilder(parser.getAllNodes(), parser.getAllWays(), args[2], db);
+//			g = new Graph(gb);
+//			g.buildGraph();
+//			g.printGraph();
 			break;
 		}
 	}

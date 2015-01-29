@@ -73,13 +73,13 @@ public class GraphBuilder {
     		}
     	}
     	
-    	System.out.println("Real nodes: " + realNodes.values().size());
+    	System.out.println("[INFO] Real nodes: " + realNodes.values().size());
     	Collection<RealNode> result = realNodes.values();
     	return result; 
     }
     
     public HashMap<Long, RealNode> buildNodes(){
-    	System.out.println("Bulding real nodes.");
+    	System.out.println("[INFO] Bulding real nodes.");
     	HashMap<Long, RealNode> realNodes = new HashMap<Long, RealNode>();
 		Collection<RealNode> nodes = getRealStreetNodes();
 		db.openWriter(city + "_street_nodes_import.sql");
@@ -103,7 +103,7 @@ public class GraphBuilder {
     }
     
     public ArrayList<Edge> buildEdges(){
-    	System.out.println("Building edges.");
+    	System.out.println("[INFO] Building edges.");
 //    	HashMap<Long, Edge> edges = new HashMap<Long, Edge>();
     	ArrayList<Edge> edges = new ArrayList<Edge>();
     	db.openWriter(city + "_street_edges_import.sql");

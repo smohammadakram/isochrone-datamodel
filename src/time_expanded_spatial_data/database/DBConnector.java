@@ -278,10 +278,9 @@ public class DBConnector {
 				bw.write(";\n");
 				bw.flush();
 				if(checkpoint % 50 == 0)
-					System.out.println("Checkpoint " + checkpoint);
+					System.out.println("[INFO] Checkpoint " + checkpoint);
 				checkpoint++;
 			}
-			bw.close();
 		} 
 		catch (IOException e) {
 			e.printStackTrace();
@@ -309,10 +308,9 @@ public class DBConnector {
 				bw.write(";\n");
 				bw.flush();
 				if(checkpoint % 50 == 0)
-					System.out.println("Checkpoint " + checkpoint);
+					System.out.println("[INFO] Checkpoint " + checkpoint);
 				checkpoint++;
 			}
-			bw.close();
 		}
 		catch (IOException e) {
 			e.printStackTrace();
@@ -361,6 +359,7 @@ public class DBConnector {
 	public void openWriter(String file){
 		try {
 			bw = new BufferedWriter(new FileWriter(file));
+			System.out.println("[INFO] Stream opened.");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -369,6 +368,7 @@ public class DBConnector {
 	public void closeWriter(){
 		try {
 			bw.close();
+			System.out.println("[INFO] Stream closed.");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -387,5 +387,7 @@ public class DBConnector {
 	public void resetCheckpoint(){
 		checkpoint = 0;
 	}
+	
+	
 	
 }

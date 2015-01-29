@@ -9,7 +9,6 @@ import time_expanded_spatial_data.street_network.GraphBuilder;
 public class Graph {
 	
 	private HashMap<Long, RealNode> nodes;
-//	private HashMap<Long, Edge> edges;
 	private ArrayList<Edge> edges;
 	private GraphBuilder builder;
 	
@@ -18,11 +17,8 @@ public class Graph {
 	}
 	
 	public void buildGraph(){
-//		builder.findCross();
 		nodes = builder.buildNodes();
 		edges = builder.buildEdges();
-		builder.insertNodes(nodes.values());
-		builder.insertEdges(edges);
 	}
 	
 	public RealNode getNodeByID(Long id){
@@ -30,13 +26,8 @@ public class Graph {
 		return result;
 	}
 	
-//	public Edge getEdgeByID(Long id){
-//		Edge result = edges.get(id);
-//		return result;
-//	}
-	
 	public void printGraph(){
-		System.out.println("Graph: " + nodes.size() + " nodes, " + edges.size() + " edges");
+		System.out.println("[INFO] Graph: " + nodes.size() + " nodes, " + edges.size() + " edges");
 	}
 
 }

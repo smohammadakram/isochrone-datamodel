@@ -74,14 +74,14 @@ public class PBFParser extends BinaryParser{
     @Override
     protected void parseRelations(List<Relation> rels) {
         if (!rels.isEmpty())
-            System.out.println("Got some relations to parse.");
+            System.out.println("[INFO] Got some relations to parse.");
 //            for(Relation rel : rels)
 //            	System.out.println("Relation, %e, ", rel.getId(), rel.get);
     }
 
     @Override
     protected void parseDense(DenseNodes nodes) {
-    	System.out.println("Parsing dense nodes.");
+    	System.out.println("[INFO] Parsing dense nodes.");
         long lastId=0;
         long lastLat=0;
         long lastLon=0;
@@ -99,14 +99,14 @@ public class PBFParser extends BinaryParser{
     @Override
     protected void parseNodes(List<Node> nodes) {
         for (Node n : nodes) {
-            System.out.printf("Regular node, ID %d @ %.6f,%.6f\n",
+            System.out.printf("[INFO] Regular node, ID %d @ %.6f,%.6f\n",
                     n.getId(),parseLat(n.getLat()),parseLon(n.getLon()));
         }
     }
 
     @Override
     protected void parseWays(List<Way> ways) {
-    	System.out.println("Parsing ways.");
+    	System.out.println("[INFO] Parsing ways.");
     	boolean street = false;
     	
     	 for (Osmformat.Way i : ways) {
@@ -154,11 +154,11 @@ public class PBFParser extends BinaryParser{
 
     @Override
     protected void parse(HeaderBlock header) {
-        System.out.println("Got header block.");
+        System.out.println("[INFO] Got header block.");
     }
 
     public void complete() {
-        System.out.println("Complete!");
+        System.out.println("[INFO] Complete!");
     }
     
     public HashMap<Long, DenseNode> getAllNodes(){
