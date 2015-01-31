@@ -21,9 +21,9 @@ public class DBConnector {
 	
 	private final static String MAPS_DB_LOCAL = "jdbc:postgresql://localhost:5432/isochrones2014";
 	private final static String MAPS_DB_REMOTE = "jdbc:postgresql://maps.inf.unibz.it:5432/isochrones2014";
-	private final static String MAPS_USER = "postgres";
+	private final static String MAPS_USER = "spatial";
 	private final static String MAPS_PWD_REMOTE = "AifaXub2";
-	private final static String MAPS_PWD_LOCAL = "postgres";
+	private final static String MAPS_PWD_LOCAL = "";
 	private static Connection conn;
 	private BufferedWriter bw;
 	private int checkpoint = 0;
@@ -277,9 +277,9 @@ public class DBConnector {
 				bw.write(script);
 				bw.write(";\n");
 				bw.flush();
-				if(checkpoint % 50 == 0)
-					System.out.println("[INFO] Checkpoint " + checkpoint);
-				checkpoint++;
+//				if(checkpoint % 50 == 0)
+//					System.out.println("[INFO] Checkpoint " + checkpoint);
+//				checkpoint++;
 			}
 		} 
 		catch (IOException e) {
@@ -307,9 +307,9 @@ public class DBConnector {
 				bw.write(script);
 				bw.write(";\n");
 				bw.flush();
-				if(checkpoint % 50 == 0)
-					System.out.println("[INFO] Checkpoint " + checkpoint);
-				checkpoint++;
+//				if(checkpoint % 50 == 0)
+//					System.out.println("[INFO] Checkpoint " + checkpoint);
+//				checkpoint++;
 			}
 		}
 		catch (IOException e) {
@@ -359,7 +359,7 @@ public class DBConnector {
 	public void openWriter(String file){
 		try {
 			bw = new BufferedWriter(new FileWriter(file));
-			System.out.println("[INFO] Stream opened.");
+//			System.out.println("[INFO] Stream opened.");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -368,7 +368,7 @@ public class DBConnector {
 	public void closeWriter(){
 		try {
 			bw.close();
-			System.out.println("[INFO] Stream closed.");
+//			System.out.println("[INFO] Stream closed.");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

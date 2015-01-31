@@ -81,7 +81,7 @@ public class PBFParser extends BinaryParser{
 
     @Override
     protected void parseDense(DenseNodes nodes) {
-    	System.out.println("[INFO] Parsing dense nodes.");
+    	System.out.print("[INFO] Parsing dense nodes...");
         long lastId=0;
         long lastLat=0;
         long lastLon=0;
@@ -94,6 +94,7 @@ public class PBFParser extends BinaryParser{
             DenseNode dn = new DenseNode(lastId, di);
             allNodes.put(lastId, dn);
         }
+        System.out.println("Done.");
     }
 
     @Override
@@ -106,7 +107,7 @@ public class PBFParser extends BinaryParser{
 
     @Override
     protected void parseWays(List<Way> ways) {
-    	System.out.println("[INFO] Parsing ways.");
+    	System.out.print("[INFO] Parsing ways...");
     	boolean street = false;
     	
     	 for (Osmformat.Way i : ways) {
@@ -150,6 +151,7 @@ public class PBFParser extends BinaryParser{
              allWays.put(id, tmp);
    
         }
+    	System.out.println("Done.");
     }
 
     @Override

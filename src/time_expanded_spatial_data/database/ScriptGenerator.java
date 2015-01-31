@@ -95,15 +95,20 @@ public class ScriptGenerator {
 	
 	private String createForeignKey(Table t){
 		String keys = "";
-		String foreign1 = "\tforeign key(";
-		String foreign2 = "references";
+		boolean comma = false;
 		for(String s : t.getForeignKeys()){
+			String foreign1 = "\tforeign key(";
+			String foreign2 = "references";
+			if(comma)
+				keys += ",\n";
+			comma = true;
 			StringTokenizer st = new StringTokenizer(s, ";");
 			foreign1 += st.nextToken();
 			foreign2 += BLANK + st.nextToken() + SCHEMA_DIVIDER + st.nextToken() + "(" + st.nextToken();
 			foreign1 += ")";
 			foreign2 += ")";
 			keys += foreign1 + BLANK + foreign2;
+//			System.out.println("keys: "+ keys);
 		}
 		return keys;
 	}
@@ -124,7 +129,7 @@ public class ScriptGenerator {
 		if(t.getPrimaryKeys().size() != 0){
 			s += createPrimaryKey(t)  ;
 			if(t.getForeignKeys().size() != 0)
-			s += "," + BLANK_LINE + createForeignKey(t);
+				s += "," + BLANK_LINE + createForeignKey(t);
 		}
 		s += BLANK_LINE;
 		s += ");\n" + BLANK_LINE;
@@ -133,8 +138,8 @@ public class ScriptGenerator {
 	
 	public void createScript(){
 		String script = "";
-		script += dropSchema(true) + BLANK_LINE ;
-		script += createSchema() + BLANK_LINE;
+//		script += dropSchema(true) + BLANK_LINE ;
+//		script += createSchema() + BLANK_LINE;
 		for(Table t : tables)
 			script += createTable(t);
 		this.script = script;
