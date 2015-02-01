@@ -44,6 +44,7 @@ public class GraphBuilder extends BinaryParser{
     static final int NOCHANGESET = -1;
 	private HashMap<Long, DenseNode> denseNodes;
 	private HashMap<Long, RealNode> realNodes;
+	private HashMap<Long, Long> insertedNodes;
 	private HashMap<Long, Way> ways;
 	private ArrayList<Edge> edges;
 	private String outPath;
@@ -68,6 +69,7 @@ public class GraphBuilder extends BinaryParser{
 		this.file = file;
 		denseNodes = new HashMap<Long, DenseNode>();
 		realNodes = new HashMap<Long, RealNode>();
+		insertedNodes = new HashMap<Long, Long>();
 		ways = new HashMap<Long, Way>();
 		edges = new ArrayList<Edge>();
 		this.outPath = outPath;
@@ -109,23 +111,27 @@ public class GraphBuilder extends BinaryParser{
     		Long destination = way.getWayNodes().get(way.getWayNodes().size()-1).getNodeId();
     		
     		//add the source to the list if it is not there yet
-    		if(realNodes.get(source) == null){
+    		if(realNodes.get(source) == null && insertedNodes.get(source) == null){
 	    		DenseNode dn = denseNodes.get(source);
 	    		Point p = new Point(dn.getdInfo().getLognitude(),dn.getdInfo().getLatitude());
 	    		p.setSrid(4326);
 	    		RealNode aNode = new RealNode(source, new PGgeometry(p));
 	    		realNodes.put(source, aNode);
+	    		insertedNodes.put(source, source);
 //	    		discovered.add(dn.getId());
+	    		nrNodes++;
     		}
     		
     		//same for the destination
-    		if(realNodes.get(destination) == null){
+    		if(realNodes.get(destination) == null && insertedNodes.get(destination) == null){
     			DenseNode dn = denseNodes.get(destination);
 	    		Point p = new Point(dn.getdInfo().getLognitude(),dn.getdInfo().getLatitude());
 	    		p.setSrid(4326);
 	    		RealNode aNode = new RealNode(destination, new PGgeometry(p));
 	    		realNodes.put(destination, aNode);
+	    		insertedNodes.put(destination, destination);
 //	    		discovered.add(dn.getId());
+	    		nrNodes++;
     		}
     	}
     	
@@ -133,6 +139,8 @@ public class GraphBuilder extends BinaryParser{
 //    	removeDiscoveredNodes(discovered);
     	Collection<RealNode> result = realNodes.values();
 //    	denseNodes = new HashMap<Long, DenseNode>();
+    	buildNodes();
+    	realNodes = new HashMap<Long, RealNode>();
     	return result; 
     }
     
@@ -154,23 +162,23 @@ public class GraphBuilder extends BinaryParser{
 //		System.out.println("[INFO] Nodes: " + nodes.size());
     	System.out.print("[INFO] Bulding real nodes...");
     	ArrayList<RealNode> tmp = new ArrayList<RealNode>();
-    	db.resetFile(outPath + "/" + city + "_street_nodes_import.sql");
+//    	db.resetFile(outPath + "/" + city + "_street_nodes_import.sql");
 		db.openWriter(outPath + "/" + city + "_street_nodes_import.sql", true);
-		db.deleteClause(city + "_street_nodes");
-		db.resetCheckpoint();
+//		db.deleteClause(city + "_street_nodes");
+//		db.resetCheckpoint();
 		int counter = 0;
 		for(RealNode rn : realNodes.values()){
-			if(counter == 999){
-				counter = 0;
-				insertNodes(tmp);
-				tmp = new ArrayList<RealNode>();
-			}
+//			if(counter == 999){
+//				counter = 0;
+//				insertNodes(tmp);
+//				tmp = new ArrayList<RealNode>();
+//			}
 //			realNodes.put(rn.getId(), rn);
 			tmp.add(rn);
 //			nrNodes++;
-			counter++;
+//			counter++;
 		}
-		if(counter != 0)
+//		if(counter != 0)
 			insertNodes(tmp);
 		db.closeWriter();
 		System.out.println("Done.");
@@ -376,10 +384,10 @@ public class GraphBuilder extends BinaryParser{
              
              this.ways.put(id, tmp);             
         }
+    	System.out.println("Done.");
     	if(newNodes)
     		getRealStreetNodes();
         addEdges(this.ways.keySet());
-        System.out.println("Done.");
         buildEdges();
 //        populateScript();
 //        denseNodes = null;

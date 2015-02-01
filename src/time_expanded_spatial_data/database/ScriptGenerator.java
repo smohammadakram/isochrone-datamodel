@@ -7,6 +7,7 @@ import java.util.StringTokenizer;
 public class ScriptGenerator {
 	
 	private static final String DROP_SCHEMA = "DROP SCHEMA IF EXISTS ";
+	private static final String DROP_TABLE = "DROP TABLE IF EXISTS ";
 	private static final String CREATE_SCHEMA = "CREATE SCHEMA ";
 	private static final String CREATE_TABLE = "CREATE TABLE ";
 	private static final String BLANK = " "; 
@@ -136,10 +137,17 @@ public class ScriptGenerator {
 		return s;
 	}
 	
+	public String dropTable(Table t){
+		return DROP_TABLE + BLANK + t.getSchemaName() + SCHEMA_DIVIDER + t.getTableName() + " CASCADE;" + BLANK_LINE;
+	}
+	
 	public void createScript(){
 		String script = "";
 //		script += dropSchema(true) + BLANK_LINE ;
 //		script += createSchema() + BLANK_LINE;
+		for(Table t : tables)
+			script += dropTable(t);
+		script += BLANK_LINE;
 		for(Table t : tables)
 			script += createTable(t);
 		this.script = script;

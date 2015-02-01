@@ -18,7 +18,7 @@ public class Graph {
 	
 	public void buildGraph(){
 //		builder.parsePBF();
-		nodes = builder.buildNodes();
+//		nodes = builder.buildNodes();
 //		edges = builder.buildEdges();
 	}
 	
@@ -29,7 +29,7 @@ public class Graph {
 	
 	public void printGraph(){
 //		System.out.println("[INFO] Graph: " + nodes.size() + " nodes, " + edges.size() + " edges");
-		System.out.println("[INFO] Graph: " + nodes.size() + " nodes, " + builder.nrEdges + " edges");
+		System.out.println("[INFO] Graph: " + builder.nrNodes + " nodes, " + builder.nrEdges + " edges");
 	}
 
 }
