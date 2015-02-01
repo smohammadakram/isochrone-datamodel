@@ -17,8 +17,9 @@ public class Graph {
 	}
 	
 	public void buildGraph(){
+//		builder.parsePBF();
 		nodes = builder.buildNodes();
-		edges = builder.buildEdges();
+//		edges = builder.buildEdges();
 	}
 	
 	public RealNode getNodeByID(Long id){
@@ -27,7 +28,8 @@ public class Graph {
 	}
 	
 	public void printGraph(){
-		System.out.println("[INFO] Graph: " + nodes.size() + " nodes, " + edges.size() + " edges");
+//		System.out.println("[INFO] Graph: " + nodes.size() + " nodes, " + edges.size() + " edges");
+		System.out.println("[INFO] Graph: " + nodes.size() + " nodes, " + builder.nrEdges + " edges");
 	}
 
 }

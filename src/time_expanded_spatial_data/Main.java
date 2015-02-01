@@ -28,7 +28,7 @@ public class Main {
 		/**
 		 * Renaming the vdv file from *.x10 to *.X10.
 		 */
-		case "vdvnames":
+		case "vdvnames": case "1":
 			System.out.println("[INFO] File rename.");
 			File vdv = new File("vdv/");
 			File[] files = vdv.listFiles();
@@ -42,7 +42,7 @@ public class Main {
 		/**
 		 * Populating temporary bus database.
 		 */
-		case "tmpdb":
+		case "tmpdb": case "2":
 			db = new DBConnector();
 			db.emptyTmpDatabase();
 			final BusDataParser bdp = new BusDataParser(db);
@@ -97,7 +97,7 @@ public class Main {
 		/**
 		 * Creating link network.
 		 */
-		case "linknet":
+		case "linknet": case "3":
 			db = new DBConnector();
 			final LinkNetwork ln = new LinkNetwork(db);
 			Thread t6 = new Thread(new Runnable() {
@@ -115,7 +115,7 @@ public class Main {
 		/**
 		 * Parsing Openstreetmap data; inserting nodes and edges into the database.
 		 */
-		case "pbfparser":
+		case "pbfparser": case "4":
 			if(db == null)
 				db = new DBConnector();
 			
@@ -126,17 +126,29 @@ public class Main {
 			//parse the file for the corresponding city
 //			GraphBuilder gb = new GraphBuilder(parser.getAllNodes(), parser.getWaysBlocks(), args[1], args[3], db);
 			GraphBuilder gb = new GraphBuilder(args[3], args[1], args[2], db);
-			gb.parsePBF();
 			Graph g = new Graph(gb);
+//			gb.parsePBF();
 //			db.emptyStreetNodesTable();
+//			db.resetFile(args[1] + "/" + args[2] + "_street_nodes_import.sql");
+			db.resetFile(args[1] + "/" + args[2] + "_street_edges_import.sql");
+//			File f1 = new File(args[1] + "/" + args[2] + "_street_nodes_import.sql");
+			File f2 = new File(args[1] + "/" + args[2] + "_street_edges_import.sql");
+//			db.openWriter(f1.getAbsolutePath(), true);
+//			db.deleteClause(args[2] + "_street_nodes");
+//			db.closeWriter();
+			db.openWriter(f2.getAbsolutePath(), true);
+			db.deleteClause(args[2] + "_street_edges");
+			db.closeWriter();
+			gb.parsePBF();
 			g.buildGraph();
 			g.printGraph();
+//			System.out.println("[INFO] Graph: " + gb.nrNodes + " nodes, " + gb.nrEdges + " edges");
 			break;
 			
 		/**
 		 * Generate the script to add only street network for a city.
 		 */
-		case "scriptgen":
+		case "scriptgen": case "5":
 			if(db == null)
 				db = new DBConnector(true);
 			

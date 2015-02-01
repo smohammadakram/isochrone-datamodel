@@ -20,6 +20,8 @@ package crosby.binary;
 import java.util.Date;
 import java.util.List;
 
+import time_expanded_spatial_data.street_network.PBFBlock;
+
 import com.google.protobuf.InvalidProtocolBufferException;
 
 import crosby.binary.Osmformat;
@@ -33,8 +35,8 @@ public abstract class BinaryParser implements BlockReaderAdapter {
     private long lon_offset;
     protected int date_granularity;
     protected String strings[];
-    protected List<Osmformat.Way> waysBlocks;
     protected String wayStrings[];
+    protected List<PBFBlock> waysBlocks;
 
     /** Take a Info protocol buffer containing a date and convert it into a java Date object */
     public Date getDate(Osmformat.Info info) {
@@ -119,15 +121,16 @@ public abstract class BinaryParser implements BlockReaderAdapter {
         	parseNodes(groupmessage.getNodesList());
         	if (groupmessage.hasDense())
                 parseDense(groupmessage.getDense());
-        	if(groupmessage.getWaysCount() > 0){
-//    			waysBlocks.addAll(groupmessage.getWaysList());
-        	}
+//        	if(groupmessage.getWaysCount() > 0){
+//    			PBFBlock aBlock = new PBFBlock(groupmessage.getWaysList(), strings);
+//    			waysBlocks.add(aBlock);
+//        	}
           parseWays(groupmessage.getWaysList());
           parseRelations(groupmessage.getRelationsList());
         }
     }
     
-    public List<Osmformat.Way> getWaysBlocks(){
+    public List<PBFBlock> getWaysBlocks(){
     	return waysBlocks;
     }
     

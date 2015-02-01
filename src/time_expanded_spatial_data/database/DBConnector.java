@@ -1,6 +1,7 @@
 package time_expanded_spatial_data.database;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.Connection;
@@ -31,14 +32,9 @@ public class DBConnector {
 	public DBConnector(){
 		try {
 			Class.forName("org.postgresql.Driver");
-				conn = DriverManager.getConnection(MAPS_DB_REMOTE, MAPS_USER, MAPS_PWD_REMOTE);
+			conn = DriverManager.getConnection(MAPS_DB_LOCAL, MAPS_USER, MAPS_PWD_LOCAL);
 		} catch (SQLException e) {
 			System.out.println("Remote database not available. Switching to local.");
-			try{
-				conn = DriverManager.getConnection(MAPS_DB_LOCAL, MAPS_USER, MAPS_PWD_LOCAL);
-			} catch (SQLException e1) {
-				e1.printStackTrace();
-			}
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -233,7 +229,7 @@ public class DBConnector {
 	public boolean insertStreetNode(RealNode aNode, String city){
 		boolean result = false;
 		try {
-			PreparedStatement stmt = conn.prepareStatement("INSERT INTO isochrones_2014." + city + "_street_nodes (node_id, node_geometry) "
+			PreparedStatement stmt = conn.prepareStatement("INSERT INTO time_expanded." + city + "_street_nodes (node_id, node_geometry) "
 					+ "VALUES (?, ST_GeomFromText(?));");
 			stmt.setLong(1, aNode.getId());
 			stmt.setString(2, aNode.getGeometry().toString());
@@ -247,7 +243,7 @@ public class DBConnector {
 	public boolean insertStreetEdge(Edge anEdge, String city){
 		boolean result = false;
 		try {
-			PreparedStatement stmt = conn.prepareStatement("INSERT INTO isochrones_2014." + city + "_street_edges (edge_id, edge_source, edge_destination,edge_geometry) "
+			PreparedStatement stmt = conn.prepareStatement("INSERT INTO time_expanded." + city + "_street_edges (edge_id, edge_source, edge_destination,edge_geometry) "
 					+ "VALUES (?, ?, ?, ST_GeomFromText(?)));");
 			stmt.setLong(1, anEdge.getId());
 			stmt.setLong(2, anEdge.getSource());
@@ -272,7 +268,7 @@ public class DBConnector {
 //				stmt.setLong(1, rn.getId());
 //				stmt.setString(2, rn.getGeometry().toString());
 //				result = stmt.execute();
-				script = "INSERT INTO isochrones_2014." + city + "_street_nodes (node_id, node_geometry) "
+				script = "INSERT INTO time_expanded." + city + "_street_nodes (node_id, node_geometry) "
 						+ "VALUES ('" + rn.getId() + "', ST_GeomFromEWKT('" + rn.getGeometry().toString() + "'))";
 				bw.write(script);
 				bw.write(";\n");
@@ -301,7 +297,7 @@ public class DBConnector {
 //				stmt.setLong(2, anEdge.getSource());
 //				stmt.setLong(3, anEdge.getDestination());
 //				stmt.setString(4, anEdge.getGeometry().toString());
-				script = "INSERT INTO isochrones_2014." + city + "_street_edges (edge_source, edge_destination,edge_geometry) "
+				script = "INSERT INTO time_expanded." + city + "_street_edges (edge_source, edge_destination,edge_geometry) "
 						+ "VALUES ('"+ anEdge.getSource() +"', '" + anEdge.getDestination() +"', ST_GeomFromEWKT('" + anEdge.getGeometry().toString() + "'))";
 //				result = stmt.execute();
 				bw.write(script);
@@ -356,9 +352,15 @@ public class DBConnector {
 		return null;
 	}
 	
-	public void openWriter(String file){
+	public void resetFile(String file){
+		File f = new File(file);
+		if(f.exists())
+			f.delete();
+	}
+	
+	public void openWriter(String file, boolean append){
 		try {
-			bw = new BufferedWriter(new FileWriter(file));
+			bw = new BufferedWriter(new FileWriter(file, append));
 //			System.out.println("[INFO] Stream opened.");
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -375,7 +377,7 @@ public class DBConnector {
 	}
 	
 	public void deleteClause(String table){
-		String script = "DELETE FROM isochrones_2014." +table + ";\n";
+		String script = "DELETE FROM time_expanded." +table + ";\n";
 		try {
 			bw.write(script);
 			bw.flush();

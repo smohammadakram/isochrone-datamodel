@@ -106,7 +106,7 @@ public class PBFParser extends BinaryParser{
     }
 
     @Override
-    protected void parseWays(List<Way> ways) {
+    protected void parseWays(List<Osmformat.Way> ways) {
     	System.out.print("[INFO] Parsing ways...");
     	boolean street = false;
     	
