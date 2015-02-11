@@ -5,7 +5,9 @@ package time_expanded_spatial_data.database;
  * @author Luca
  *
  */
-public  final class TablesDescription {
+public  final class TimeExpTablesDescription {
+	
+	public static final String SCHEMA_NAME = "time_expanded";
 	
 	/**
 	 * Definition of attributes for street nodes table.

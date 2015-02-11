@@ -5,10 +5,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -18,16 +20,20 @@ public class BusDataParser {
 	
 	private String file;
 	private DBConnector db;
-	static String GTFS = "gtfs/";
+//	static String GTFS = "gtfs/";
+	private String gtfs;
+	private String city;
 	
-	public BusDataParser(DBConnector conn){
+	public BusDataParser(DBConnector conn, String gtfs, String city){
 		db = conn;
+		this.gtfs = gtfs + "/";
+		this.city = city;
 	}
 	
 	public void parseStops(){
 		try {
-			System.out.println("Parsing bus stops.");
-			BufferedReader br = new BufferedReader(new FileReader(new File(GTFS + "stops.txt")));
+//			System.out.println("[INFO] Parsing bus stops...");
+			BufferedReader br = new BufferedReader(new FileReader(new File(gtfs + "stops.txt")));
 			br.readLine(); //next line skipped
 			String line = br.readLine();
 			StringTokenizer st = null;
@@ -36,8 +42,16 @@ public class BusDataParser {
 			double longi = 0.0;
 			double lat = 0.0;
 			String script = "";
-			script =  "INSERT INTO vdv_gtfs_tmp.stops VALUES\n"; 
+			script = "DELETE FROM vdv_gtfs_tmp.stops CASCADE;";
+			Statement stmt = DBConnector.getConnection().createStatement();
+			stmt.execute(script);
+			boolean comma = false;
 			while(line != null){
+				script =  "INSERT INTO vdv_gtfs_tmp.stops VALUES\n"; 
+				String aux = "";
+//				if(comma)
+//					aux += ",\n";
+//				comma = true;
 				st = new StringTokenizer(line, ",");
 				id = Integer.parseInt(st.nextToken());
 				name = st.nextToken();
@@ -47,33 +61,36 @@ public class BusDataParser {
 				longi = Double.parseDouble(s1.substring(1, s.length()-2));
 //				bs = new BusStop(id, name, longi, lat);
 //				stops.add(bs);
-				if(name.contains("\'"))
-					name.replaceAll("\'", "\\'");
-				script += "('" + id + "', '" + name + "', '" + lat + "', '" + longi + "')";
-				System.out.println(db.insertStop(id, name, lat, longi));
+//				if(name.contains("\'"))
+//					name.replaceAll("\'", "\\'");
+				name = name.replace("\'", " ");
+				aux += "(" + id + ", '" + name + "', " + lat + ", " + longi + ")";
+//				db.insertStop(id, name, lat, longi);
 				line = br.readLine();
 //				if(line != null)
 //					script += ",\n";
-			}
-			script += ";";
-			System.out.println(script);
-			Statement stmt;
-			try {
+				script += aux;
+				script += ";";
+//				System.out.println(script);
 				stmt = DBConnector.getConnection().createStatement();
 				stmt.execute(script);
-			} catch (SQLException e) {
-				e.printStackTrace();
 			}
+			
+//			System.out.println(script);
 			br.close();
 		} catch (IOException e) {
 			e.printStackTrace();
+		} catch (SQLException e1) {
+			e1.printStackTrace();
 		}
+//		System.out.println("[INFO] Parsing bus stops...Done.");
 	}
 	
 	public double parseCoordinates(String s){
-		System.out.println("Parsing coordinates.");
+//		System.out.println("[INFO] Parsing coordinates...");
 		StringTokenizer st = new StringTokenizer(s, ",");
 		s = st.nextToken() + "." + st.nextToken() + st.nextToken();
+//		System.out.println("[INFO] Parsing coordinates...Done.");
 		return Double.parseDouble(s);
 	}
 	
@@ -86,10 +103,10 @@ public class BusDataParser {
 	}
 	
 	public void parseRoutes(){
-		System.out.println("Parsing routes.");
+//		System.out.println("[INFO] Parsing routes...");
 		BufferedReader br;
 		try {
-			br = new BufferedReader(new FileReader(new File(GTFS + "routes.txt")));
+			br = new BufferedReader(new FileReader(new File(gtfs + "routes.txt")));
 
 			br.readLine();
 			String s = br.readLine();
@@ -106,7 +123,7 @@ public class BusDataParser {
 					script += ",\n";
 			}
 			script += ";";
-			System.out.println(script);
+//			System.out.println(script);
 			Statement stmt = DBConnector.getConnection().createStatement();
 			stmt.execute(script);
 			br.close();
@@ -117,13 +134,13 @@ public class BusDataParser {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		
+//		System.out.println("[INFO] Parsing routes...Done.");
 	}
 	
 	public void parseTrips(){
-		System.out.println("Parsing trips.");
+//		System.out.println("[INFO] Parsing trips...");
 		try {
-			BufferedReader br = new BufferedReader(new FileReader(new File(GTFS + "trips.txt")));
+			BufferedReader br = new BufferedReader(new FileReader(new File(gtfs + "trips.txt")));
 			br.readLine();
 			String s = br.readLine();
 			StringTokenizer st;
@@ -137,7 +154,7 @@ public class BusDataParser {
 					script += ",\n";
 			}
 			script += ";";
-			System.out.println(script);
+//			System.out.println(script);
 			Statement stmt = DBConnector.getConnection().createStatement();
 			stmt.execute(script);
 			br.close();
@@ -148,29 +165,32 @@ public class BusDataParser {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+//		System.out.println("[INFO] Parsing trips...Done.");
 	}
 
 	
 	public void parseTripSequence(){
-		System.out.println("Parsing trips sequence.");
+//		System.out.println("[INFO] Parsing trips sequence...");
 		try {
-			BufferedReader br = new BufferedReader(new FileReader(new File(GTFS + "stop_times.txt")));
+			BufferedReader br = new BufferedReader(new FileReader(new File(gtfs + "stop_times.txt")));
 			StringTokenizer st = null;
 			br.readLine();
 			String s = br.readLine();
 			String script = "";
-			script =  "INSERT INTO vdv_gtfs_tmp.stop_times VALUES\n"; 
+//			script =  "INSERT INTO vdv_gtfs_tmp.stop_times VALUES\n"; 
+			Statement stmt = DBConnector.getConnection().createStatement();
 			while(s != null){
+				script =  "INSERT INTO vdv_gtfs_tmp.stop_times VALUES\n";
 				st = new StringTokenizer(s, ",");
 				script += "('" + Integer.parseInt(st.nextToken()) + "', '" + Integer.parseInt(st.nextToken()) + "', '" + st.nextToken() + "', '" + st.nextToken() + "', '" + Integer.parseInt(st.nextToken()) + "')";
 				s = br.readLine();
-				if(s != null)
-					script += ",\n";
+//				if(s != null)
+//					script += ",\n";
+				script += ";";
+				stmt.execute(script); 
 			}
-			script += ";";
-			System.out.println(script);
-			Statement stmt = DBConnector.getConnection().createStatement();
-			stmt.execute(script); 
+			
+//			System.out.println(script);
 			br.close();
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -179,12 +199,13 @@ public class BusDataParser {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+//		System.out.println("[INFO] Parsing trips sequence...Done.");
 	}
 	
 	public void parseCalendar(){
-		System.out.println("Parsing calendar.");
+//		System.out.println("[INFO] Parsing calendar...");
 		try {
-			BufferedReader br = new BufferedReader(new FileReader(new File(GTFS + "calendar.txt")));
+			BufferedReader br = new BufferedReader(new FileReader(new File(gtfs + "calendar.txt")));
 			StringTokenizer st = null;
 			br.readLine();
 			String s = br.readLine();
@@ -209,21 +230,21 @@ public class BusDataParser {
 						"', '" + isValidDay(st.nextToken()) +
 						"', '" + isValidDay(st.nextToken()) +
 						"', '" + isValidDay(st.nextToken()) + 
-						"', '" + st.nextToken() + "', '" + st.nextToken() + "'),\n";
+						"', '" + st.nextToken() + "', '" + st.nextToken() + "'),\n";		
 				s = br.readLine();
 			} 
 			br.close();
 			
-			br = new BufferedReader(new FileReader(new File(GTFS + "calendar_dates.txt")));
+			br = new BufferedReader(new FileReader(new File(gtfs + "calendar_dates.txt")));
 			br.readLine();
 			s = br.readLine();
 			Calendar c = null;
 			while(s != null){
 				st = new StringTokenizer(s, ",");
 				int id = Integer.parseInt(st.nextToken());
-				System.out.println(id);
+//				System.out.println(id);
 				String date = st.nextToken();
-				System.out.println(date);
+//				System.out.println(date);
 				c = parseDateToCalendar(date);
 				boolean[] validity = {false, false, false, false, false, false, false};
 				validity[c.get(Calendar.DAY_OF_WEEK)-1] = true;
@@ -241,7 +262,7 @@ public class BusDataParser {
 					script += ",\n";
 			}
 			script += ";";
-			System.out.println(script);
+//			System.out.println(script);
 			Statement stmt = DBConnector.getConnection().createStatement();
 			stmt.execute(script); 
 			br.close();
@@ -252,6 +273,7 @@ public class BusDataParser {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+//		System.out.println("[INFO] Parsing calendar...Done.");
 	}
 	
 	public boolean isValidDay(String valid){
@@ -266,7 +288,7 @@ public class BusDataParser {
 	}
 	
 	public long parseDateToMillis(String d){
-		System.out.println(d);
+//		System.out.println(d);
 		Calendar c = new GregorianCalendar(Integer.parseInt(d.substring(0, 4)), Integer.parseInt(d.substring(4, 6)), Integer.parseInt(d.substring(6, 8)));
 		return c.getTimeInMillis();
 	}
@@ -308,7 +330,7 @@ public class BusDataParser {
 			}
 			for(int i = 0; i < 366; i++)
 				dbVector += validityVector[i];
-			db.insertService(s.getId(), s.getStartDate(), s.getEndDate(), dbVector);
+			db.insertService(s.getId(), s.getStartDate(), s.getEndDate(), dbVector, city);
 		}
 	}
 	

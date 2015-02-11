@@ -20,13 +20,14 @@ import time_expanded_spatial_data.street_network.components.RealNode;
 
 public class DBConnector {
 	
-	private final static String MAPS_DB_LOCAL = "jdbc:postgresql://localhost:5432/isochrones2014";
-	private final static String MAPS_DB_REMOTE = "jdbc:postgresql://maps.inf.unibz.it:5432/isochrones2014";
+	private final static String MAPS_DB_LOCAL = "jdbc:postgresql://localhost:5432/spatial";
+//	private final static String MAPS_DB_REMOTE = "jdbc:postgresql://maps.inf.unibz.it:5432/isochrones2014";
 	private final static String MAPS_USER = "spatial";
-	private final static String MAPS_PWD_REMOTE = "AifaXub2";
-	private final static String MAPS_PWD_LOCAL = "";
+//	private final static String MAPS_PWD_REMOTE = "AifaXub2";
+	private final static String MAPS_PWD_LOCAL = "spatial";
 	private static Connection conn;
 	private BufferedWriter bw;
+	private String sqlDirectory;
 	private int checkpoint = 0;
 
 	public DBConnector(){
@@ -34,7 +35,7 @@ public class DBConnector {
 			Class.forName("org.postgresql.Driver");
 			conn = DriverManager.getConnection(MAPS_DB_LOCAL, MAPS_USER, MAPS_PWD_LOCAL);
 		} catch (SQLException e) {
-			System.out.println("Remote database not available. Switching to local.");
+			System.out.println("[ERROR] Database \"spatial\" does not exist. Please create it.");
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -67,13 +68,18 @@ public class DBConnector {
 	public String insertStop(int id, String name, double lat, double longi){
 		PreparedStatement stmt = null;
 		try {
+			bw = new BufferedWriter(new FileWriter(sqlDirectory + "/vdv-stops.sql"));
+			bw.write("DELETE FROM vdv_gtfs_tmp.stops CASCADE;");
 			stmt = conn.prepareStatement("INSERT INTO vdv_gtfs_tmp.stops VALUES (?,?,?,?);");
 			stmt.setInt(1, id);
 			stmt.setString(2, name);
 			stmt.setDouble(3, lat);
 			stmt.setDouble(4, longi);
+			bw.write(stmt.toString());
 			stmt.execute();
 		} catch (SQLException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		return stmt.toString();
@@ -137,10 +143,10 @@ public class DBConnector {
 		}
 	}
 	
-	public void insertService(int id, String start, String end, String vector){
+	public void insertService(int id, String start, String end, String vector, String city){
 		PreparedStatement stmt;
 		try {
-			stmt = conn.prepareStatement("INSERT INTO bz_isochrones_2014.bz_bus_calendar(service_id, service_start_date, service_end_date, service_vector) VALUES(?,?,?,?);");
+			stmt = conn.prepareStatement("INSERT INTO " + TimeExpTablesDescription.SCHEMA_NAME + "." + city + "_bus_calendar(service_id, service_start_date, service_end_date, service_vector) VALUES(?,?,?,?);");
 			stmt.setInt(1, id);
 			stmt.setString(2, start);
 			stmt.setString(3, end);
@@ -153,22 +159,43 @@ public class DBConnector {
 	
 	public void emptyTmpDatabase(){
 		Statement stmt;
+		boolean result = false;
 		try {
 			stmt = conn.createStatement();
-			stmt.execute("DELETE FROM vdv_gtfs_tmp.stops;");
-			stmt.execute("DELETE FROM vdv_gtfs_tmp.stop_times;");
-			stmt.execute("DELETE FROM vdv_gtfs_tmp.routes;");
-			stmt.execute("DELETE FROM vdv_gtfs_tmp.calendar;");
-			stmt.execute("DELETE FROM vdv_gtfs_tmp.trips;");
+			result = stmt.execute("DELETE FROM vdv_gtfs_tmp.stops CASCADE;");
+			if(result)
+				System.out.println("[INFO] vdv_gtfs_tmp.stops has been emptied.");
+			else
+				System.out.println("[ERROR] An error occured. vdv_gtfs_tmp.stops not empty.");
+			result = stmt.execute("DELETE FROM vdv_gtfs_tmp.stop_times CASCADE;");
+			if(result)
+				System.out.println("[INFO] vdv_gtfs_tmp.stops_times has been emptied.");
+			else
+				System.out.println("[ERROR] An error occured. vdv_gtfs_tmp.stops_times not empty.");
+			result = stmt.execute("DELETE FROM vdv_gtfs_tmp.routes CASCADE;");
+			if(result)
+				System.out.println("[INFO] vdv_gtfs_tmp.routes has been emptied.");
+			else
+				System.out.println("[ERROR] An error occured. vdv_gtfs_tmp.routes not empty.");
+			result = stmt.execute("DELETE FROM vdv_gtfs_tmp.calendar CASCADE;");
+			if(result)
+				System.out.println("[INFO] vdv_gtfs_tmp.calendar has been emptied.");
+			else
+				System.out.println("[ERROR] An error occured. vdv_gtfs_tmp.calendar not empty.");
+			result = stmt.execute("DELETE FROM vdv_gtfs_tmp.trips CASCADE;");
+			if(result)
+				System.out.println("[INFO] vdv_gtfs_tmp.trips has been emptied.");
+			else
+				System.out.println("[ERROR] An error occured. vdv_gtfs_tmp.trips not empty.");
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 	}
 	
-	public void insertBusNode( double latitude, double longitude, int route){
+	public void insertBusNode( double latitude, double longitude, int route, String city){
 		PreparedStatement stmt;
 		try {
-			stmt = conn.prepareStatement("INSERT INTO isochrones_2014.bz_bus_nodes(node_mode, node_route_id, node_geometry)"
+			stmt = conn.prepareStatement("INSERT INTO " + TimeExpTablesDescription.SCHEMA_NAME + "." + city + "_bus_nodes(node_mode, node_route_id, node_geometry)"
 					+ " VALUES (?,?,ST_AsEWKT(ST_SetSRID(ST_Makepoint(?,?), ?)));");
 			stmt.setInt(1, 0);
 			stmt.setInt(2, route);
@@ -182,12 +209,12 @@ public class DBConnector {
 		}
 	}
 	
-	public void emptyBzBusNode(){
+	public void emptyBzBusNode(String city){
 		Statement stmt;
 		try {
 			stmt = conn.createStatement();
-			stmt.execute("DELETE FROM bz_isochrones_2014.bz_bus_nodes;");
-			stmt.execute("ALTER SEQUENCE bz_isochrones_2014.bz_bus_nodes_node_id_seq RESTART WITH 1;");
+			stmt.execute("DELETE FROM " + TimeExpTablesDescription.SCHEMA_NAME + "." + city + "_bus_nodes;");
+			stmt.execute("ALTER SEQUENCE " + TimeExpTablesDescription.SCHEMA_NAME + "." + city + "_bus_nodes_node_id_seq RESTART WITH 1;");
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -218,7 +245,7 @@ public class DBConnector {
 	public boolean emptyStreetNodesTable(){
 		boolean result = false;
 		try {
-			PreparedStatement stmt = conn.prepareStatement("DELETE FROM bz_isochrones_2014.bz_pedestrian_nodes CASCADE;");
+			PreparedStatement stmt = conn.prepareStatement("DELETE FROM " + TimeExpTablesDescription.SCHEMA_NAME + ".bz_pedestrian_nodes CASCADE;");
 			result = stmt.execute();
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -229,7 +256,7 @@ public class DBConnector {
 	public boolean insertStreetNode(RealNode aNode, String city){
 		boolean result = false;
 		try {
-			PreparedStatement stmt = conn.prepareStatement("INSERT INTO time_expanded." + city + "_street_nodes (node_id, node_geometry) "
+			PreparedStatement stmt = conn.prepareStatement("INSERT INTO " + TimeExpTablesDescription.SCHEMA_NAME + "." + city + "_street_nodes (node_id, node_geometry) "
 					+ "VALUES (?, ST_GeomFromText(?));");
 			stmt.setLong(1, aNode.getId());
 			stmt.setString(2, aNode.getGeometry().toString());
@@ -243,7 +270,7 @@ public class DBConnector {
 	public boolean insertStreetEdge(Edge anEdge, String city){
 		boolean result = false;
 		try {
-			PreparedStatement stmt = conn.prepareStatement("INSERT INTO time_expanded." + city + "_street_edges (edge_id, edge_source, edge_destination,edge_geometry) "
+			PreparedStatement stmt = conn.prepareStatement("INSERT INTO " + TimeExpTablesDescription.SCHEMA_NAME + "." + city + "_street_edges (edge_id, edge_source, edge_destination,edge_geometry) "
 					+ "VALUES (?, ?, ?, ST_GeomFromText(?)));");
 			stmt.setLong(1, anEdge.getId());
 			stmt.setLong(2, anEdge.getSource());
@@ -268,7 +295,7 @@ public class DBConnector {
 //				stmt.setLong(1, rn.getId());
 //				stmt.setString(2, rn.getGeometry().toString());
 //				result = stmt.execute();
-				script = "INSERT INTO time_expanded." + city + "_street_nodes (node_id, node_geometry) "
+				script = "INSERT INTO " + TimeExpTablesDescription.SCHEMA_NAME + "." + city + "_street_nodes (node_id, node_geometry) "
 						+ "VALUES ('" + rn.getId() + "', ST_GeomFromEWKT('" + rn.getGeometry().toString() + "'))";
 				bw.write(script);
 				bw.write(";\n");
@@ -297,7 +324,7 @@ public class DBConnector {
 //				stmt.setLong(2, anEdge.getSource());
 //				stmt.setLong(3, anEdge.getDestination());
 //				stmt.setString(4, anEdge.getGeometry().toString());
-				script = "INSERT INTO time_expanded." + city + "_street_edges (edge_source, edge_destination,edge_geometry) "
+				script = "INSERT INTO " + TimeExpTablesDescription.SCHEMA_NAME + "." + city + "_street_edges (edge_source, edge_destination,edge_geometry) "
 						+ "VALUES ('"+ anEdge.getSource() +"', '" + anEdge.getDestination() +"', ST_GeomFromEWKT('" + anEdge.getGeometry().toString() + "'))";
 //				result = stmt.execute();
 				bw.write(script);
@@ -314,9 +341,9 @@ public class DBConnector {
 		return result;
 	}	
 	
-	public int getLastPedestrianNodeID(){
+	public int getLastPedestrianNodeID(String city){
 		try {
-			PreparedStatement stmt = conn.prepareStatement("SELECT node_id FROM bz_isochrones_2014.bz_pedestrian_nodes ORDER BY node_id;", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement stmt = conn.prepareStatement("SELECT node_id FROM " + TimeExpTablesDescription.SCHEMA_NAME + "." + city + "_pedestrian_nodes ORDER BY node_id;", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 			ResultSet rs = stmt.executeQuery();
 			if(rs.last()){
 				return rs.getInt("node_id");
@@ -327,9 +354,9 @@ public class DBConnector {
 		return -1;
 	}
 	
-	public int getLastPedestrianEdgeID(){
+	public int getLastPedestrianEdgeID(String city){
 		try {
-			PreparedStatement stmt = conn.prepareStatement("SELECT edge_id FROM bz_isochrones_2014.bz_pedestrian_edges ORDER BY edge_id;", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement stmt = conn.prepareStatement("SELECT edge_id FROM " + TimeExpTablesDescription.SCHEMA_NAME + "." + city + "_pedestrian_edges ORDER BY edge_id;", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 			ResultSet rs = stmt.executeQuery();
 			if(rs.last()){
 				return rs.getInt("edge_id");
@@ -341,7 +368,7 @@ public class DBConnector {
 	}
 	
 	public ResultSet executeSimpleQuery(String sql){
-		System.out.println(sql);
+//		System.out.println(sql);
 		try {
 			ResultSet rs = conn.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY).executeQuery();
 			if(rs != null)
@@ -377,7 +404,7 @@ public class DBConnector {
 	}
 	
 	public void deleteClause(String table){
-		String script = "DELETE FROM time_expanded." +table + ";\n";
+		String script = "DELETE FROM " + TimeExpTablesDescription.SCHEMA_NAME + "." +table + ";\n";
 		try {
 			bw.write(script);
 			bw.flush();
@@ -389,6 +416,16 @@ public class DBConnector {
 	public void resetCheckpoint(){
 		checkpoint = 0;
 	}
+
+	public String getSqlDirectory() {
+		return sqlDirectory;
+	}
+
+	public void setSqlDirectory(String sqlDirectory) {
+		this.sqlDirectory = sqlDirectory;
+	}
+	
+	
 	
 	
 	

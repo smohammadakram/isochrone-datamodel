@@ -10,13 +10,15 @@ import time_expanded_spatial_data.database.DBConnector;
 public class LinkNetwork {
 	
 	private DBConnector db;
+	private String city;
 	
-	public LinkNetwork(DBConnector db){
+	public LinkNetwork(DBConnector db, String city){
 		this.db = db;
+		this.city = city;
 	}
 	
 	public void createLinkNode(){
-		int lastIndex = db.getLastPedestrianNodeID();
+		int lastIndex = db.getLastPedestrianNodeID(city);
 		ResultSet rs = db.executeSimpleQuery("SELECT node_id, ST_AsEWKT(st_line_interpolate_point) "
 				+ "FROM bz_isochrones_2014.bus_to_ped_coords_interpolate;");
 		try {
@@ -40,7 +42,7 @@ public class LinkNetwork {
 	}
 	
 	public void updatePedestrianNetwork(){
-		int lastIndex = db.getLastPedestrianEdgeID();
+		int lastIndex = db.getLastPedestrianEdgeID(city);
 		try {
 			System.out.println("Retrieving data...");
 		ResultSet rs = db.executeSimpleQuery("SELECT edge_id, edge_source, edge_destination, bus_ped_node_id, ST_AsEWKT(edge_geometry), ST_AsEWKT(node_geometry) "
