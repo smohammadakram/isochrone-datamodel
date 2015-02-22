@@ -20,14 +20,13 @@ package crosby.binary;
 import java.util.Date;
 import java.util.List;
 
-import time_expanded_spatial_data.street_network.PBFBlock;
-
 import com.google.protobuf.InvalidProtocolBufferException;
 
 import crosby.binary.Osmformat;
 import crosby.binary.file.BlockReaderAdapter;
 import crosby.binary.file.FileBlock;
 import crosby.binary.file.FileBlockPosition;
+import data_model.time_expanded.street_network.PBFBlock;
 
 public abstract class BinaryParser implements BlockReaderAdapter {
     protected int granularity;
