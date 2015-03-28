@@ -1,7 +1,9 @@
 package datamodel.command;
 
-import datamodel.timeexpanded.database.ScriptGenerator;
+import datamodel.database.ScriptGenerator;
 import datamodel.timeexpanded.streetnetwork.StreetSQL;
+
+import java.io.IOException;
 
 /**
  * This generates the script to add the street network for a city.
@@ -17,14 +19,12 @@ public class ScriptGenCommand implements ICommand {
 	}
 
 	@Override
-	public void execute() {
+	public void execute() throws IOException {
 		System.out.println("[INFO] Output directory: " + folder);
 		System.out.println("[INFO] City: " + city);
 
-		final ScriptGenerator sg = new ScriptGenerator(folder + "/" + city + "_street_network.sql");
-		sg.createByReplace(StreetSQL.BUILD_STREET_NETWORK, "<city>", city);
-		sg.writeScipt();
-		sg.closeWriter();
+		final ScriptGenerator sg = new ScriptGenerator(StreetSQL.BUILD_STREET_NETWORK, "<city>", city);
+		sg.writeScript(folder + "/" + city + "_street_network.sql");
 	}
 
 }

@@ -1,9 +1,10 @@
 package datamodel.command;
 
-import datamodel.timeexpanded.database.ScriptGenerator;
-import datamodel.timeexpanded.database.Table;
+import datamodel.database.ScriptGenerator;
+import datamodel.database.Table;
 import datamodel.timeexpanded.database.TimeExpTablesDescription;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -25,15 +26,12 @@ public class GenerateTableExp implements ICommand {
 	// Public methods
 
 	@Override
-	public void execute() {
-		final ScriptGenerator sg = new ScriptGenerator(getAllTables(), folder);
-		sg.writeScipt();
-		sg.closeWriter();
+	public void execute() throws IOException {
+		final ScriptGenerator sg = new ScriptGenerator(getAllTables());
+		sg.writeScript(folder);
 	}
 
-	// Package private methods
-
-	Collection<Table> getAllTables() {
+	public Collection<Table> getAllTables() {
 		final List<Table> tables = new ArrayList<Table>();
 		tables.add(getTableNodes());
 		tables.add(getTableEdges());
@@ -56,9 +54,7 @@ public class GenerateTableExp implements ICommand {
 		attributes.put("edge_destination", TimeExpTablesDescription.StreetEdges.EDGE_DESTINATION);
 		attributes.put("edge_geometry", TimeExpTablesDescription.StreetEdges.EDGE_GEOMETRY);
 
-		final Table tableEdges = new Table(city + "_street_edges", primaryKeys, foreignKeys, attributes);
-		tableEdges.setSchemaName(TimeExpTablesDescription.SCHEMA_NAME);
-		return tableEdges;
+		return new Table(TimeExpTablesDescription.SCHEMA_NAME, city + "_street_edges", primaryKeys, foreignKeys, attributes);
 	}
 
 	private Table getTableNodes() {
@@ -72,9 +68,7 @@ public class GenerateTableExp implements ICommand {
 		attributes.put("node_out_degree", TimeExpTablesDescription.StreetNodes.NODE_OUT_DEGREE);
 		attributes.put("node_geometry", TimeExpTablesDescription.StreetNodes.NODE_GEOMETRY);
 
-		final Table tableNodes = new Table(city + "_street_nodes", primaryKeys, foreignKeys, attributes);
-		tableNodes.setSchemaName(TimeExpTablesDescription.SCHEMA_NAME);
-		return tableNodes;
+		return new Table(TimeExpTablesDescription.SCHEMA_NAME, city + "_street_nodes", primaryKeys, foreignKeys, attributes);
 	}
 
 }

@@ -28,9 +28,9 @@ import java.util.List;
 public class DBConnector {
 
 	private final static String MAPS_DB_LOCAL = "jdbc:postgresql://localhost:5432/spatial";
-	//	private final static String MAPS_DB_REMOTE = "jdbc:postgresql://maps.inf.unibz.it:5432/isochrones2014";
+//	private final static String MAPS_DB_REMOTE = "jdbc:postgresql://maps.inf.unibz.it:5432/isochrones2014";
 	private final static String MAPS_USER = "spatial";
-	//	private final static String MAPS_PWD_REMOTE = "AifaXub2";
+//	private final static String MAPS_PWD_REMOTE = "AifaXub2";
 	private final static String MAPS_PWD_LOCAL = "spatial";
 	private static Connection conn;
 	private BufferedWriter bw;
@@ -47,8 +47,6 @@ public class DBConnector {
 			e.printStackTrace();
 		}
 	}
-
-	public DBConnector(final boolean tmp) {}
 
 	public static Connection getConnection() {
 		return conn;
@@ -317,21 +315,21 @@ public class DBConnector {
 		try {
 			String script = "";
 			for (final RealNode rn : nodes) {
-				//				PreparedStatement stmt = conn.prepareStatement("DELETE FROM bz_isochrones_2014.bz_pedestrian_nodes");
-				//				stmt.execute();
-				//				stmt = conn.prepareStatement("INSERT INTO bz_isochrones_2014.bz_pedestrian_nodes (node_id, node_geometry) "
-				//						+ "VALUES (?, ST_GeomFromEWKT(?));");
-				//				stmt.setLong(1, rn.getId());
-				//				stmt.setString(2, rn.getGeometry().toString());
-				//				result = stmt.execute();
+//				PreparedStatement stmt = conn.prepareStatement("DELETE FROM bz_isochrones_2014.bz_pedestrian_nodes");
+//				stmt.execute();
+//				stmt = conn.prepareStatement("INSERT INTO bz_isochrones_2014.bz_pedestrian_nodes (node_id, node_geometry) "
+//						+ "VALUES (?, ST_GeomFromEWKT(?));");
+//				stmt.setLong(1, rn.getId());
+//				stmt.setString(2, rn.getGeometry().toString());
+//				result = stmt.execute();
 				script = "INSERT INTO " + TimeExpTablesDescription.SCHEMA_NAME + "." + city + "_street_nodes (node_id, node_geometry) " + "VALUES ('" + rn.getId() + "', ST_GeomFromEWKT('"
 					+ rn.getGeometry().toString() + "'))";
 				bw.write(script);
 				bw.write(";\n");
 				bw.flush();
-				//				if(checkpoint % 50 == 0)
-				//					System.out.println("[INFO] Checkpoint " + checkpoint);
-				//				checkpoint++;
+//				if(checkpoint % 50 == 0)
+//					System.out.println("[INFO] Checkpoint " + checkpoint);
+//				checkpoint++;
 			}
 		} catch (final IOException e) {
 			e.printStackTrace();
@@ -344,23 +342,23 @@ public class DBConnector {
 		try {
 			for (final Edge anEdge : edges) {
 				String script = "";
-				//				PreparedStatement stmt = conn.prepareStatement("DELETE FROM bz_isochrones_2014.bz_pedestrian_edges");
-				//				stmt.execute();
-				//				stmt = conn.prepareStatement("INSERT INTO bz_isochrones_2014.bz_pedestrian_edges (edge_id, edge_source, edge_destination,edge_geometry) "
-				//						+ "VALUES (?, ?, ?, ST_GeomFromEWKT(?));");
-				//				stmt.setLong(1, anEdge.getId());
-				//				stmt.setLong(2, anEdge.getSource());
-				//				stmt.setLong(3, anEdge.getDestination());
-				//				stmt.setString(4, anEdge.getGeometry().toString());
+//				PreparedStatement stmt = conn.prepareStatement("DELETE FROM bz_isochrones_2014.bz_pedestrian_edges");
+//				stmt.execute();
+//				stmt = conn.prepareStatement("INSERT INTO bz_isochrones_2014.bz_pedestrian_edges (edge_id, edge_source, edge_destination,edge_geometry) "
+//						+ "VALUES (?, ?, ?, ST_GeomFromEWKT(?));");
+//				stmt.setLong(1, anEdge.getId());
+//				stmt.setLong(2, anEdge.getSource());
+//				stmt.setLong(3, anEdge.getDestination());
+//				stmt.setString(4, anEdge.getGeometry().toString());
 				script = "INSERT INTO " + TimeExpTablesDescription.SCHEMA_NAME + "." + city + "_street_edges (edge_source, edge_destination,edge_geometry) " + "VALUES ('" + anEdge.getSource()
 					+ "', '" + anEdge.getDestination() + "', ST_SetSRID(ST_GeomFromEWKT('" + anEdge.getGeometry().toString() + "'), 4326))";
-				//				result = stmt.execute();
+//				result = stmt.execute();
 				bw.write(script);
 				bw.write(";\n");
 				bw.flush();
-				//				if(checkpoint % 50 == 0)
-				//					System.out.println("[INFO] Checkpoint " + checkpoint);
-				//				checkpoint++;
+//				if(checkpoint % 50 == 0)
+//					System.out.println("[INFO] Checkpoint " + checkpoint);
+//				checkpoint++;
 			}
 		} catch (final IOException e) {
 			e.printStackTrace();

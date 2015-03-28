@@ -1,9 +1,10 @@
 package datamodel.command;
 
+import datamodel.database.ScriptGenerator;
+import datamodel.database.Table;
 import datamodel.timedependent.database.TimeDepTablesDescription;
-import datamodel.timeexpanded.database.ScriptGenerator;
-import datamodel.timeexpanded.database.Table;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -25,15 +26,12 @@ public class GenerateTableDep implements ICommand {
 	// Public methods
 
 	@Override
-	public void execute() {
-		final ScriptGenerator sg = new ScriptGenerator(getAllTables(), folder);
-		sg.writeScipt();
-		sg.closeWriter();
+	public void execute() throws IOException {
+		final ScriptGenerator sg = new ScriptGenerator(getAllTables());
+		sg.writeScript(folder);
 	}
 
-	// Package private methods
-
-	Collection<Table> getAllTables() {
+	public Collection<Table> getAllTables() {
 		final List<Table> tables = new ArrayList<Table>(5);
 		tables.add(getTableNodes());
 		tables.add(getTableEdges());
@@ -62,9 +60,7 @@ public class GenerateTableDep implements ICommand {
 		attributes.put("calendar_saturday", TimeDepTablesDescription.Calendar.CALENDAR_DAY);
 		attributes.put("calendar_sunday", TimeDepTablesDescription.Calendar.CALENDAR_DAY);
 
-		final Table tableCalendar = new Table(city + "_calendar", primaryKeys, foreignKeys, attributes);
-		tableCalendar.setSchemaName(TimeDepTablesDescription.SCHEMA_NAME);
-		return tableCalendar;
+		return new Table(TimeDepTablesDescription.SCHEMA_NAME, city + "_calendar", primaryKeys, foreignKeys, attributes);
 	}
 
 	private Table getTableEdges() {
@@ -95,9 +91,7 @@ public class GenerateTableDep implements ICommand {
 		attributes.put("edge_target_indegree", TimeDepTablesDescription.Edges.EDGE_TARGET_INDEGREE);
 		attributes.put("edge_target_c_indegree", TimeDepTablesDescription.Edges.EDGE_TARGET_C_INDEGREE);
 
-		final Table tableEdge = new Table(city + "_edges", primaryKeys, foreignKeys, attributes);
-		tableEdge.setSchemaName(TimeDepTablesDescription.SCHEMA_NAME);
-		return tableEdge;
+		return new Table(TimeDepTablesDescription.SCHEMA_NAME, city + "_edges", primaryKeys, foreignKeys, attributes);
 	}
 
 	private Table getTableNodes() {
@@ -119,9 +113,7 @@ public class GenerateTableDep implements ICommand {
 		attributes.put("node_c_outdegree", TimeDepTablesDescription.Nodes.NODE_C_OUTDEGREE);
 		attributes.put("node_target_indegree", TimeDepTablesDescription.Nodes.NODE_TARGET_INDEGREE);
 
-		final Table tableNodes = new Table(city + "_nodes", primaryKeys, foreignKeys, attributes);
-		tableNodes.setSchemaName(TimeDepTablesDescription.SCHEMA_NAME);
-		return tableNodes;
+		return new Table(TimeDepTablesDescription.SCHEMA_NAME, city + "_nodes", primaryKeys, foreignKeys, attributes);
 	}
 
 	private Table getTableRoutes() {
@@ -137,9 +129,7 @@ public class GenerateTableDep implements ICommand {
 		attributes.put("route_type", TimeDepTablesDescription.Routes.ROUTE_TYPE);
 		attributes.put("route_agency_id", TimeDepTablesDescription.Routes.ROUTE_AGENCY_ID);
 
-		final Table tableRoutes = new Table(city + "_routes", primaryKeys, foreignKeys, attributes);
-		tableRoutes.setSchemaName(TimeDepTablesDescription.SCHEMA_NAME);
-		return tableRoutes;
+		return new Table(TimeDepTablesDescription.SCHEMA_NAME, city + "_routes", primaryKeys, foreignKeys, attributes);
 	}
 
 	private Table getTableTrips() {
@@ -163,9 +153,7 @@ public class GenerateTableDep implements ICommand {
 		attributes.put("trip_edge_id", TimeDepTablesDescription.Trips.TRIP_EDGE_ID);
 		attributes.put("trip_source_geo", TimeDepTablesDescription.Trips.TRIP_SOURCE_GEO);
 
-		final Table tableTrips = new Table(city + "_trips", primaryKeys, foreignKeys, attributes);
-		tableTrips.setSchemaName(TimeDepTablesDescription.SCHEMA_NAME);
-		return tableTrips;
+		return new Table(TimeDepTablesDescription.SCHEMA_NAME, city + "_trips", primaryKeys, foreignKeys, attributes);
 	}
 
 }

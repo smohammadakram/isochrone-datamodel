@@ -1,7 +1,9 @@
 package datamodel.command;
 
+import datamodel.database.ScriptGenerator;
 import datamodel.timeexpanded.busnetwork.BusSQL;
-import datamodel.timeexpanded.database.ScriptGenerator;
+
+import java.io.IOException;
 
 public class BusNetCommand implements ICommand {
 	private final String city;
@@ -14,24 +16,18 @@ public class BusNetCommand implements ICommand {
 	}
 
 	@Override
-	public void execute() {
+	public void execute() throws IOException {
 		System.out.println("[INFO] Output directory: " + folder);
 		System.out.println("[INFO] City: " + city);
 
-		final ScriptGenerator sg0 = new ScriptGenerator(folder + "/" + city + "_create_bus_nodes_edges.sql");
-		sg0.createBusScript(city, BusSQL.BUS_NODES_EDGES);
-		sg0.writeScipt();
-		sg0.closeWriter();
+		final ScriptGenerator sg0 = new ScriptGenerator(BusSQL.BUS_NODES_EDGES, "<city>", city);
+		sg0.writeScript(folder + "/" + city + "_create_bus_nodes_edges.sql");
 
-		final ScriptGenerator sg1 = new ScriptGenerator(folder + "/" + city + "_bus_trips_import.sql");
-		sg1.createBusScript(city, BusSQL.BUS_TRIPS_IMPORT);
-		sg1.writeScipt();
-		sg1.closeWriter();
+		final ScriptGenerator sg1 = new ScriptGenerator(BusSQL.BUS_TRIPS_IMPORT, "<city>", city);
+		sg1.writeScript(folder + "/" + city + "_bus_trips_import.sql");
 
-		final ScriptGenerator sg2 = new ScriptGenerator(folder + "/" + city + "_bus_network.sql");
-		sg2.createByReplace(BusSQL.BUILD_BUS_NETWORK, "<city>", city);
-		sg2.writeScipt();
-		sg2.closeWriter();
+		final ScriptGenerator sg2 = new ScriptGenerator(BusSQL.BUILD_BUS_NETWORK, "<city>", city);
+		sg2.writeScript(folder + "/" + city + "_bus_network.sql");
 	}
 
 }

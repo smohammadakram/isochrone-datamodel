@@ -1,6 +1,6 @@
 package datamodel.command;
 
-import datamodel.timeexpanded.database.Table;
+import datamodel.database.Table;
 
 import java.util.Collection;
 

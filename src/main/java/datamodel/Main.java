@@ -1,17 +1,17 @@
 package datamodel;
 
 import datamodel.command.CommandFactory;
-import datamodel.command.ICommand;
 
+import java.io.IOException;
 import java.util.Arrays;
 
 public class Main {
 
-	public static void main(final String[] args) {
+	public static void main(final String[] args) throws IOException {
 		final String cmdName = args[0].toUpperCase();
 		final String[] cmdParams = Arrays.copyOfRange(args, 1, args.length);
-		final ICommand cmd = CommandFactory.createCommand(cmdName, cmdParams);
-		cmd.execute();
+
+		CommandFactory.createCommand(cmdName, cmdParams).execute();;
 	}
 
 }

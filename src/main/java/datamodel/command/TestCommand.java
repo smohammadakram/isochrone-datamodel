@@ -1,7 +1,9 @@
 package datamodel.command;
 
+import datamodel.database.ScriptGenerator;
 import datamodel.timedependent.database.TimeDependentSQL;
-import datamodel.timeexpanded.database.ScriptGenerator;
+
+import java.io.IOException;
 
 public class TestCommand implements ICommand {
 	private final String city;
@@ -14,21 +16,15 @@ public class TestCommand implements ICommand {
 	}
 
 	@Override
-	public void execute() {
-		final ScriptGenerator sg0 = new ScriptGenerator(folder + "/" + city + "-network.sql");
-		sg0.createByReplace(TimeDependentSQL.CREATE_TABLES, "<city>", city);
-		sg0.writeScipt();
-		sg0.closeWriter();
+	public void execute() throws IOException {
+		final ScriptGenerator sg0 = new ScriptGenerator(TimeDependentSQL.CREATE_TABLES, "<city>", city);
+		sg0.writeScript(folder + "/" + city + "-network.sql");
 
-		final ScriptGenerator sg1 = new ScriptGenerator(folder + "/" + city + "-views.sql");
-		sg1.createByReplace(TimeDependentSQL.NODES_EDGES_VIEWS, "<city>", city);
-		sg1.writeScipt();
-		sg1.closeWriter();
+		final ScriptGenerator sg1 = new ScriptGenerator(TimeDependentSQL.NODES_EDGES_VIEWS, "<city>", city);
+		sg1.writeScript(folder + "/" + city + "-views.sql");
 
-		final ScriptGenerator sg2 = new ScriptGenerator(folder + "/" + city + "-insert.sql");
-		sg2.createByReplace(TimeDependentSQL.INSERT, "<city>", city);
-		sg2.writeScipt();
-		sg2.closeWriter();
+		final ScriptGenerator sg2 = new ScriptGenerator(TimeDependentSQL.INSERT, "<city>", city);
+		sg2.writeScript(folder + "/" + city + "-insert.sql");
 	}
 
 }
