@@ -1,0 +1,55 @@
+buildscript {
+	apply from: 'http://www.krismer.de/files/checkstyle.gradle'
+}
+
+apply plugin: 'checkstyle'
+apply plugin: 'eclipse'
+apply plugin: 'findbugs'
+apply plugin: 'jacoco'
+apply plugin: 'java'
+apply plugin: 'jdepend'
+
+// Basic settings
+
+group = 'at.uibk.dbis'
+version = '0.4.2-SNAPSHOT'
+sourceCompatibility=JavaVersion.VERSION_1_8
+targetCompatibility=JavaVersion.VERSION_1_8
+
+ext {
+	versionFindbugs = '+'
+	versionJacoco = '0.7.2+'
+	versionPostgresql = '9.3+'
+}
+
+// Repositories, Configurations, Dependencies and SourceSets setup
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	compile 'org.openstreetmap.osmosis:osmosis-pbf:+'
+	compile ('org.postgis:postgis-jdbc:+') {
+		exclude module: 'postgresql'
+	}
+	compile "org.postgresql:postgresql:$versionPostgresql"
+}
+
+// Detailled settings (tasks, task configuration, ...)
+
+checkstyle {
+	ignoreFailures = true
+	showViolations = false
+}
+
+findbugs {
+	effort = 'max'
+	ignoreFailures = true
+	reportLevel = 'low'
+	toolVersion = versionFindbugs
+}
+
+jacoco {
+	toolVersion = versionJacoco
+}
