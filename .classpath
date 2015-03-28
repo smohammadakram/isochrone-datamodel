@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="src" path="linked_sources/crosby"/>
-	<classpathentry kind="src" path="linked_sources/osmosis-core"/>
-	<classpathentry kind="src" path="linked_sources/java"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry exported="true" kind="lib" path="libs/ojdbc7.jar"/>
-	<classpathentry kind="lib" path="libs/postgresql-9.3-1102.jdbc41.jar"/>
-	<classpathentry kind="lib" path="libs/postgis.jar"/>
-	<classpathentry kind="lib" path="libs/osm-tools-formats-1.0.m3.jar"/>
-	<classpathentry kind="lib" path="libs/osm-tools-pbf-1.0.m7.jar"/>
-	<classpathentry kind="lib" path="libs/osm-tools-process-1.0.m3.jar"/>
-	<classpathentry kind="lib" path="libs/osm-tools-ra-1.0.m3.jar"/>
-	<classpathentry kind="lib" path="libs/osm-tools-api-1.0.m3.jar"/>
-	<classpathentry kind="lib" path="libs/osm-descriptor.jar"/>
-	<classpathentry kind="lib" path="libs/osmosis-0.35.1.jar"/>
-	<classpathentry kind="lib" path="libs/jpf-1.5.jar"/>
 	<classpathentry kind="output" path="bin"/>
+	<classpathentry kind="src" path="src/main/java"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER" exported="true"/>
+	<classpathentry sourcepath="/home/niko/.gradle/caches/modules-2/files-2.1/org.openstreetmap.osmosis/osmosis-pbf/0.43.1/47131f44e4cf5523df55e8a52243013280000eaa/osmosis-pbf-0.43.1-sources.jar" kind="lib" path="/home/niko/.gradle/caches/modules-2/files-2.1/org.openstreetmap.osmosis/osmosis-pbf/0.43.1/abc4fe918ca14db850783b6815c93585944c21db/osmosis-pbf-0.43.1.jar" exported="true"/>
+	<classpathentry sourcepath="/home/niko/.gradle/caches/modules-2/files-2.1/org.postgis/postgis-jdbc/1.3.3/dfc4d6d049f035bcd76de1423eb99276883ee642/postgis-jdbc-1.3.3-sources.jar" kind="lib" path="/home/niko/.gradle/caches/modules-2/files-2.1/org.postgis/postgis-jdbc/1.3.3/350a8f88ef5077d33b2166d08ed3ca9897c020b9/postgis-jdbc-1.3.3.jar" exported="true"/>
+	<classpathentry sourcepath="/home/niko/.gradle/caches/modules-2/files-2.1/org.postgresql/postgresql/9.3-1103-jdbc41/ee886e1a73d9debe9fb430bdfa1ee8c3a9f66d71/postgresql-9.3-1103-jdbc41-sources.jar" kind="lib" path="/home/niko/.gradle/caches/modules-2/files-2.1/org.postgresql/postgresql/9.3-1103-jdbc41/fc74ce9827284c5ea3fc5a76483333a56e690319/postgresql-9.3-1103-jdbc41.jar" exported="true"/>
+	<classpathentry sourcepath="/home/niko/.gradle/caches/modules-2/files-2.1/org.openstreetmap.osmosis/osmosis-osm-binary/0.43.1/a6e10e5a59d96856c02ad746d9282adcbc13ae1a/osmosis-osm-binary-0.43.1-sources.jar" kind="lib" path="/home/niko/.gradle/caches/modules-2/files-2.1/org.openstreetmap.osmosis/osmosis-osm-binary/0.43.1/1c92d0d8fef6d0f40d2793238b821eb74aa543f1/osmosis-osm-binary-0.43.1.jar" exported="true"/>
+	<classpathentry sourcepath="/home/niko/.gradle/caches/modules-2/files-2.1/com.google.protobuf/protobuf-java/2.4.1/e406f69360f2a89cb4aa724ed996a1c5599af383/protobuf-java-2.4.1-sources.jar" kind="lib" path="/home/niko/.gradle/caches/modules-2/files-2.1/com.google.protobuf/protobuf-java/2.4.1/c589509ec6fd86d5d2fda37e07c08538235d3b9/protobuf-java-2.4.1.jar" exported="true"/>
+	<classpathentry sourcepath="/home/niko/.gradle/caches/modules-2/files-2.1/org.openstreetmap.osmosis/osmosis-core/0.43.1/e47d9f42ced156fbf2218c62f6246acd0f8c3713/osmosis-core-0.43.1-sources.jar" kind="lib" path="/home/niko/.gradle/caches/modules-2/files-2.1/org.openstreetmap.osmosis/osmosis-core/0.43.1/2ed450c48ac67d1dd0ee9bc2af4e1fd977f35b09/osmosis-core-0.43.1.jar" exported="true"/>
+	<classpathentry sourcepath="/home/niko/.gradle/caches/modules-2/files-2.1/org.postgis/postgis-stubs/1.3.3/ccbb6260ff95b57adb206e522148c554803959d0/postgis-stubs-1.3.3-sources.jar" kind="lib" path="/home/niko/.gradle/caches/modules-2/files-2.1/org.postgis/postgis-stubs/1.3.3/71bc58069260f86338a00e6897de082759ae6a67/postgis-stubs-1.3.3.jar" exported="true"/>
+	<classpathentry sourcepath="/home/niko/.gradle/caches/modules-2/files-2.1/org.codehaus.woodstox/stax2-api/3.1.1/cb342dff0332b73ca4db2ebc395e7f8aaf1964ad/stax2-api-3.1.1-sources.jar" kind="lib" path="/home/niko/.gradle/caches/modules-2/files-2.1/org.codehaus.woodstox/stax2-api/3.1.1/466eab062e9d1a3ce2c4631b6d09b5e5c0cbd1b/stax2-api-3.1.1.jar" exported="true"/>
+	<classpathentry kind="lib" path="/home/niko/.gradle/caches/modules-2/files-2.1/xerces/xercesImpl/2.9.1/7bc7e49ddfe4fb5f193ed37ecc96c12292c8ceb6/xercesImpl-2.9.1.jar" exported="true"/>
+	<classpathentry sourcepath="/home/niko/.gradle/caches/modules-2/files-2.1/org.codehaus.woodstox/woodstox-core-lgpl/4.1.4/a363593119d1ba7020996a8469d8dc548eb57982/woodstox-core-lgpl-4.1.4-sources.jar" kind="lib" path="/home/niko/.gradle/caches/modules-2/files-2.1/org.codehaus.woodstox/woodstox-core-lgpl/4.1.4/781d313831b0f4a03f0c832694899dc6515e3a55/woodstox-core-lgpl-4.1.4.jar" exported="true"/>
+	<classpathentry sourcepath="/home/niko/.gradle/caches/modules-2/files-2.1/net.sf.jpf/jpf/1.5/5686464309d6882a373e1a910003e78dc7fcebbd/jpf-1.5-sources.jar" kind="lib" path="/home/niko/.gradle/caches/modules-2/files-2.1/net.sf.jpf/jpf/1.5/dd3c81d603e0223e226ae8ccef53acdfb01052d0/jpf-1.5.jar" exported="true"/>
+	<classpathentry sourcepath="/home/niko/.gradle/caches/modules-2/files-2.1/org.apache.commons/commons-compress/1.4.1/277d39267403965a7a192474794a29bac6760a25/commons-compress-1.4.1-sources.jar" kind="lib" path="/home/niko/.gradle/caches/modules-2/files-2.1/org.apache.commons/commons-compress/1.4.1/b02e84a993d88568417536240e970c4b809126fd/commons-compress-1.4.1.jar" exported="true"/>
+	<classpathentry sourcepath="/home/niko/.gradle/caches/modules-2/files-2.1/commons-logging/commons-logging/1.0.4/8d3424a318e818f88568dfb3b55c58583364ba9/commons-logging-1.0.4-sources.jar" kind="lib" path="/home/niko/.gradle/caches/modules-2/files-2.1/commons-logging/commons-logging/1.0.4/f029a2aefe2b3e1517573c580f948caac31b1056/commons-logging-1.0.4.jar" exported="true"/>
+	<classpathentry sourcepath="/home/niko/.gradle/caches/modules-2/files-2.1/org.tukaani/xz/1.0/f95e32a5d2dd8da643c4419814415b9704312993/xz-1.0-sources.jar" kind="lib" path="/home/niko/.gradle/caches/modules-2/files-2.1/org.tukaani/xz/1.0/ecff5cb8b1189514c9d1d8d68eb77ac372e000c9/xz-1.0.jar" exported="true"/>
 </classpath>
