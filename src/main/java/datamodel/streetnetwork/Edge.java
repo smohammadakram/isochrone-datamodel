@@ -31,7 +31,7 @@ public class Edge {
 		return geometry;
 	}
 
-	public long getId(){
+	public long getId() {
 		return id;
 	}
 

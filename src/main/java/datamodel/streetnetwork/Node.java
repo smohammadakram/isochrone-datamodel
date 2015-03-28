@@ -28,7 +28,7 @@ public class Node {
 	// Public methods
 
 	@Override
-	public String toString(){
+	public String toString() {
 		return "Node: " + id + ", " + geometry.toString();
 	}
 

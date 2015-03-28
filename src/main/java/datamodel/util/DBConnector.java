@@ -18,11 +18,11 @@ import java.util.List;
 
 public class DBConnector {
 
-	private final static String MAPS_DB_LOCAL = "jdbc:postgresql://localhost:5432/spatial";
-//	private final static String MAPS_DB_REMOTE = "jdbc:postgresql://maps.inf.unibz.it:5432/isochrones2014";
-	private final static String MAPS_USER = "spatial";
-//	private final static String MAPS_PWD_REMOTE = "AifaXub2";
-	private final static String MAPS_PWD_LOCAL = "spatial";
+	private static final String MAPS_DB_LOCAL = "jdbc:postgresql://localhost:5432/spatial";
+//	private static final String MAPS_DB_REMOTE = "jdbc:postgresql://maps.inf.unibz.it:5432/isochrones2014";
+	private static final String MAPS_USER = "spatial";
+//	private static final String MAPS_PWD_REMOTE = "AifaXub2";
+	private static final String MAPS_PWD_LOCAL = "spatial";
 	private static Connection conn;
 	private BufferedWriter bw;
 

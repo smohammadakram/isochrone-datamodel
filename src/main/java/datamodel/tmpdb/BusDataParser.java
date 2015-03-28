@@ -87,12 +87,12 @@ public class BusDataParser {
 //		System.out.println("[INFO] Parsing bus stops...Done.");
 	}
 
-	public double parseCoordinates(String s) {
+	public double parseCoordinates(final String s) {
 //		System.out.println("[INFO] Parsing coordinates...");
 		final StringTokenizer st = new StringTokenizer(s, ",");
-		s = st.nextToken() + "." + st.nextToken() + st.nextToken();
+		final String sTmp = st.nextToken() + "." + st.nextToken() + st.nextToken();
 //		System.out.println("[INFO] Parsing coordinates...Done.");
-		return Double.parseDouble(s);
+		return Double.parseDouble(sTmp);
 	}
 
 	public void setFile(final String f) {

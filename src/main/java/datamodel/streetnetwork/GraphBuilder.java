@@ -33,9 +33,9 @@ import org.postgis.Point;
 public class GraphBuilder extends BinaryParser {
 
 	/** The magic number used to indicate no version number metadata for this entity. */
-    private static final int NOVERSION = -1;
+	private static final int NOVERSION = -1;
     /** The magic number used to indicate no changeset metadata for this entity. */
-    private static final int NOCHANGESET = -1;
+	private static final int NOCHANGESET = -1;
 	private Map<Long, DenseNode> denseNodes;
 	private Map<Long, Node> realNodes;
 	private Map<Long, Long> insertedNodes;

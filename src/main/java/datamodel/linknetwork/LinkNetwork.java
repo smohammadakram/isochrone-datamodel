@@ -41,7 +41,7 @@ public class LinkNetwork {
 		System.out.println("Done.");
 	}
 
-	public void getNearestStreetEdge(){
+	public void getNearestStreetEdge() {
 		System.out.print("[INFO] Extracting nearest edges...");
 		nearestEdge = new HashMap<String, String>();
 		for (final PGgeometry geom : bNodes) {
@@ -59,7 +59,7 @@ public class LinkNetwork {
 		System.out.println("Done.");
 	}
 
-	public void getPointLocation(){
+	public void getPointLocation() {
 		System.out.print("[INFO] Extracting point location...");
 		pointLocation = new HashMap<String, PointLocation>();
 		for (final String s : nearestEdge.keySet()) {
@@ -79,7 +79,7 @@ public class LinkNetwork {
 		System.out.println("Done.");
 	}
 
-	public void getIntersecatedPoints(){
+	public void getIntersecatedPoints() {
 		System.out.print("[INFO] Extracting new points...");
 		long maxStreetID = db.getMaxStreetNodeID(city);
 		additionalNodes = new HashMap<Long, String>();
@@ -115,7 +115,7 @@ public class LinkNetwork {
 		System.out.println("Done.");
 	}
 
-	public void builtInterBusLinks(){
+	public void builtInterBusLinks() {
 		System.out.print("[INFO] Building inter-bus nodes links...");
 		try {
 			final ResultSet rs = db.executeSimpleQuery("SELECT bn1.node_id AS id_1, bn2.node_id AS id_2 "
@@ -134,7 +134,7 @@ public class LinkNetwork {
 		System.out.println("Done.");
 	}
 
-	public void insertLinkEdges(){
+	public void insertLinkEdges() {
 		System.out.println("[INFO] Links: " + linkEdges.size());
 		System.out.print("[INFO] Adding links...");
 		for (final LinkEdge le : linkEdges) {
@@ -143,14 +143,14 @@ public class LinkNetwork {
 		System.out.println("Done.");
 	}
 
-//	public void createLinkNode(String city){
+//	public void createLinkNode(String city) {
 //		long lastIndex = db.getLastPedestrianNodeID(city);
 //		ResultSet rs = db.executeSimpleQuery("SELECT node_id, ST_AsEWKT(ST_SetSRID(st_line_interpolate_point, 4326)) "
 //				+ "FROM time_expanded." + city + "_bus_to_ped_coords_interpolate;");
 //		try {
 //			String sql = "";
-//			if(rs.first()){
-//				while(rs.next()){
+//			if(rs.first()) {
+//				while(rs.next()) {
 //					System.out.println((String) rs.getObject(2));
 //					System.out.println(++lastIndex);
 //					sql = "INSERT INTO time_expanded." + city + "_bz_street_nodes(node_id, node_geometry) "
@@ -167,7 +167,7 @@ public class LinkNetwork {
 //		}
 //	}
 
-	public void updateStreetEdges(){
+	public void updateStreetEdges() {
 		System.out.print("[INFO] Updating street edges...");
 		int lastIndex = db.getLastPedestrianEdgeID(city);
 		try {
@@ -195,21 +195,21 @@ public class LinkNetwork {
 //		ResultSet rs = db.executeSimpleQuery("SELECT edge_id, edge_source, edge_destination, bus_ped_node_id, ST_AsEWKT(ST_SetSRID(edge_geometry, 4326), ST_AsEWKT(ST_SetSRID(node_geometry, 4326)) "
 //				+ "FROM time_expanded." + city + "_data_for_edges_snap;");
 //		if(rs.first())
-//			while(rs.next()){
+//			while(rs.next()) {
 //				String edgeGeometry = (String) rs.getObject(5);
 //				String nodeGeometry = (String) rs.getObject(6);
 //				System.out.println(rs.toString());
 //				System.out.println("Updating old edges...");
 //				db.executeSimpleQuery("UPDATE time_expanded." + city + "_street_edges "
-//						+ "SET edge_geometry = ST_Snap(ST_SetSRID(ST_GeomFromEWKT('" + edgeGeometry + "'), 4326),  ST_SetSRID(ST_GeomFromEWKT('" + nodeGeometry + "'), 4326), 1), "
-//						+ "edge_destination = '" + rs.getInt(3) + "', "
-//						+ "edge_length = ST_Length(ST_Snap(ST_SetSRID(ST_GeomFromEWKT('" + edgeGeometry + "'), 4326), ST_SetSRID(ST_GeomFromEWKT('" + nodeGeometry + "'), 4326), 1)) "
-//						+ "WHERE edge_id = '" + rs.getInt(1) + "';");
+//					+ "SET edge_geometry = ST_Snap(ST_SetSRID(ST_GeomFromEWKT('" + edgeGeometry + "'), 4326),  ST_SetSRID(ST_GeomFromEWKT('" + nodeGeometry + "'), 4326), 1), "
+//					+ "edge_destination = '" + rs.getInt(3) + "', "
+//					+ "edge_length = ST_Length(ST_Snap(ST_SetSRID(ST_GeomFromEWKT('" + edgeGeometry + "'), 4326), ST_SetSRID(ST_GeomFromEWKT('" + nodeGeometry + "'), 4326), 1)) "
+//					+ "WHERE edge_id = '" + rs.getInt(1) + "';");
 //				System.out.println("Inserting new edges...");
 //				db.executeSimpleQuery("INSERT INTO time_expanded." + city + "_street_edges (edge_id, edge_source, edge_destination, edge_length, edge_geometry) "
-//						+ "VALUES('" + ++lastIndex + "', '" + rs.getInt(4) + "', '" + rs.getInt(3) + "', "
-//								+ "ST_Length(ST_Difference('" + edgeGeometry + "', ST_Snap(ST_SetSRID(ST_GeomFromEWKT('" + edgeGeometry + "'), 4326), ST_SetSRID(ST_GeomFromEWKT('" + nodeGeometry + "'), 4326), 1))), "
-//										+ "ST_Difference('" + edgeGeometry + "', ST_Snap(ST_SetSRID(ST_GeomFromEWKT('" + edgeGeometry + "'), 4326), ST_SetSRID(ST_GeomFromEWKT('" + nodeGeometry + "'), 4326), 1)));");
+//					+ "VALUES('" + ++lastIndex + "', '" + rs.getInt(4) + "', '" + rs.getInt(3) + "', "
+//					+ "ST_Length(ST_Difference('" + edgeGeometry + "', ST_Snap(ST_SetSRID(ST_GeomFromEWKT('" + edgeGeometry + "'), 4326), ST_SetSRID(ST_GeomFromEWKT('" + nodeGeometry + "'), 4326), 1))), "
+//					+ "ST_Difference('" + edgeGeometry + "', ST_Snap(ST_SetSRID(ST_GeomFromEWKT('" + edgeGeometry + "'), 4326), ST_SetSRID(ST_GeomFromEWKT('" + nodeGeometry + "'), 4326), 1)));");
 //			}
 		} catch (final SQLException e) {
 			e.printStackTrace();
@@ -218,12 +218,12 @@ public class LinkNetwork {
 	}
 
 
-	public void updateStreetNodes(){
+	public void updateStreetNodes() {
 		System.out.print("[INFO] Updating street nodes in/out degree...");
 
 		final Map<Long, Integer> inDegree = new HashMap<Long, Integer>();
 		final Map<Long, Integer> outDegree = new HashMap<Long, Integer>();
-		try{
+		try {
 			// updating in-degree from street edges
 			ResultSet rs = db.executeSimpleQuery("SELECT sn.node_id, count(edge_destination) AS in_d\n"
 					+ "FROM  time_expanded." + city + "_street_nodes sn JOIN time_expanded." + city + "_street_edges se\n"
@@ -291,7 +291,7 @@ public class LinkNetwork {
 		System.out.println("Done.");
 	}
 
-	public void updateBusNodes(){
+	public void updateBusNodes() {
 		System.out.print("[INFO] Updating bus nodes in/out degree...");
 
 		final Map<Integer, Integer> inDegree = new HashMap<Integer, Integer>();

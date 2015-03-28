@@ -27,7 +27,7 @@ public abstract class CommandFactory {
 	static ICommand createCommand(final Command cmd, final String... args) {
 		ICommand cmdO = null;
 
-		switch(cmd) {
+		switch (cmd) {
 			case BUSNET:
 				cmdO = new BusNetCommand(args[0], args[1]);
 				break;
