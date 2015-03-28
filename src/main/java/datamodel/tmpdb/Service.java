@@ -1,6 +1,6 @@
-package datamodel.timeexpanded.busnetwork;
+package datamodel.tmpdb;
 
-public class Service {
+class Service {
 
 	private String endDate;
 	private int id;

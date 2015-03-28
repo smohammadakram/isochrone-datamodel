@@ -1,7 +1,7 @@
 package datamodel.command;
 
-import datamodel.database.DBConnector;
-import datamodel.timeexpanded.busnetwork.BusDataParser;
+import datamodel.tmpdb.BusDataParser;
+import datamodel.util.DBConnector;
 
 /**
  * This populates the temporary bus database.

@@ -1,10 +1,6 @@
-package datamodel.timeexpanded.streetnetwork;
+package datamodel.streetnetwork;
 
-import datamodel.database.DBConnector;
-import datamodel.timeexpanded.streetnetwork.components.DenseInfo;
-import datamodel.timeexpanded.streetnetwork.components.DenseNode;
-import datamodel.timeexpanded.streetnetwork.components.Edge;
-import datamodel.timeexpanded.streetnetwork.components.RealNode;
+import datamodel.util.DBConnector;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -41,7 +37,7 @@ public class GraphBuilder extends BinaryParser {
     /** The magic number used to indicate no changeset metadata for this entity. */
     private static final int NOCHANGESET = -1;
 	private Map<Long, DenseNode> denseNodes;
-	private Map<Long, RealNode> realNodes;
+	private Map<Long, Node> realNodes;
 	private Map<Long, Long> insertedNodes;
 	private Map<Long, Way> ways;
 	private List<Edge> edges;
@@ -49,19 +45,19 @@ public class GraphBuilder extends BinaryParser {
 	private String city;
 	private DBConnector db;
 	private String file;
-	public static final Date NODATE = new Date(-1);
-	public int nrNodes = 0;
-	public int nrEdges = 0;
+	private static final Date NODATE = new Date(-1);
+	private int nrNodes = 0;
+	private int nrEdges = 0;
 	private boolean newNodes = false;
 //	private List<PBFBlock> waysBlocks = new ArrayList<PBFBlock>();
 
 	public GraphBuilder(final String file, final String outPath, final String city, final DBConnector conn){
 		this.file = file;
-		denseNodes = new HashMap<Long, DenseNode>();
-		realNodes = new HashMap<Long, RealNode>();
-		insertedNodes = new HashMap<Long, Long>();
-		ways = new HashMap<Long, Way>();
-		edges = new ArrayList<Edge>();
+		denseNodes = new HashMap<>();
+		realNodes = new HashMap<>();
+		insertedNodes = new HashMap<>();
+		ways = new HashMap<>();
+		edges = new ArrayList<>();
 		this.outPath = outPath;
 		this.city = city;
 		db = conn;
@@ -88,7 +84,7 @@ public class GraphBuilder extends BinaryParser {
 //		}
 //	}
 
-    public Collection<RealNode> getRealStreetNodes(){
+    public Collection<Node> getStreetNodes(){
 //    	System.out.println("[INFO] Real Nodes.");
 //    	realNodes = new HashMap<Long, RealNode>();
 //    	System.out.println("Nodes: " + nodes);
@@ -102,9 +98,9 @@ public class GraphBuilder extends BinaryParser {
     		//add the source to the list if it is not there yet
     		if (realNodes.get(source) == null && insertedNodes.get(source) == null) {
 	    		final DenseNode dn = denseNodes.get(source);
-	    		final Point p = new Point(dn.getdInfo().getLognitude(),dn.getdInfo().getLatitude());
+	    		final Point p = new Point(dn.getLognitude(), dn.getLatitude());
 	    		p.setSrid(4326);
-	    		final RealNode aNode = new RealNode(source, new PGgeometry(p));
+	    		final Node aNode = new Node(source, new PGgeometry(p));
 	    		realNodes.put(source, aNode);
 	    		insertedNodes.put(source, source);
 //	    		discovered.add(dn.getId());
@@ -114,9 +110,9 @@ public class GraphBuilder extends BinaryParser {
     		//same for the destination
     		if (realNodes.get(destination) == null && insertedNodes.get(destination) == null) {
     			final DenseNode dn = denseNodes.get(destination);
-	    		final Point p = new Point(dn.getdInfo().getLognitude(),dn.getdInfo().getLatitude());
+	    		final Point p = new Point(dn.getLognitude(),dn.getLatitude());
 	    		p.setSrid(4326);
-	    		final RealNode aNode = new RealNode(destination, new PGgeometry(p));
+	    		final Node aNode = new Node(destination, new PGgeometry(p));
 	    		realNodes.put(destination, aNode);
 	    		insertedNodes.put(destination, destination);
 //	    		discovered.add(dn.getId());
@@ -126,10 +122,10 @@ public class GraphBuilder extends BinaryParser {
 
 //    	System.out.println("[INFO] Real nodes: " + realNodes.values().size());
 //    	removeDiscoveredNodes(discovered);
-    	final Collection<RealNode> result = realNodes.values();
+    	final Collection<Node> result = realNodes.values();
 //    	denseNodes = new HashMap<Long, DenseNode>();
     	buildNodes();
-    	realNodes = new HashMap<Long, RealNode>();
+    	realNodes = new HashMap<Long, Node>();
     	return result;
     }
 
@@ -146,18 +142,18 @@ public class GraphBuilder extends BinaryParser {
     	buildEdges();
     }
 
-    public Map<Long, RealNode> buildNodes(){
+    public Map<Long, Node> buildNodes(){
 //    	Map<Long, RealNode> realNodes = new HashMap<Long, RealNode>();
 //    	Collection<RealNode> nodes = this.realNodes.values();
 //		System.out.println("[INFO] Nodes: " + nodes.size());
     	System.out.print("[INFO] Bulding real nodes...");
-    	final List<RealNode> tmp = new ArrayList<RealNode>();
+    	final List<Node> tmp = new ArrayList<Node>();
 //    	db.resetFile(outPath + "/" + city + "_street_nodes_import.sql");
 		db.openWriter(outPath + "/" + city + "_street_nodes_import.sql", true);
 //		db.deleteClause(city + "_street_nodes");
 //		db.resetCheckpoint();
 //		final int counter = 0;
-		for (final RealNode rn : realNodes.values()) {
+		for (final Node rn : realNodes.values()) {
 //			if(counter == 999){
 //				counter = 0;
 //				insertNodes(tmp);
@@ -175,7 +171,7 @@ public class GraphBuilder extends BinaryParser {
 		return this.realNodes;
 	}
 
-    public void insertNodes(final Collection<RealNode> nodes){
+    public void insertNodes(final Collection<Node> nodes){
     	db.insertMultipleStreetNodes(nodes, city);
     }
 
@@ -186,7 +182,7 @@ public class GraphBuilder extends BinaryParser {
 //    	db.resetFile(outPath + "/" + city + "_street_edges_import.sql");
     	db.openWriter(outPath + "/" + city + "_street_edges_import.sql", true);
 //    	db.deleteClause(city + "_street_edges");
-    	db.resetCheckpoint();
+//    	db.resetCheckpoint();
 //    	final int counter = 0;
     	for (final Edge e : edges) {
 //    		if(counter == 999){
@@ -244,7 +240,7 @@ public class GraphBuilder extends BinaryParser {
 		for (final org.openstreetmap.osmosis.core.domain.v0_6.WayNode wn : nodes) {
 			final DenseNode aNode = denseNodes.get(wn.getNodeId());
 			if (aNode != null) {
-				final Point p = new Point(aNode.getdInfo().getLognitude(), aNode.getdInfo().getLatitude());
+				final Point p = new Point(aNode.getLognitude(), aNode.getLatitude());
 				points.add(p);
 			}
 		}
@@ -314,9 +310,8 @@ public class GraphBuilder extends BinaryParser {
 			lastId += nodes.getId(i);
 			lastLat += nodes.getLat(i);
 			lastLon += nodes.getLon(i);
-			final DenseInfo di = new DenseInfo(nodes.getDenseinfo().getVersion(i), nodes.getDenseinfo().getTimestamp(i), nodes.getDenseinfo().getChangeset(i), parseLat(lastLat), parseLon(lastLon));
-			final DenseNode dn = new DenseNode(lastId, di);
-			denseNodes.put(lastId, dn);
+			final DenseNode di = new DenseNode(nodes.getDenseinfo().getVersion(i), nodes.getDenseinfo().getTimestamp(i), nodes.getDenseinfo().getChangeset(i), parseLat(lastLat), parseLon(lastLon));
+			denseNodes.put(lastId, di);
 		}
 		System.out.println("Done.");
 	}
@@ -383,7 +378,7 @@ public class GraphBuilder extends BinaryParser {
 
     	System.out.println("Done.");
     	if (newNodes) {
-			getRealStreetNodes();
+			getStreetNodes();
 		}
         addEdges(this.ways.keySet());
         buildEdges();
@@ -408,5 +403,13 @@ public class GraphBuilder extends BinaryParser {
 
 	public Map<Long, org.openstreetmap.osmosis.core.domain.v0_6.Way> getAllWays() {
 		return ways;
+	}
+
+	public int getNrEdges() {
+		return nrEdges;
+	}
+
+	public int getNrNodes() {
+		return nrNodes;
 	}
 }

@@ -1,4 +1,4 @@
-package datamodel.timeexpanded.linknetwork;
+package datamodel.linknetwork;
 
 public class LinkEdge {
 

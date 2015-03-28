@@ -1,10 +1,12 @@
-package datamodel.timeexpanded.linknetwork;
+package datamodel.linknetwork;
 
 public class PointLocation {
 
-	private String edgeGeom;
-	private float location;
-	private String nodeGeom;
+	private final String edgeGeom;
+	private final float location;
+	private final String nodeGeom;
+
+	// Constructor
 
 	public PointLocation(final String nodeGeom, final float location, final String edgeGeom) {
 		super();
@@ -12,6 +14,8 @@ public class PointLocation {
 		this.location = location;
 		this.edgeGeom = edgeGeom;
 	}
+
+	// Getter
 
 	public String getEdgeGeom() {
 		return edgeGeom;
@@ -23,18 +27,6 @@ public class PointLocation {
 
 	public String getNodeGeom() {
 		return nodeGeom;
-	}
-
-	public void setEdgeGeom(final String edgeGeom) {
-		this.edgeGeom = edgeGeom;
-	}
-
-	public void setLocation(final float location) {
-		this.location = location;
-	}
-
-	public void setNodeGeom(final String nodeGeom) {
-		this.nodeGeom = nodeGeom;
 	}
 
 }

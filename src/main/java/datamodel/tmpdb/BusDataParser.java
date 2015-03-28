@@ -1,17 +1,20 @@
-package datamodel.timeexpanded.busnetwork;
+package datamodel.tmpdb;
 
-import datamodel.database.DBConnector;
+import datamodel.util.DBConnector;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.GregorianCalendar;
-import java.util.List;
 import java.util.StringTokenizer;
 
 public class BusDataParser {
@@ -275,7 +278,7 @@ public class BusDataParser {
 	}
 
 	public void createCalendar() {
-		final List<Service> services = db.getCalendars();
+		final Collection<Service> services = getCalendars();
 		Calendar start = null;
 		Calendar end = null;
 		int doyStart, doyEnd, dow = -1;
@@ -311,6 +314,28 @@ public class BusDataParser {
 			}
 			db.insertService(s.getId(), s.getStartDate(), s.getEndDate(), dbVector, city);
 		}
+	}
+
+	public Collection<Service> getCalendars() {
+		final Collection<Service> services = new ArrayList<Service>();
+		try {
+			final PreparedStatement stmt = DBConnector.getConnection().prepareStatement("SELECT * FROM vdv_gtfs_tmp.calendar;", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+			final ResultSet rs = stmt.executeQuery();
+			if (rs.first()) {
+				while (rs.next()) {
+					final Service s = new Service();
+					s.setId(rs.getInt(1));
+					s.setStartDate(rs.getString(2));
+					s.setEndDate(rs.getString(3));
+					s.setValidity(rs.getBoolean(4), rs.getBoolean(5), rs.getBoolean(6), rs.getBoolean(7), rs.getBoolean(8), rs.getBoolean(9), rs.getBoolean(10));
+					services.add(s);
+				}
+			}
+		} catch (final SQLException e) {
+			e.printStackTrace();
+		}
+
+		return services;
 	}
 
 }

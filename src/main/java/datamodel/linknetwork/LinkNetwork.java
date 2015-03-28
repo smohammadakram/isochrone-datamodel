@@ -1,14 +1,10 @@
-package datamodel.timeexpanded.linknetwork;
+package datamodel.linknetwork;
 
-import datamodel.database.DBConnector;
-import datamodel.timeexpanded.database.TimeExpTablesDescription;
+import datamodel.util.DBConnector;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +28,7 @@ public class LinkNetwork {
 
 	public void getBusNodes() {
 		System.out.print("[INFO] Extracting bus nodes...");
-		final ResultSet nodes = db.executeSimpleQuery("SELECT DISTINCT node_geometry AS n_geometry FROM " + TimeExpTablesDescription.SCHEMA_NAME + "." + city + "_bus_nodes");
+		final ResultSet nodes = db.executeSimpleQuery("SELECT DISTINCT node_geometry AS n_geometry FROM time_expanded." + city + "_bus_nodes");
 		bNodes = new ArrayList<PGgeometry>();
 		try {
 			nodes.beforeFirst();
@@ -51,7 +47,7 @@ public class LinkNetwork {
 		for (final PGgeometry geom : bNodes) {
 			final ResultSet rs = db.executeSimpleQuery("SELECT edge_geometry, "
 					+ "ST_Distance(edge_geometry, '" + geom.toString() + "') AS min_dist "
-					+ "FROM " + TimeExpTablesDescription.SCHEMA_NAME + "." + city + "_street_edges "
+					+ "FROM time_expanded." + city + "_street_edges "
 					+ "ORDER BY min_dist ASC");
 			try {
 				rs.first();
@@ -69,7 +65,7 @@ public class LinkNetwork {
 		for (final String s : nearestEdge.keySet()) {
 			final ResultSet rs = db.executeSimpleQuery("SELECT edge_geometry, "
 					+ "ST_Line_Locate_Point('" + nearestEdge.get(s) + "', ST_GeomFromEWKT('" + s + "')) AS p_loc "
-					+ "FROM " + TimeExpTablesDescription.SCHEMA_NAME + "." + city + "_street_edges "
+					+ "FROM time_expanded." + city + "_street_edges "
 					+ "WHERE edge_geometry = '" + nearestEdge.get(s) + "'"
 					+ "ORDER BY edge_geometry");
 			try {
@@ -92,7 +88,7 @@ public class LinkNetwork {
 			final PointLocation pl = pointLocation.get(s);
 //			ResultSet rs = db.executeSimpleQuery("SELECT ST_LineInterpolatePoint('" + pl.getEdgeGeom() + "', " + pl.getLocation() + ") AS geom "
 			final ResultSet rs = db.executeSimpleQuery("SELECT ST_LineInterpolatePoint(edge_geometry, " + pl.getLocation() + ") AS geom "
-					+ "FROM " + TimeExpTablesDescription.SCHEMA_NAME + "." + city + "_street_edges "
+					+ "FROM time_expanded." + city + "_street_edges "
 					+ "WHERE edge_geometry = '" + pl.getEdgeGeom() + "'");
 			try {
 				rs.beforeFirst();
@@ -123,7 +119,7 @@ public class LinkNetwork {
 		System.out.print("[INFO] Building inter-bus nodes links...");
 		try {
 			final ResultSet rs = db.executeSimpleQuery("SELECT bn1.node_id AS id_1, bn2.node_id AS id_2 "
-					+ "FROM " + TimeExpTablesDescription.SCHEMA_NAME + "." + city + "_bus_nodes bn1 JOIN  " + TimeExpTablesDescription.SCHEMA_NAME + "." + city + "_bus_nodes bn2 "
+					+ "FROM time_expanded." + city + "_bus_nodes bn1 JOIN  time_expanded." + city + "_bus_nodes bn2 "
 							+ "ON bn1.node_geometry = bn2.node_geometry AND bn1.node_id != bn2.node_id");
 			rs.beforeFirst();
 			while (rs.next()) {
@@ -150,18 +146,18 @@ public class LinkNetwork {
 //	public void createLinkNode(String city){
 //		long lastIndex = db.getLastPedestrianNodeID(city);
 //		ResultSet rs = db.executeSimpleQuery("SELECT node_id, ST_AsEWKT(ST_SetSRID(st_line_interpolate_point, 4326)) "
-//				+ "FROM " + TimeExpTablesDescription.SCHEMA_NAME + "." + city + "_bus_to_ped_coords_interpolate;");
+//				+ "FROM time_expanded." + city + "_bus_to_ped_coords_interpolate;");
 //		try {
 //			String sql = "";
 //			if(rs.first()){
 //				while(rs.next()){
 //					System.out.println((String) rs.getObject(2));
 //					System.out.println(++lastIndex);
-//					sql = "INSERT INTO " + TimeExpTablesDescription.SCHEMA_NAME + "." + city + "_bz_street_nodes(node_id, node_geometry) "
+//					sql = "INSERT INTO time_expanded." + city + "_bz_street_nodes(node_id, node_geometry) "
 //							+ "VALUES('" + ++lastIndex + "', ST_SetSRID(ST_GeomFromEWKT('" + ((String) rs.getObject(2)) + "'), 4326));";
 //					System.out.println(sql);
 //					db.executeSimpleQuery(sql);
-//					db.executeSimpleQuery("UPDATE " + TimeExpTablesDescription.SCHEMA_NAME + "." + city + "_street_nodes "
+//					db.executeSimpleQuery("UPDATE time_expanded." + city + "_street_nodes "
 //							+ "SET node_in_degree = '1', node_out_degree = '1' "
 //							+ "WHERE node_in_degree IS NULL AND node_out_degree IS NULL; ");
 //				}
@@ -176,19 +172,19 @@ public class LinkNetwork {
 		int lastIndex = db.getLastPedestrianEdgeID(city);
 		try {
 			for (final Long l : additionalNodes.keySet()) {
-				final ResultSet rs = db.executeSimpleQuery("SELECT edge_id, edge_source, edge_destination FROM " + TimeExpTablesDescription.SCHEMA_NAME + "." + city + "_street_edges "
+				final ResultSet rs = db.executeSimpleQuery("SELECT edge_id, edge_source, edge_destination FROM time_expanded." + city + "_street_edges "
 						+ "WHERE edge_geometry = '" + additionalNodes.get(l) + "'");
 
 				rs.beforeFirst();
 				while (rs.next()) {
 					final String geom = db.getGeometryByNodeID(l, city);
-					String sql = "UPDATE " + TimeExpTablesDescription.SCHEMA_NAME + "." + city + "_street_edges "
+					String sql = "UPDATE time_expanded." + city + "_street_edges "
 							+ "SET edge_geometry = ST_Snap('" + additionalNodes.get(l) + "', '" + geom + "', 1), "
 							+ "edge_destination = '" + l + "', "
 							+ "edge_length = ST_Length(ST_Snap('" + additionalNodes.get(l) + "', '" + geom + "', 1)) "
 							+ "WHERE edge_id = '" + rs.getLong("edge_id") + "';";
 					db.executeSimpleQueryNoResult(sql);
-					sql = "INSERT INTO " + TimeExpTablesDescription.SCHEMA_NAME + "." + city + "_street_edges (edge_id, edge_source, edge_destination, edge_length, edge_geometry) "
+					sql = "INSERT INTO time_expanded." + city + "_street_edges (edge_id, edge_source, edge_destination, edge_length, edge_geometry) "
 							+ "VALUES('" + ++lastIndex + "', '" + l + "', '" + rs.getLong(3) + "', "
 							+ "ST_Length(ST_Difference('" + additionalNodes.get(l) + "', ST_Snap('" + additionalNodes.get(l) + "', '" + geom + "', 1))), "
 									+ "ST_Difference('" + additionalNodes.get(l) + "', ST_Snap('" + additionalNodes.get(l) + "', '" + geom + "', 1)));";
@@ -197,20 +193,20 @@ public class LinkNetwork {
 			}
 //			System.out.println("Retrieving data...");
 //		ResultSet rs = db.executeSimpleQuery("SELECT edge_id, edge_source, edge_destination, bus_ped_node_id, ST_AsEWKT(ST_SetSRID(edge_geometry, 4326), ST_AsEWKT(ST_SetSRID(node_geometry, 4326)) "
-//				+ "FROM " + TimeExpTablesDescription.SCHEMA_NAME + "." + city + "_data_for_edges_snap;");
+//				+ "FROM time_expanded." + city + "_data_for_edges_snap;");
 //		if(rs.first())
 //			while(rs.next()){
 //				String edgeGeometry = (String) rs.getObject(5);
 //				String nodeGeometry = (String) rs.getObject(6);
 //				System.out.println(rs.toString());
 //				System.out.println("Updating old edges...");
-//				db.executeSimpleQuery("UPDATE " + TimeExpTablesDescription.SCHEMA_NAME + "." + city + "_street_edges "
+//				db.executeSimpleQuery("UPDATE time_expanded." + city + "_street_edges "
 //						+ "SET edge_geometry = ST_Snap(ST_SetSRID(ST_GeomFromEWKT('" + edgeGeometry + "'), 4326),  ST_SetSRID(ST_GeomFromEWKT('" + nodeGeometry + "'), 4326), 1), "
 //						+ "edge_destination = '" + rs.getInt(3) + "', "
 //						+ "edge_length = ST_Length(ST_Snap(ST_SetSRID(ST_GeomFromEWKT('" + edgeGeometry + "'), 4326), ST_SetSRID(ST_GeomFromEWKT('" + nodeGeometry + "'), 4326), 1)) "
 //						+ "WHERE edge_id = '" + rs.getInt(1) + "';");
 //				System.out.println("Inserting new edges...");
-//				db.executeSimpleQuery("INSERT INTO " + TimeExpTablesDescription.SCHEMA_NAME + "." + city + "_street_edges (edge_id, edge_source, edge_destination, edge_length, edge_geometry) "
+//				db.executeSimpleQuery("INSERT INTO time_expanded." + city + "_street_edges (edge_id, edge_source, edge_destination, edge_length, edge_geometry) "
 //						+ "VALUES('" + ++lastIndex + "', '" + rs.getInt(4) + "', '" + rs.getInt(3) + "', "
 //								+ "ST_Length(ST_Difference('" + edgeGeometry + "', ST_Snap(ST_SetSRID(ST_GeomFromEWKT('" + edgeGeometry + "'), 4326), ST_SetSRID(ST_GeomFromEWKT('" + nodeGeometry + "'), 4326), 1))), "
 //										+ "ST_Difference('" + edgeGeometry + "', ST_Snap(ST_SetSRID(ST_GeomFromEWKT('" + edgeGeometry + "'), 4326), ST_SetSRID(ST_GeomFromEWKT('" + nodeGeometry + "'), 4326), 1)));");
@@ -230,7 +226,7 @@ public class LinkNetwork {
 		try{
 			// updating in-degree from street edges
 			ResultSet rs = db.executeSimpleQuery("SELECT sn.node_id, count(edge_destination) AS in_d\n"
-					+ "FROM  " + TimeExpTablesDescription.SCHEMA_NAME + "." + city + "_street_nodes sn JOIN " + TimeExpTablesDescription.SCHEMA_NAME + "." + city + "_street_edges se\n"
+					+ "FROM  time_expanded." + city + "_street_nodes sn JOIN time_expanded." + city + "_street_edges se\n"
 					+ "\tON sn.node_id = se.edge_destination\n"
 					+ "GROUP BY sn.node_id, se.edge_destination\n"
 					+ "ORDER BY sn.node_id");
@@ -241,7 +237,7 @@ public class LinkNetwork {
 
 			// updating in-degree from link edges
 			rs = db.executeSimpleQuery("SELECT sn.node_id, count(link_destination) AS in_d\n"
-					+ "FROM  " + TimeExpTablesDescription.SCHEMA_NAME + "." + city + "_street_nodes sn JOIN " + TimeExpTablesDescription.SCHEMA_NAME + "." + city + "_links l\n"
+					+ "FROM  time_expanded." + city + "_street_nodes sn JOIN time_expanded." + city + "_links l\n"
 					+ "\tON sn.node_id = l.link_destination\n"
 					+ "WHERE l.link_destination_mode = 1\n"
 					+ "GROUP BY sn.node_id, l.link_destination\n"
@@ -258,7 +254,7 @@ public class LinkNetwork {
 
 			// updating out-degree from street edges
 			rs = db.executeSimpleQuery("SELECT sn.node_id, count(edge_source) AS out_d\n"
-					+ "FROM  " + TimeExpTablesDescription.SCHEMA_NAME + "." + city + "_street_nodes sn JOIN " + TimeExpTablesDescription.SCHEMA_NAME + "." + city + "_street_edges se\n"
+					+ "FROM  time_expanded." + city + "_street_nodes sn JOIN time_expanded." + city + "_street_edges se\n"
 					+ "\tON sn.node_id = se.edge_source\n"
 					+ "GROUP BY sn.node_id, se.edge_source\n"
 					+ "ORDER BY sn.node_id");
@@ -269,7 +265,7 @@ public class LinkNetwork {
 
 			// updating out-degree from link edges
 			rs = db.executeSimpleQuery("SELECT sn.node_id, count(link_source) AS out_d\n"
-					+ "FROM " + TimeExpTablesDescription.SCHEMA_NAME + "." + city + "_street_nodes sn JOIN " + TimeExpTablesDescription.SCHEMA_NAME + "." + city + "_links l\n"
+					+ "FROM time_expanded." + city + "_street_nodes sn JOIN time_expanded." + city + "_links l\n"
 					+ "\tON sn.node_id = l.link_source\n"
 					+ "WHERE l.link_source_mode = 1\n"
 					+ "GROUP BY sn.node_id, l.link_source\n"
@@ -284,10 +280,10 @@ public class LinkNetwork {
 				}
 			}
 			for (final Long l : inDegree.keySet()) {
-				db.executeSimpleQueryNoResult("UPDATE  " + TimeExpTablesDescription.SCHEMA_NAME + "." + city + "_street_nodes sn SET node_in_degree = " + inDegree.get(l) + " WHERE node_id = " + l);
+				db.executeSimpleQueryNoResult("UPDATE  time_expanded." + city + "_street_nodes sn SET node_in_degree = " + inDegree.get(l) + " WHERE node_id = " + l);
 			}
 			for (final Long l : outDegree.keySet()) {
-				db.executeSimpleQueryNoResult("UPDATE  " + TimeExpTablesDescription.SCHEMA_NAME + "." + city + "_street_nodes sn SET node_out_degree = " + outDegree.get(l) + " WHERE node_id = " + l);
+				db.executeSimpleQueryNoResult("UPDATE  time_expanded." + city + "_street_nodes sn SET node_out_degree = " + outDegree.get(l) + " WHERE node_id = " + l);
 			}
 		} catch (final SQLException e) {
 			e.printStackTrace();
@@ -303,7 +299,7 @@ public class LinkNetwork {
 		try {
 			// updating in-degree from street edges
 			ResultSet rs = db.executeSimpleQuery("SELECT bn.node_id, count(edge_destination) AS in_d\n"
-					+ "FROM  " + TimeExpTablesDescription.SCHEMA_NAME + "." + city + "_bus_nodes bn JOIN " + TimeExpTablesDescription.SCHEMA_NAME + "." + city + "_bus_edges be\n"
+					+ "FROM  time_expanded." + city + "_bus_nodes bn JOIN time_expanded." + city + "_bus_edges be\n"
 					+ "\tON bn.node_id = be.edge_destination\n"
 					+ "GROUP BY bn.node_id, be.edge_destination\n"
 					+ "ORDER BY bn.node_id");
@@ -314,7 +310,7 @@ public class LinkNetwork {
 
 			// updating in-degree from link edges
 			rs = db.executeSimpleQuery("SELECT bn.node_id, count(link_destination) AS in_d\n"
-					+ "FROM  " + TimeExpTablesDescription.SCHEMA_NAME + "." + city + "_bus_nodes bn JOIN " + TimeExpTablesDescription.SCHEMA_NAME + "." + city + "_links l\n"
+					+ "FROM  time_expanded." + city + "_bus_nodes bn JOIN time_expanded." + city + "_links l\n"
 					+ "\tON bn.node_id = l.link_destination\n"
 					+ "WHERE l.link_destination_mode = 0\n"
 					+ "GROUP BY bn.node_id, l.link_destination\n"
@@ -331,7 +327,7 @@ public class LinkNetwork {
 
 			// updating out-degree from street edges
 			rs = db.executeSimpleQuery("SELECT bn.node_id, count(edge_source) AS out_d\n"
-					+ "FROM  " + TimeExpTablesDescription.SCHEMA_NAME + "." + city + "_bus_nodes bn JOIN " + TimeExpTablesDescription.SCHEMA_NAME + "." + city + "_bus_edges be\n"
+					+ "FROM  time_expanded." + city + "_bus_nodes bn JOIN time_expanded." + city + "_bus_edges be\n"
 					+ "\tON bn.node_id = be.edge_source\n"
 					+ "GROUP BY bn.node_id, be.edge_source\n"
 					+ "ORDER BY bn.node_id");
@@ -342,7 +338,7 @@ public class LinkNetwork {
 
 			// updating out-degree from link edges
 			rs = db.executeSimpleQuery("SELECT bn.node_id, count(link_source) AS out_d\n"
-					+ "FROM " + TimeExpTablesDescription.SCHEMA_NAME + "." + city + "_bus_nodes bn JOIN " + TimeExpTablesDescription.SCHEMA_NAME + "." + city + "_links l\n"
+					+ "FROM time_expanded." + city + "_bus_nodes bn JOIN time_expanded." + city + "_links l\n"
 					+ "\tON bn.node_id = l.link_source\n"
 					+ "WHERE l.link_source_mode = 0\n"
 					+ "GROUP BY bn.node_id, l.link_source\n"
@@ -360,33 +356,12 @@ public class LinkNetwork {
 			e.printStackTrace();
 		}
 		for (final Integer i : inDegree.keySet()) {
-			db.executeSimpleQueryNoResult("UPDATE  " + TimeExpTablesDescription.SCHEMA_NAME + "." + city + "_bus_nodes sn SET node_in_degree = " + inDegree.get(i) + " WHERE node_id = " + i);
+			db.executeSimpleQueryNoResult("UPDATE time_expanded." + city + "_bus_nodes sn SET node_in_degree = " + inDegree.get(i) + " WHERE node_id = " + i);
 		}
 		for (final Integer i : outDegree.keySet()) {
-			db.executeSimpleQueryNoResult("UPDATE  " + TimeExpTablesDescription.SCHEMA_NAME + "." + city + "_bus_nodes sn SET node_out_degree = " + outDegree.get(i) + " WHERE node_id = " + i);
+			db.executeSimpleQueryNoResult("UPDATE time_expanded." + city + "_bus_nodes sn SET node_out_degree = " + outDegree.get(i) + " WHERE node_id = " + i);
 		}
 		System.out.println("Done.");
 	}
-
-	public void mapping() {
-		final long start = System.currentTimeMillis();
-		getBusNodes();
-		getNearestStreetEdge();
-		getPointLocation();
-		getIntersecatedPoints();
-		builtInterBusLinks();
-		insertLinkEdges();
-		updateStreetEdges();
-		updateStreetNodes();
-		updateBusNodes();
-		final long end = System.currentTimeMillis();
-		final DateFormat df = new SimpleDateFormat("mm:ss");
-		System.out.println("[INFO] Time for building link network: " + df.format(new Date((end - start))) + " minutes");
-	}
-
-//	public static void main(String[] args){
-//		LinkNetwork ln = new LinkNetwork(new DBConnector(), "mebo");
-//		ln.mapping();
-//	}
 
 }

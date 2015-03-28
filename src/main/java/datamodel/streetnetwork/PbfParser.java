@@ -1,7 +1,4 @@
-package datamodel.timeexpanded.streetnetwork;
-
-import datamodel.timeexpanded.streetnetwork.components.DenseInfo;
-import datamodel.timeexpanded.streetnetwork.components.DenseNode;
+package datamodel.streetnetwork;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -22,7 +19,7 @@ import org.openstreetmap.osmosis.osmbinary.Osmformat.HeaderBlock;
 import org.openstreetmap.osmosis.osmbinary.file.BlockInputStream;
 import org.openstreetmap.osmosis.osmbinary.file.BlockReaderAdapter;
 
-public class PBFParser extends BinaryParser {
+public class PbfParser extends BinaryParser {
 	/** The magic number used to indicate no version number metadata for this entity. */
 	private static final int NOVERSION = -1;
 	/** The magic number used to indicate no changeset metadata for this entity. */
@@ -31,10 +28,10 @@ public class PBFParser extends BinaryParser {
 	private Map<Long, DenseNode> allNodes;
 	private Map<Long, org.openstreetmap.osmosis.core.domain.v0_6.Way> allWays;
 
-	public PBFParser(final String file) {
+	public PbfParser(final String file) {
 		this.file = file;
-		allNodes = new HashMap<Long, DenseNode>();
-		allWays = new HashMap<Long, org.openstreetmap.osmosis.core.domain.v0_6.Way>();
+		allNodes = new HashMap<>();
+		allWays = new HashMap<>();
 	}
 
 	public void parsePBF() {
@@ -89,9 +86,8 @@ public class PBFParser extends BinaryParser {
 			lastId += nodes.getId(i);
 			lastLat += nodes.getLat(i);
 			lastLon += nodes.getLon(i);
-			final DenseInfo di = new DenseInfo(nodes.getDenseinfo().getVersion(i), nodes.getDenseinfo().getTimestamp(i), nodes.getDenseinfo().getChangeset(i), parseLat(lastLat), parseLon(lastLon));
-			final DenseNode dn = new DenseNode(lastId, di);
-			allNodes.put(lastId, dn);
+			final DenseNode di = new DenseNode(nodes.getDenseinfo().getVersion(i), nodes.getDenseinfo().getTimestamp(i), nodes.getDenseinfo().getChangeset(i), parseLat(lastLat), parseLon(lastLon));
+			allNodes.put(lastId, di);
 		}
 
 		System.out.println("Done.");

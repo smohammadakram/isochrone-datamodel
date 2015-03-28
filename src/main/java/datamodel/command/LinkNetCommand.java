@@ -1,7 +1,11 @@
 package datamodel.command;
 
-import datamodel.database.DBConnector;
-import datamodel.timeexpanded.linknetwork.LinkNetwork;
+import datamodel.linknetwork.LinkNetwork;
+import datamodel.util.DBConnector;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * This creates the link network.
@@ -16,7 +20,22 @@ public class LinkNetCommand implements ICommand {
 
 	@Override
 	public void execute() {
-		new LinkNetwork(new DBConnector(), city).mapping();
+		final long start = System.currentTimeMillis();
+		final LinkNetwork ln = new LinkNetwork(new DBConnector(), city);
+
+		ln.getBusNodes();
+		ln.getNearestStreetEdge();
+		ln.getPointLocation();
+		ln.getIntersecatedPoints();
+		ln.builtInterBusLinks();
+		ln.insertLinkEdges();
+		ln.updateStreetEdges();
+		ln.updateStreetNodes();
+		ln.updateBusNodes();
+
+		final long end = System.currentTimeMillis();
+		final DateFormat df = new SimpleDateFormat("mm:ss");
+		System.out.println("[INFO] Time for building link network: " + df.format(new Date((end - start))) + " minutes");
 	}
 
 }
