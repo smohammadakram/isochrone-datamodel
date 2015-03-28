@@ -1,10 +1,9 @@
-.bin/
 .checkstyle
 .classpath
 .git/
 .gradle/
 .project
 .settings/
-/bin/
-/build/
-/test-output/
+bin/
+build/
+test-output/
