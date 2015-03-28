@@ -2,6 +2,7 @@ buildscript {
 	apply from: 'http://www.krismer.de/files/checkstyle.gradle'
 }
 
+apply plugin: 'application'
 apply plugin: 'checkstyle'
 apply plugin: 'eclipse'
 apply plugin: 'findbugs'
@@ -11,8 +12,7 @@ apply plugin: 'jdepend'
 
 // Basic settings
 
-group = 'at.uibk.dbis'
-version = '0.4.2-SNAPSHOT'
+mainClassName = 'datamodel.Main'
 sourceCompatibility=JavaVersion.VERSION_1_8
 targetCompatibility=JavaVersion.VERSION_1_8
 
@@ -34,6 +34,8 @@ dependencies {
 		exclude module: 'postgresql'
 	}
 	compile "org.postgresql:postgresql:$versionPostgresql"
+
+	testCompile 'org.testng:testng:6+'
 }
 
 // Detailled settings (tasks, task configuration, ...)
@@ -53,3 +55,49 @@ findbugs {
 jacoco {
 	toolVersion = versionJacoco
 }
+
+jar {
+    manifest {
+        attributes 'Main-Class': "$mainClassName"
+    }
+}
+
+test {
+	useTestNG {
+		useDefaultListeners = true
+	}
+
+	ignoreFailures = true
+}
+
+// Custom tasks
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+	description = 'Builds a jar file including javadoc'
+	from javadoc.destinationDir
+
+	classifier 'javadoc'
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+	description = 'Builds a jar file including sources'
+	from sourceSets.main.allSource
+
+	classifier 'sources'
+}
+
+task staticJar(type: Jar) {
+	description = 'Builds a jar file including all libraries'
+	from sourceSets.main.output
+	from { configurations.runtime.collect { it.isDirectory() ? it : zipTree(it) } }
+
+	manifest {
+        attributes 'Main-Class': "$mainClassName"
+    }
+
+	classifier = 'static'
+}
+
+// CI tasks
+
+task jarAll(dependsOn: [jar, javadocJar, sourcesJar, staticJar])
