@@ -30,6 +30,7 @@ repositories {
 
 dependencies {
 	compile "com.google.code.findbugs:annotations:$versionFindbugs"
+	compile 'com.tngtech.java:config-builder:+'
 	compile 'org.openstreetmap.osmosis:osmosis-pbf:+'
 	compile ('org.postgis:postgis-jdbc:+') {
 		exclude module: 'postgresql'

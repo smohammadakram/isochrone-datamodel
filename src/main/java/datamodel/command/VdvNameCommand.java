@@ -1,6 +1,7 @@
 package datamodel.command;
 
 import java.io.File;
+import java.util.Locale;
 import java.util.StringTokenizer;
 
 /**
@@ -25,7 +26,8 @@ public class VdvNameCommand implements ICommand {
 		for (final File f : files) {
 			final StringTokenizer st = new StringTokenizer(f.getName(), ".");
 			final String name = st.nextToken();
-			final String newName = city + "/" + name + ".x10";
+			final String extension = st.nextToken();
+			final String newName = city + "/" + name + extension.toLowerCase(Locale.ENGLISH);
 			final boolean renamed = f.renameTo(new File(newName));
 			if (renamed) {
 				System.out.println("[DEBUG] File renamed to \"" + newName + "\"");

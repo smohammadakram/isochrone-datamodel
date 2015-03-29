@@ -1,6 +1,6 @@
 package datamodel.linknetwork;
 
-public class PointLocation {
+class PointLocation {
 
 	private final String edgeGeom;
 	private final float location;

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+	<!-- Postgres database -->
+	<entry key="db.servername">localhost</entry>
+	<entry key="db.database">spatial</entry>
+	<entry key="db.username">spatial</entry>
+	<entry key="db.password">spatial</entry>
+	<entry key="db.port">5432</entry>
+</properties>

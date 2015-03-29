@@ -1,7 +1,7 @@
 package datamodel.command;
 
 import datamodel.tmpdb.BusDataParser;
-import datamodel.util.DBConnector;
+import datamodel.util.DbConnector;
 
 /**
  * This populates the temporary bus database.
@@ -18,7 +18,7 @@ public class TmpDbCommand implements ICommand {
 
 	@Override
 	public void execute() {
-		final DBConnector db = new DBConnector();
+		final DbConnector db = new DbConnector();
 		final BusDataParser bdp = new BusDataParser(db, gtfs, city);
 		new Thread(() -> bdp.parseRoutes()).start();
 		new Thread(() -> bdp.parseTrips()).start();

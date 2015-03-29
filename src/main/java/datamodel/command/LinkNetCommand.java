@@ -1,7 +1,7 @@
 package datamodel.command;
 
 import datamodel.linknetwork.LinkNetwork;
-import datamodel.util.DBConnector;
+import datamodel.util.DbConnector;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -21,7 +21,7 @@ public class LinkNetCommand implements ICommand {
 	@Override
 	public void execute() {
 		final long start = System.currentTimeMillis();
-		final LinkNetwork ln = new LinkNetwork(new DBConnector(), city);
+		final LinkNetwork ln = new LinkNetwork(new DbConnector(), city);
 		ln.performMapping();
 
 		final long end = System.currentTimeMillis();
