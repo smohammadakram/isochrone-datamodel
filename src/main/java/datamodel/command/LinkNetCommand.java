@@ -22,16 +22,7 @@ public class LinkNetCommand implements ICommand {
 	public void execute() {
 		final long start = System.currentTimeMillis();
 		final LinkNetwork ln = new LinkNetwork(new DBConnector(), city);
-
-		ln.getBusNodes();
-		ln.getNearestStreetEdge();
-		ln.getPointLocation();
-		ln.getIntersecatedPoints();
-		ln.builtInterBusLinks();
-		ln.insertLinkEdges();
-		ln.updateStreetEdges();
-		ln.updateStreetNodes();
-		ln.updateBusNodes();
+		ln.performMapping();
 
 		final long end = System.currentTimeMillis();
 		final DateFormat df = new SimpleDateFormat("mm:ss");

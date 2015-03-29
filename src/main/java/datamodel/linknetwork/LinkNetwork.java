@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.postgis.PGgeometry;
 
@@ -15,25 +16,48 @@ public class LinkNetwork {
 
 	private DBConnector db;
 	private String city;
-	private List<PGgeometry> bNodes;
+	private List<PGgeometry> busNodes;
 	private Map<String, String> nearestEdge;
 	private Map<String, PointLocation> pointLocation;
 	private Map<Long, String> additionalNodes;
 	private List<LinkEdge> linkEdges;
 
+	// Constructor
+
 	public LinkNetwork(final DBConnector db, final String city) {
 		this.db = db;
 		this.city = city;
+
+		busNodes = new ArrayList<>();
+		nearestEdge = new HashMap<>();
+		pointLocation = new HashMap<>();
+		additionalNodes = new HashMap<>();
+		linkEdges = new ArrayList<>();
 	}
 
-	public void getBusNodes() {
+	// Public methods
+
+	public void performMapping() {
+		fillBusNodes();
+		fillNearestEdges();
+		fillPointLocations();
+		fillIntersectedPoints();
+		buildInterBusLinks();
+		insertLinkEdges();
+		updateStreetEdges();
+		updateStreetNodes();
+		updateBusNodes();
+	}
+
+	// Private methods
+
+	private void fillBusNodes() {
 		System.out.print("[INFO] Extracting bus nodes...");
-		final ResultSet nodes = db.executeSimpleQuery("SELECT DISTINCT node_geometry AS n_geometry FROM time_expanded." + city + "_bus_nodes");
-		bNodes = new ArrayList<PGgeometry>();
-		try {
+		final String query = "SELECT DISTINCT node_geometry AS n_geometry FROM time_expanded." + city + "_bus_nodes";
+		try (final ResultSet nodes = db.executeSimpleQuery(query)) {
 			nodes.beforeFirst();
 			while (nodes.next()) {
-				bNodes.add(new PGgeometry(PGgeometry.geomFromString(nodes.getString("n_geometry"))));
+				busNodes.add(new PGgeometry(PGgeometry.geomFromString(nodes.getString("n_geometry"))));
 			}
 		} catch (final SQLException e) {
 			e.printStackTrace();
@@ -41,15 +65,18 @@ public class LinkNetwork {
 		System.out.println("Done.");
 	}
 
-	public void getNearestStreetEdge() {
+	private void fillNearestEdges() {
 		System.out.print("[INFO] Extracting nearest edges...");
-		nearestEdge = new HashMap<String, String>();
-		for (final PGgeometry geom : bNodes) {
-			final ResultSet rs = db.executeSimpleQuery("SELECT edge_geometry, "
-					+ "ST_Distance(edge_geometry, '" + geom.toString() + "') AS min_dist "
-					+ "FROM time_expanded." + city + "_street_edges "
-					+ "ORDER BY min_dist ASC");
-			try {
+		if (busNodes.isEmpty()) {
+			throw new IllegalStateException("Fill the bus nodes before tryong to get nearest street edges");
+		}
+
+		final String query = "SELECT edge_geometry, "
+			+ "ST_Distance(edge_geometry, '%s') AS min_dist "
+			+ "FROM time_expanded." + city + "_street_edges "
+			+ "ORDER BY min_dist ASC";
+		for (final PGgeometry geom : busNodes) {
+			try (final ResultSet rs = db.executeSimpleQuery(String.format(query, geom.toString()))) {
 				rs.first();
 				nearestEdge.put(geom.toString(), rs.getString("edge_geometry"));
 			} catch (final SQLException e) {
@@ -59,16 +86,22 @@ public class LinkNetwork {
 		System.out.println("Done.");
 	}
 
-	public void getPointLocation() {
+	private void fillPointLocations() {
 		System.out.print("[INFO] Extracting point location...");
-		pointLocation = new HashMap<String, PointLocation>();
-		for (final String s : nearestEdge.keySet()) {
-			final ResultSet rs = db.executeSimpleQuery("SELECT edge_geometry, "
-					+ "ST_Line_Locate_Point('" + nearestEdge.get(s) + "', ST_GeomFromEWKT('" + s + "')) AS p_loc "
-					+ "FROM time_expanded." + city + "_street_edges "
-					+ "WHERE edge_geometry = '" + nearestEdge.get(s) + "'"
-					+ "ORDER BY edge_geometry");
-			try {
+		if (nearestEdge.isEmpty()) {
+			throw new IllegalStateException("Fill the nearest edges before trying to get point locations");
+		}
+
+		final String query = "SELECT edge_geometry, "
+			+ "ST_Line_Locate_Point('%s', ST_GeomFromEWKT('%s')) AS p_loc "
+			+ "FROM time_expanded.%s_street_edges "
+			+ "WHERE edge_geometry = '%s'"
+			+ "ORDER BY edge_geometry";
+
+		for (final Entry<String, String> entry : nearestEdge.entrySet()) {
+			final String s = entry.getKey();
+			final String nEdge = entry.getValue();
+			try (final ResultSet rs = db.executeSimpleQuery(String.format(query, nEdge, s, city, nEdge))) {
 				rs.first();
 				final PointLocation pl = new PointLocation(s, rs.getFloat("p_loc"), rs.getString("edge_geometry"));
 				pointLocation.put(s, pl);
@@ -79,18 +112,21 @@ public class LinkNetwork {
 		System.out.println("Done.");
 	}
 
-	public void getIntersecatedPoints() {
+	private void fillIntersectedPoints() {
 		System.out.print("[INFO] Extracting new points...");
+		if (pointLocation.isEmpty()) {
+			throw new IllegalStateException("Fill the point locations before filling additional nodespriv");
+		}
+
 		long maxStreetID = db.getMaxStreetNodeID(city);
-		additionalNodes = new HashMap<Long, String>();
-		linkEdges = new ArrayList<LinkEdge>();
-		for (final String s : pointLocation.keySet()) {
-			final PointLocation pl = pointLocation.get(s);
-//			ResultSet rs = db.executeSimpleQuery("SELECT ST_LineInterpolatePoint('" + pl.getEdgeGeom() + "', " + pl.getLocation() + ") AS geom "
-			final ResultSet rs = db.executeSimpleQuery("SELECT ST_LineInterpolatePoint(edge_geometry, " + pl.getLocation() + ") AS geom "
-					+ "FROM time_expanded." + city + "_street_edges "
-					+ "WHERE edge_geometry = '" + pl.getEdgeGeom() + "'");
-			try {
+		final String query = "SELECT ST_LineInterpolatePoint(edge_geometry, %f) AS geom "
+			+ "FROM time_expanded.%s_street_edges "
+			+ "WHERE edge_geometry = '%s'";
+
+		for (final Entry<String, PointLocation> entry : pointLocation.entrySet()) {
+			final String s = entry.getKey();
+			final PointLocation pl = entry.getValue();
+			try (final ResultSet rs = db.executeSimpleQuery(String.format(query, pl.getLocation(), city, pl.getEdgeGeom()))) {
 				rs.beforeFirst();
 				while (rs.next()) {
 					//new node for link table
@@ -115,12 +151,13 @@ public class LinkNetwork {
 		System.out.println("Done.");
 	}
 
-	public void builtInterBusLinks() {
+	private void buildInterBusLinks() {
 		System.out.print("[INFO] Building inter-bus nodes links...");
-		try {
-			final ResultSet rs = db.executeSimpleQuery("SELECT bn1.node_id AS id_1, bn2.node_id AS id_2 "
-					+ "FROM time_expanded." + city + "_bus_nodes bn1 JOIN  time_expanded." + city + "_bus_nodes bn2 "
-							+ "ON bn1.node_geometry = bn2.node_geometry AND bn1.node_id != bn2.node_id");
+		final String query = "SELECT bn1.node_id AS id_1, bn2.node_id AS id_2 "
+			+ "FROM time_expanded.%s_bus_nodes bn1 JOIN  time_expanded.%s_bus_nodes bn2 "
+			+ "ON bn1.node_geometry = bn2.node_geometry AND bn1.node_id != bn2.node_id";
+
+		try (final ResultSet rs = db.executeSimpleQuery(String.format(query, city, city))) {
 			rs.beforeFirst();
 			while (rs.next()) {
 				LinkEdge le = new LinkEdge(rs.getInt("id_1"), 0, rs.getInt("id_2"), 0);
@@ -131,10 +168,11 @@ public class LinkNetwork {
 		} catch (final SQLException e) {
 			e.printStackTrace();
 		}
+
 		System.out.println("Done.");
 	}
 
-	public void insertLinkEdges() {
+	private void insertLinkEdges() {
 		System.out.println("[INFO] Links: " + linkEdges.size());
 		System.out.print("[INFO] Adding links...");
 		for (final LinkEdge le : linkEdges) {
@@ -143,38 +181,15 @@ public class LinkNetwork {
 		System.out.println("Done.");
 	}
 
-//	public void createLinkNode(String city) {
-//		long lastIndex = db.getLastPedestrianNodeID(city);
-//		ResultSet rs = db.executeSimpleQuery("SELECT node_id, ST_AsEWKT(ST_SetSRID(st_line_interpolate_point, 4326)) "
-//				+ "FROM time_expanded." + city + "_bus_to_ped_coords_interpolate;");
-//		try {
-//			String sql = "";
-//			if(rs.first()) {
-//				while(rs.next()) {
-//					System.out.println((String) rs.getObject(2));
-//					System.out.println(++lastIndex);
-//					sql = "INSERT INTO time_expanded." + city + "_bz_street_nodes(node_id, node_geometry) "
-//							+ "VALUES('" + ++lastIndex + "', ST_SetSRID(ST_GeomFromEWKT('" + ((String) rs.getObject(2)) + "'), 4326));";
-//					System.out.println(sql);
-//					db.executeSimpleQuery(sql);
-//					db.executeSimpleQuery("UPDATE time_expanded." + city + "_street_nodes "
-//							+ "SET node_in_degree = '1', node_out_degree = '1' "
-//							+ "WHERE node_in_degree IS NULL AND node_out_degree IS NULL; ");
-//				}
-//			}
-//		} catch (SQLException e) {
-//			e.printStackTrace();
-//		}
-//	}
-
-	public void updateStreetEdges() {
+	private void updateStreetEdges() {
 		System.out.print("[INFO] Updating street edges...");
 		int lastIndex = db.getLastPedestrianEdgeID(city);
-		try {
-			for (final Long l : additionalNodes.keySet()) {
-				final ResultSet rs = db.executeSimpleQuery("SELECT edge_id, edge_source, edge_destination FROM time_expanded." + city + "_street_edges "
-						+ "WHERE edge_geometry = '" + additionalNodes.get(l) + "'");
+		final String query = "SELECT edge_id, edge_source, edge_destination FROM time_expanded.%s_street_edges "
+			+ "WHERE edge_geometry = '%s'";
 
+		for (final Entry<Long, String> entry : additionalNodes.entrySet()) {
+			final Long l = entry.getKey();
+			try (final ResultSet rs = db.executeSimpleQuery(String.format(query, city, entry.getValue()))) {
 				rs.beforeFirst();
 				while (rs.next()) {
 					final String geom = db.getGeometryByNodeID(l, city);
@@ -190,7 +205,6 @@ public class LinkNetwork {
 									+ "ST_Difference('" + additionalNodes.get(l) + "', ST_Snap('" + additionalNodes.get(l) + "', '" + geom + "', 1)));";
 					db.executeSimpleQueryNoResult(sql);
 				}
-			}
 //			System.out.println("Retrieving data...");
 //		ResultSet rs = db.executeSimpleQuery("SELECT edge_id, edge_source, edge_destination, bus_ped_node_id, ST_AsEWKT(ST_SetSRID(edge_geometry, 4326), ST_AsEWKT(ST_SetSRID(node_geometry, 4326)) "
 //				+ "FROM time_expanded." + city + "_data_for_edges_snap;");
@@ -211,25 +225,26 @@ public class LinkNetwork {
 //					+ "ST_Length(ST_Difference('" + edgeGeometry + "', ST_Snap(ST_SetSRID(ST_GeomFromEWKT('" + edgeGeometry + "'), 4326), ST_SetSRID(ST_GeomFromEWKT('" + nodeGeometry + "'), 4326), 1))), "
 //					+ "ST_Difference('" + edgeGeometry + "', ST_Snap(ST_SetSRID(ST_GeomFromEWKT('" + edgeGeometry + "'), 4326), ST_SetSRID(ST_GeomFromEWKT('" + nodeGeometry + "'), 4326), 1)));");
 //			}
-		} catch (final SQLException e) {
-			e.printStackTrace();
+			} catch (final SQLException e) {
+				e.printStackTrace();
+			}
 		}
 		System.out.println("Done.");
 	}
 
-
-	public void updateStreetNodes() {
+	private void updateStreetNodes() {
 		System.out.print("[INFO] Updating street nodes in/out degree...");
 
 		final Map<Long, Integer> inDegree = new HashMap<Long, Integer>();
 		final Map<Long, Integer> outDegree = new HashMap<Long, Integer>();
+		final String query = "SELECT sn.node_id, count(edge_destination) AS in_d\n"
+			+ "FROM  time_expanded.%s_street_nodes sn JOIN time_expanded.%s_street_edges se\n"
+			+ "\tON sn.node_id = se.edge_destination\n"
+			+ "GROUP BY sn.node_id, se.edge_destination\n"
+			+ "ORDER BY sn.node_id";
 		try {
 			// updating in-degree from street edges
-			ResultSet rs = db.executeSimpleQuery("SELECT sn.node_id, count(edge_destination) AS in_d\n"
-					+ "FROM  time_expanded." + city + "_street_nodes sn JOIN time_expanded." + city + "_street_edges se\n"
-					+ "\tON sn.node_id = se.edge_destination\n"
-					+ "GROUP BY sn.node_id, se.edge_destination\n"
-					+ "ORDER BY sn.node_id");
+			ResultSet rs = db.executeSimpleQuery(String.format(query, city, city));
 			rs.beforeFirst();
 			while (rs.next()) {
 				inDegree.put(rs.getLong("node_id"), rs.getInt("in_d"));
@@ -291,7 +306,7 @@ public class LinkNetwork {
 		System.out.println("Done.");
 	}
 
-	public void updateBusNodes() {
+	private void updateBusNodes() {
 		System.out.print("[INFO] Updating bus nodes in/out degree...");
 
 		final Map<Integer, Integer> inDegree = new HashMap<Integer, Integer>();
@@ -317,7 +332,7 @@ public class LinkNetwork {
 					+ "ORDER BY bn.node_id");
 			rs.beforeFirst();
 			while (rs.next()) {
-				if (inDegree.get(rs.getLong("node_id")) != null) {
+				if (inDegree.get(rs.getInt("node_id")) != null) {
 					final int oldDegree = inDegree.get(rs.getInt("node_id"));
 					inDegree.replace(rs.getInt("node_id"), rs.getInt("in_d") + oldDegree);
 				} else {
@@ -345,7 +360,7 @@ public class LinkNetwork {
 					+ "ORDER BY bn.node_id");
 			rs.beforeFirst();
 			while (rs.next()) {
-				if (outDegree.get(rs.getLong("node_id")) != null) {
+				if (outDegree.get(rs.getInt("node_id")) != null) {
 					final int oldDegree = outDegree.get(rs.getInt("node_id"));
 					outDegree.replace(rs.getInt("node_id"), rs.getInt("out_d") + oldDegree);
 				} else {

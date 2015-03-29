@@ -96,7 +96,8 @@ public class PbfParser extends BinaryParser {
 	@Override
 	protected void parseNodes(final List<Osmformat.Node> nodes) {
 		for (final Osmformat.Node n : nodes) {
-			System.out.printf("[INFO] Regular node, ID %d @ %.6f,%.6f\n", n.getId(), parseLat(n.getLat()), parseLon(n.getLon()));
+			System.out.printf("[INFO] Regular node, ID %d @ %.6f,%.6f", n.getId(), parseLat(n.getLat()), parseLon(n.getLon()));
+			System.out.println();
 		}
 	}
 

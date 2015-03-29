@@ -1,5 +1,7 @@
 package datamodel.command;
 
+import java.util.Locale;
+
 public abstract class CommandFactory {
 	enum Command {
 		BUSNET,
@@ -18,7 +20,7 @@ public abstract class CommandFactory {
 			throw new NullPointerException("Command name must be non-null to create a instance from it!");
 		}
 
-		final Command cmd = Command.valueOf(commandName.toUpperCase().replaceAll("-", "_"));
+		final Command cmd = Command.valueOf(commandName.toUpperCase(Locale.ENGLISH).replaceAll("-", "_"));
 		return createCommand(cmd, args);
 	}
 

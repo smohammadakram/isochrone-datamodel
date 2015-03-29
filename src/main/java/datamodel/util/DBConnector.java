@@ -65,22 +65,25 @@ public class DBConnector {
 	}
 
 	public boolean insertStreetNode(final long id, final String geom, final String city) {
+		final String query = "INSERT INTO time_expanded.%s_street_nodes(node_id, node_geometry) VALUES (?, ST_GeomFromEWKT(?));";
 		boolean result = false;
+
 		try {
-			final PreparedStatement stmt = conn.prepareStatement("INSERT INTO time_expanded." + city + "_street_nodes(node_id, node_geometry) "
-				+ "VALUES (?, ST_GeomFromEWKT(?));");
+			final PreparedStatement stmt = conn.prepareStatement(String.format(query, city));
 
 			stmt.setLong(1, id);
 			stmt.setString(2, geom.toString());
 			result = stmt.execute();
 		} catch (final SQLException e) {
 			e.printStackTrace();
+			result = false;
 		}
+
 		return result;
 	}
 
 	public boolean insertMultipleStreetNodes(final Collection<Node> nodes, final String city) {
-		final boolean result = false;
+		boolean result = false;
 		try {
 			String script = "";
 			for (final Node rn : nodes) {
@@ -102,7 +105,9 @@ public class DBConnector {
 			}
 		} catch (final IOException e) {
 			e.printStackTrace();
+			result = false;
 		}
+
 		return result;
 	}
 
@@ -249,18 +254,19 @@ public class DBConnector {
 	}
 
 	public String getGeometryByNodeID(final long id, final String city) {
+		final String query = "SELECT node_geometry FROM time_expanded.%s_street_nodes WHERE node_id = ?";
+
 		String result = "";
 		try {
-			final PreparedStatement stmt = conn.prepareStatement("SELECT node_geometry FROM time_expanded." + city + "_street_nodes WHERE node_id = ?",
-				ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+			final PreparedStatement stmt = conn.prepareStatement(String.format(query, city), ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 			stmt.setLong(1, id);
 			final ResultSet rs = stmt.executeQuery();
 			rs.first();
 			result = rs.getString("node_geometry");
-
 		} catch (final SQLException e) {
 			e.printStackTrace();
 		}
+
 		return result;
 	}
 

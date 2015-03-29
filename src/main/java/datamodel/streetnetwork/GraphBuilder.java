@@ -34,7 +34,7 @@ public class GraphBuilder extends BinaryParser {
 
 	/** The magic number used to indicate no version number metadata for this entity. */
 	private static final int NOVERSION = -1;
-    /** The magic number used to indicate no changeset metadata for this entity. */
+	/** The magic number used to indicate no changeset metadata for this entity. */
 	private static final int NOCHANGESET = -1;
 	private Map<Long, DenseNode> denseNodes;
 	private Map<Long, Node> realNodes;
@@ -51,7 +51,7 @@ public class GraphBuilder extends BinaryParser {
 	private boolean newNodes = false;
 //	private List<PBFBlock> waysBlocks = new ArrayList<PBFBlock>();
 
-	public GraphBuilder(final String file, final String outPath, final String city, final DBConnector conn){
+	public GraphBuilder(final String file, final String outPath, final String city, final DBConnector conn) {
 		this.file = file;
 		denseNodes = new HashMap<>();
 		realNodes = new HashMap<>();
@@ -63,7 +63,7 @@ public class GraphBuilder extends BinaryParser {
 		db = conn;
 	}
 
-    public long intersect(final List<Long> outer, final List<Long> inner){
+	public long intersect(final List<Long> outer, final List<Long> inner) {
 		for (final Long l : outer) {
 			if (l > 0 && String.valueOf(l).length() >= 7) {
 				for (final Long l1 : inner) {
@@ -75,7 +75,7 @@ public class GraphBuilder extends BinaryParser {
 		}
 
 		return -1;
-    }
+	}
 
 //	public void parseNetwork() {
 //		for (PBFBlock block : waysBlock) {
@@ -84,77 +84,77 @@ public class GraphBuilder extends BinaryParser {
 //		}
 //	}
 
-    public Collection<Node> getStreetNodes(){
-//    	System.out.println("[INFO] Real Nodes.");
-//    	realNodes = new HashMap<Long, RealNode>();
-//    	System.out.println("Nodes: " + nodes);
-//    	parseWays(waysBlock);
-//    	List<Long> discovered = new ArrayList<Long>();
-    	for (final Way way : ways.values()) {
-    		//getting source and destination of the way, which are real nodes
-    		final Long source = way.getWayNodes().get(0).getNodeId();
-    		final Long destination = way.getWayNodes().get(way.getWayNodes().size()-1).getNodeId();
+	public Collection<Node> getStreetNodes() {
+//		System.out.println("[INFO] Real Nodes.");
+//		realNodes = new HashMap<Long, RealNode>();
+//		System.out.println("Nodes: " + nodes);
+//		parseWays(waysBlock);
+//		List<Long> discovered = new ArrayList<Long>();
+		for (final Way way : ways.values()) {
+			//getting source and destination of the way, which are real nodes
+			final Long source = way.getWayNodes().get(0).getNodeId();
+			final Long destination = way.getWayNodes().get(way.getWayNodes().size() - 1).getNodeId();
 
-    		//add the source to the list if it is not there yet
-    		if (realNodes.get(source) == null && insertedNodes.get(source) == null) {
-	    		final DenseNode dn = denseNodes.get(source);
-	    		final Point p = new Point(dn.getLognitude(), dn.getLatitude());
-	    		p.setSrid(4326);
-	    		final Node aNode = new Node(source, new PGgeometry(p));
-	    		realNodes.put(source, aNode);
-	    		insertedNodes.put(source, source);
-//	    		discovered.add(dn.getId());
-	    		nrNodes++;
-    		}
+			//add the source to the list if it is not there yet
+			if (realNodes.get(source) == null && insertedNodes.get(source) == null) {
+				final DenseNode dn = denseNodes.get(source);
+				final Point p = new Point(dn.getLognitude(), dn.getLatitude());
+				p.setSrid(4326);
+				final Node aNode = new Node(source, new PGgeometry(p));
+				realNodes.put(source, aNode);
+				insertedNodes.put(source, source);
+//				discovered.add(dn.getId());
+				nrNodes++;
+			}
 
-    		//same for the destination
-    		if (realNodes.get(destination) == null && insertedNodes.get(destination) == null) {
-    			final DenseNode dn = denseNodes.get(destination);
-	    		final Point p = new Point(dn.getLognitude(),dn.getLatitude());
-	    		p.setSrid(4326);
-	    		final Node aNode = new Node(destination, new PGgeometry(p));
-	    		realNodes.put(destination, aNode);
-	    		insertedNodes.put(destination, destination);
-//	    		discovered.add(dn.getId());
-	    		nrNodes++;
-    		}
-    	}
+			//same for the destination
+			if (realNodes.get(destination) == null && insertedNodes.get(destination) == null) {
+				final DenseNode dn = denseNodes.get(destination);
+				final Point p = new Point(dn.getLognitude(), dn.getLatitude());
+				p.setSrid(4326);
+				final Node aNode = new Node(destination, new PGgeometry(p));
+				realNodes.put(destination, aNode);
+				insertedNodes.put(destination, destination);
+//				discovered.add(dn.getId());
+				nrNodes++;
+			}
+		}
 
-//    	System.out.println("[INFO] Real nodes: " + realNodes.values().size());
-//    	removeDiscoveredNodes(discovered);
-    	final Collection<Node> result = realNodes.values();
-//    	denseNodes = new HashMap<Long, DenseNode>();
-    	buildNodes();
-    	realNodes = new HashMap<Long, Node>();
-    	return result;
-    }
+//		System.out.println("[INFO] Real nodes: " + realNodes.values().size());
+//		removeDiscoveredNodes(discovered);
+		final Collection<Node> result = realNodes.values();
+//		denseNodes = new HashMap<Long, DenseNode>();
+		buildNodes();
+		realNodes = new HashMap<Long, Node>();
+		return result;
+	}
 
-    public void removeDiscoveredNodes(final List<Long> nodes){
-    	for(final Long l : nodes) {
+	public void removeDiscoveredNodes(final List<Long> nodes) {
+		for(final Long l : nodes) {
 			denseNodes.remove(l);
 		}
-    }
+	}
 
-    public void populateScript(){
-    	if(newNodes){
-    		buildNodes();
-    	}
-    	buildEdges();
-    }
+	public void populateScript() {
+		if(newNodes) {
+			buildNodes();
+		}
+		buildEdges();
+	}
 
-    public Map<Long, Node> buildNodes(){
-//    	Map<Long, RealNode> realNodes = new HashMap<Long, RealNode>();
-//    	Collection<RealNode> nodes = this.realNodes.values();
+	public Map<Long, Node> buildNodes() {
+//		Map<Long, RealNode> realNodes = new HashMap<Long, RealNode>();
+//		Collection<RealNode> nodes = this.realNodes.values();
 //		System.out.println("[INFO] Nodes: " + nodes.size());
-    	System.out.print("[INFO] Bulding real nodes...");
-    	final List<Node> tmp = new ArrayList<Node>();
-//    	db.resetFile(outPath + "/" + city + "_street_nodes_import.sql");
+		System.out.print("[INFO] Bulding real nodes...");
+		final List<Node> tmp = new ArrayList<Node>();
+//		db.resetFile(outPath + "/" + city + "_street_nodes_import.sql");
 		db.openWriter(outPath + "/" + city + "_street_nodes_import.sql", true);
 //		db.deleteClause(city + "_street_nodes");
 //		db.resetCheckpoint();
 //		final int counter = 0;
 		for (final Node rn : realNodes.values()) {
-//			if(counter == 999){
+//			if(counter == 999) {
 //				counter = 0;
 //				insertNodes(tmp);
 //				tmp = new ArrayList<RealNode>();
@@ -171,50 +171,50 @@ public class GraphBuilder extends BinaryParser {
 		return this.realNodes;
 	}
 
-    public void insertNodes(final Collection<Node> nodes){
-    	db.insertMultipleStreetNodes(nodes, city);
-    }
+	public void insertNodes(final Collection<Node> nodes) {
+		db.insertMultipleStreetNodes(nodes, city);
+	}
 
-    public List<Edge> buildEdges(){
-    	System.out.print("[INFO] Building edges...");
-//    	Map<Long, Edge> edges = new HashMap<Long, Edge>();
-    	final List<Edge> tmp = new ArrayList<Edge>();
-//    	db.resetFile(outPath + "/" + city + "_street_edges_import.sql");
-    	db.openWriter(outPath + "/" + city + "_street_edges_import.sql", true);
-//    	db.deleteClause(city + "_street_edges");
-//    	db.resetCheckpoint();
-//    	final int counter = 0;
-    	for (final Edge e : edges) {
-//    		if(counter == 999){
-//    			insertEdges(tmp);
-//    			counter = 0;
-//    			tmp = new ArrayList<Edge>();
-//    		}
-    		tmp.add(e);
-//    		nrEdges++;
-//    		counter += 2;
-    	}
-//    	for (Long l : ways.keySet()) {
-//    		if(counter == 999){
-//    			insertEdges(edges);
-//    			edges = new ArrayList<Edge>();
-//    		}
-//    		Way way = ways.get(l);
-//    		List<WayNode> tmp = way.getWayNodes();
-//    		Edge e = new Edge(l, tmp.get(0).getNodeId(), (tmp.get(way.getWayNodes().size()-1).getNodeId()), buildEdgeGeometry(tmp), 0);
-//    		edges.add(e);
-//    		Collections.reverse(tmp);
-//    		e = new Edge(l, tmp.get(0).getNodeId(), (tmp.get(way.getWayNodes().size()-1).getNodeId()), buildEdgeGeometry(tmp), 0);
-//    		edges.add(e);
-////    		edges.put(destination, reverseEdge(edgePoint, destination, source));
-//    		counter += 2;
-//    	}
-//    	if(counter != 0)
-    		insertEdges(tmp);
-    	db.closeWriter();
-    	System.out.println("Done.");
-    	return edges;
-    }
+	public List<Edge> buildEdges() {
+		System.out.print("[INFO] Building edges...");
+//		Map<Long, Edge> edges = new HashMap<Long, Edge>();
+		final List<Edge> tmp = new ArrayList<Edge>();
+//		db.resetFile(outPath + "/" + city + "_street_edges_import.sql");
+		db.openWriter(outPath + "/" + city + "_street_edges_import.sql", true);
+//		db.deleteClause(city + "_street_edges");
+//		db.resetCheckpoint();
+//		final int counter = 0;
+		for (final Edge e : edges) {
+//			if(counter == 999) {
+//				insertEdges(tmp);
+//				counter = 0;
+//				tmp = new ArrayList<Edge>();
+//			}
+			tmp.add(e);
+//			nrEdges++;
+//			counter += 2;
+		}
+//		for (Long l : ways.keySet()) {
+//			if(counter == 999) {
+//				insertEdges(edges);
+//				edges = new ArrayList<Edge>();
+//			}
+//			Way way = ways.get(l);
+//			List<WayNode> tmp = way.getWayNodes();
+//			Edge e = new Edge(l, tmp.get(0).getNodeId(), (tmp.get(way.getWayNodes().size()-1).getNodeId()), buildEdgeGeometry(tmp), 0);
+//			edges.add(e);
+//			Collections.reverse(tmp);
+//			e = new Edge(l, tmp.get(0).getNodeId(), (tmp.get(way.getWayNodes().size()-1).getNodeId()), buildEdgeGeometry(tmp), 0);
+//			edges.add(e);
+////			edges.put(destination, reverseEdge(edgePoint, destination, source));
+//			counter += 2;
+//		}
+//		if(counter != 0)
+			insertEdges(tmp);
+		db.closeWriter();
+		System.out.println("Done.");
+		return edges;
+	}
 
 	public void addEdges(final Set<Long> waysKeys) {
 		for (final Long l : waysKeys) {
@@ -231,7 +231,7 @@ public class GraphBuilder extends BinaryParser {
 
 	public Edge reverseEdge(final ArrayList<Point> points, final long id, final long source, final long destination) {
 		Collections.reverse(points);
-		final PGgeometry edge = new PGgeometry(new LineString(points.toArray(new Point[] {})));
+		final PGgeometry edge = new PGgeometry(new LineString(points.toArray(new Point[points.size()])));
 		return new Edge(id, source, destination, edge, 0);
 	}
 
@@ -244,7 +244,7 @@ public class GraphBuilder extends BinaryParser {
 				points.add(p);
 			}
 		}
-		return new PGgeometry(new LineString(points.toArray(new Point[] {})));
+		return new PGgeometry(new LineString(points.toArray(new Point[points.size()])));
 	}
 
 	public void insertEdges(final Collection<Edge> edges) {
@@ -273,8 +273,8 @@ public class GraphBuilder extends BinaryParser {
 	}
 
 	   /** Get the osmosis object representing a the user in a given Info protobuf.
-     * @param info The info protobuf.
-     * @return The OsmUser object */
+	 * @param info The info protobuf.
+	 * @return The OsmUser object */
 	OsmUser getUser(final Osmformat.Info info) {
 		// System.out.println(info);
 		if (info.hasUid() && info.hasUserSid()) {
@@ -287,21 +287,21 @@ public class GraphBuilder extends BinaryParser {
 		}
 	}
 
-    @Override
-    protected void parseRelations(final List<Osmformat.Relation> rels) {
-        if (!rels.isEmpty()) {
-        	System.out.println("[INFO] Got some relations to parse.");
+	@Override
+	protected void parseRelations(final List<Osmformat.Relation> rels) {
+		if (!rels.isEmpty()) {
+			System.out.println("[INFO] Got some relations to parse.");
 //			for(Relation rel : rels) {
 //				System.out.println("Relation, %e, ", rel.getId(), rel.get);
-//        	}
+//			}
 		}
-    }
+	}
 
 	@Override
 	protected void parseDense(final DenseNodes nodes) {
 		System.out.print("[INFO] Parsing dense nodes...");
 		newNodes = true;
-//    	denseNodes = new HashMap<Long, DenseNode>();
+//		denseNodes = new HashMap<Long, DenseNode>();
 		long lastId = 0;
 		long lastLat = 0;
 		long lastLon = 0;
@@ -319,21 +319,22 @@ public class GraphBuilder extends BinaryParser {
 	@Override
 	protected void parseNodes(final List<Osmformat.Node> nodes) {
 		for (final Osmformat.Node n : nodes) {
-			System.out.printf("[INFO] Regular node, ID %d @ %.6f,%.6f\n", n.getId(), parseLat(n.getLat()), parseLon(n.getLon()));
+			System.out.printf("[INFO] Regular node, ID %d @ %.6f,%.6f", n.getId(), parseLat(n.getLat()), parseLon(n.getLon()));
+			System.out.println();
 		}
 	}
 
-    @Override
-    protected void parseWays(final List<Osmformat.Way> ways) {
+	@Override
+	protected void parseWays(final List<Osmformat.Way> ways) {
 //		if (ways,size() > 0) {
 //			PBFBlock aBlock = new PBFBlock(ways, strings);
 //			waysBlocks.add(aBlock);
 //		}
 
-    	this.ways = new HashMap<Long, Way>();
-    	edges = new ArrayList<Edge>();
-    	System.out.print("[INFO] Parsing ways...");
-    	boolean street = false;
+		this.ways = new HashMap<Long, Way>();
+		edges = new ArrayList<Edge>();
+		System.out.print("[INFO] Parsing ways...");
+		boolean street = false;
 
 		for (final Osmformat.Way i : ways) {
 			street = false;
@@ -347,7 +348,7 @@ public class GraphBuilder extends BinaryParser {
 				}
 			}
 
-             //check if the current way is a street
+			 //check if the current way is a street
 			if (!street) {
 				continue;
 			}
@@ -374,32 +375,32 @@ public class GraphBuilder extends BinaryParser {
 			}
 
 			this.ways.put(id, tmp);
-        }
+		}
 
-    	System.out.println("Done.");
-    	if (newNodes) {
+		System.out.println("Done.");
+		if (newNodes) {
 			getStreetNodes();
 		}
-        addEdges(this.ways.keySet());
-        buildEdges();
+		addEdges(this.ways.keySet());
+		buildEdges();
 
 //		populateScript();
 //		denseNodes = null;
-    }
+	}
 
-    @Override
-    protected void parse(final HeaderBlock header) {
-        System.out.println("[INFO] Got header block.");
-    }
+	@Override
+	protected void parse(final HeaderBlock header) {
+		System.out.println("[INFO] Got header block.");
+	}
 
-    @Override
+	@Override
 	public void complete() {
-        System.out.println("[INFO] Complete!");
-    }
+		System.out.println("[INFO] Complete!");
+	}
 
-    public Map<Long, DenseNode> getAllNodes() {
-    	return denseNodes;
-    }
+	public Map<Long, DenseNode> getAllNodes() {
+		return denseNodes;
+	}
 
 	public Map<Long, org.openstreetmap.osmosis.core.domain.v0_6.Way> getAllWays() {
 		return ways;

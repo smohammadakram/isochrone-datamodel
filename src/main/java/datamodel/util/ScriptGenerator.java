@@ -3,16 +3,16 @@ package datamodel.util;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
 
 public class ScriptGenerator {
 	private static final Charset FILE_CS = Charset.forName("UTF-8");
-	private String schemaName;
 	private String script;
 
 	// Constructor
@@ -25,12 +25,6 @@ public class ScriptGenerator {
 
 	public String getScript() {
 		return (script == null) ? "" : script;
-	}
-
-	// Setter
-
-	public String getSchemaName() {
-		return schemaName;
 	}
 
 	// Public methods
@@ -59,7 +53,7 @@ public class ScriptGenerator {
 	private static String readFromFile(final File f) throws IOException {
 		final StringBuilder sb = new StringBuilder();
 
-		try (BufferedReader r = new BufferedReader(new FileReader(f))) {
+		try (final BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(f), FILE_CS))) {
 			String s = null;
 			while ((s = r.readLine()) != null) {
 				sb.append(s);

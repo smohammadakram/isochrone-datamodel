@@ -4,9 +4,11 @@ import datamodel.util.DBConnector;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -18,23 +20,21 @@ import java.util.GregorianCalendar;
 import java.util.StringTokenizer;
 
 public class BusDataParser {
-
-	private String file;
+	private static final Charset FILE_CS = Charset.forName("UTF-8");
 	private DBConnector db;
 //	static String GTFS = "gtfs/";
 	private String gtfs;
 	private String city;
 
-	public BusDataParser(final DBConnector conn, final String gtfs, final String city) {
-		db = conn;
+	public BusDataParser(final DBConnector db, final String gtfs, final String city) {
+		this.db = db;
 		this.gtfs = gtfs + "/";
 		this.city = city;
 	}
 
 	public void parseStops() {
-		try {
+		try (final BufferedReader br = getBufferedReader(new File(gtfs + "stops.txt"))) {
 //			System.out.println("[INFO] Parsing bus stops...");
-			final BufferedReader br = new BufferedReader(new FileReader(new File(gtfs + "stops.txt")));
 			br.readLine(); //next line skipped
 			String line = br.readLine();
 			StringTokenizer st = null;
@@ -78,7 +78,6 @@ public class BusDataParser {
 			}
 
 //			System.out.println(script);
-			br.close();
 		} catch (final IOException e) {
 			e.printStackTrace();
 		} catch (final SQLException e1) {
@@ -87,28 +86,9 @@ public class BusDataParser {
 //		System.out.println("[INFO] Parsing bus stops...Done.");
 	}
 
-	public double parseCoordinates(final String s) {
-//		System.out.println("[INFO] Parsing coordinates...");
-		final StringTokenizer st = new StringTokenizer(s, ",");
-		final String sTmp = st.nextToken() + "." + st.nextToken() + st.nextToken();
-//		System.out.println("[INFO] Parsing coordinates...Done.");
-		return Double.parseDouble(sTmp);
-	}
-
-	public void setFile(final String f) {
-		file = f;
-	}
-
-	public String getFile() {
-		return file;
-	}
-
 	public void parseRoutes() {
 //		System.out.println("[INFO] Parsing routes...");
-		BufferedReader br;
-		try {
-			br = new BufferedReader(new FileReader(new File(gtfs + "routes.txt")));
-
+		try (final BufferedReader br = getBufferedReader(new File(gtfs + "routes.txt"))) {
 			br.readLine();
 			String s = br.readLine();
 			StringTokenizer st = new StringTokenizer(s, ",");
@@ -128,7 +108,6 @@ public class BusDataParser {
 //			System.out.println(script);
 			final Statement stmt = DBConnector.getConnection().createStatement();
 			stmt.execute(script);
-			br.close();
 		} catch (final FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (final IOException e) {
@@ -141,8 +120,7 @@ public class BusDataParser {
 
 	public void parseTrips() {
 //		System.out.println("[INFO] Parsing trips...");
-		try {
-			final BufferedReader br = new BufferedReader(new FileReader(new File(gtfs + "trips.txt")));
+		try (final BufferedReader br = getBufferedReader(new File(gtfs + "trips.txt"))) {
 			br.readLine();
 			String s = br.readLine();
 			StringTokenizer st;
@@ -160,7 +138,6 @@ public class BusDataParser {
 //			System.out.println(script);
 			final Statement stmt = DBConnector.getConnection().createStatement();
 			stmt.execute(script);
-			br.close();
 		} catch (final FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (final IOException e) {
@@ -173,8 +150,7 @@ public class BusDataParser {
 
 	public void parseTripSequence() {
 //		System.out.println("[INFO] Parsing trips sequence...");
-		try {
-			final BufferedReader br = new BufferedReader(new FileReader(new File(gtfs + "stop_times.txt")));
+		try (final BufferedReader br = getBufferedReader(new File(gtfs + "stop_times.txt"))) {
 			StringTokenizer st = null;
 			br.readLine();
 			String s = br.readLine();
@@ -194,7 +170,6 @@ public class BusDataParser {
 			}
 
 //			System.out.println(script);
-			br.close();
 		} catch (final FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (final IOException e) {
@@ -208,12 +183,11 @@ public class BusDataParser {
 	public void parseCalendar() {
 //		System.out.println("[INFO] Parsing calendar...");
 		try {
-			BufferedReader br = new BufferedReader(new FileReader(new File(gtfs + "calendar.txt")));
+			final BufferedReader br = getBufferedReader(new File(gtfs + "calendar.txt"));
 			StringTokenizer st = null;
 			br.readLine();
 			String s = br.readLine();
-			String script = "";
-			script = "INSERT INTO vdv_gtfs_tmp.calendar(service_id," + "monday," + "tuesday," + "wednesday," + "thursday," + "friday," + "saturday," + "sunday," + "start_date," + "end_date) VALUES\n";
+			String script = "INSERT INTO vdv_gtfs_tmp.calendar(service_id, monday, tuesday, wednesday, thursday, friday, saturday, sunday, start_date, end_date) VALUES\n";
 			while (s != null) {
 				st = new StringTokenizer(s, ",");
 				script += "('" + Integer.parseInt(st.nextToken()) + "', '" + isValidDay(st.nextToken()) + "', '" + isValidDay(st.nextToken()) + "', '" + isValidDay(st.nextToken()) + "', '"
@@ -223,9 +197,9 @@ public class BusDataParser {
 			}
 			br.close();
 
-			br = new BufferedReader(new FileReader(new File(gtfs + "calendar_dates.txt")));
-			br.readLine();
-			s = br.readLine();
+			final BufferedReader br2 = getBufferedReader(new File(gtfs + "calendar_dates.txt"));
+			br2.readLine();
+			s = br2.readLine();
 			Calendar c = null;
 			while (s != null) {
 				st = new StringTokenizer(s, ",");
@@ -238,43 +212,23 @@ public class BusDataParser {
 				validity[c.get(Calendar.DAY_OF_WEEK) - 1] = true;
 				script += "('" + id + "', '" + validity[0] + "', '" + validity[1] + "', '" + validity[2] + "', '" + validity[3] + "', '" + validity[4] + "', '" + validity[5] + "', '" + validity[6]
 					+ "', '" + date + "', '" + date + "')";
-				s = br.readLine();
+				s = br2.readLine();
 				if (s != null) {
 					script += ",\n";
 				}
 			}
 			script += ";";
+			br2.close();
+
 //			System.out.println(script);
 			final Statement stmt = DBConnector.getConnection().createStatement();
 			stmt.execute(script);
-			br.close();
-		} catch (final FileNotFoundException e) {
-			e.printStackTrace();
 		} catch (final IOException e) {
 			e.printStackTrace();
 		} catch (final SQLException e) {
 			e.printStackTrace();
 		}
 //		System.out.println("[INFO] Parsing calendar...Done.");
-	}
-
-	public boolean isValidDay(final String valid) {
-		return  !valid.equals("0");
-	}
-
-	public String parseDate(final String d) {
-		return d.substring(0, 4) + "-" + d.substring(4, 6) + "-" + d.substring(6, 8);
-	}
-
-	public long parseDateToMillis(final String d) {
-		//		System.out.println(d);
-		final Calendar c = new GregorianCalendar(Integer.parseInt(d.substring(0, 4)), Integer.parseInt(d.substring(4, 6)), Integer.parseInt(d.substring(6, 8)));
-		return c.getTimeInMillis();
-	}
-
-	public Calendar parseDateToCalendar(final String d) {
-		final Calendar c = new GregorianCalendar(Integer.parseInt(d.substring(0, 4)), Integer.parseInt(d.substring(4, 6)), Integer.parseInt(d.substring(6, 8)));
-		return c;
 	}
 
 	public void createCalendar() {
@@ -316,7 +270,9 @@ public class BusDataParser {
 		}
 	}
 
-	public Collection<Service> getCalendars() {
+	// Private methods
+
+	private Collection<Service> getCalendars() {
 		final Collection<Service> services = new ArrayList<Service>();
 		try {
 			final PreparedStatement stmt = DBConnector.getConnection().prepareStatement("SELECT * FROM vdv_gtfs_tmp.calendar;", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
@@ -336,6 +292,25 @@ public class BusDataParser {
 		}
 
 		return services;
+	}
+
+	// Private static methods
+
+	private static BufferedReader getBufferedReader(final File f) throws FileNotFoundException {
+		return new BufferedReader(new InputStreamReader(new FileInputStream(f), FILE_CS));
+	}
+
+	private static boolean isValidDay(final String valid) {
+		return  !valid.equals("0");
+	}
+
+	private static Calendar parseDateToCalendar(final String d) {
+		return new GregorianCalendar(Integer.parseInt(d.substring(0, 4)), Integer.parseInt(d.substring(4, 6)), Integer.parseInt(d.substring(6, 8)));
+	}
+
+	private static long parseDateToMillis(final String d) {
+		final Calendar c = new GregorianCalendar(Integer.parseInt(d.substring(0, 4)), Integer.parseInt(d.substring(4, 6)), Integer.parseInt(d.substring(6, 8)));
+		return c.getTimeInMillis();
 	}
 
 }
