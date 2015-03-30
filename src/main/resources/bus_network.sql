@@ -21,7 +21,8 @@ CREATE TABLE time_expanded.<city>_bus_routes (
 );
 
 CREATE TABLE time_expanded.<city>_bus_nodes (
-	node_id serial NOT NULL,	node_geometry geometry NOT NULL,
+	node_id serial NOT NULL,
+	node_geometry geometry NOT NULL,
 	node_in_degree integer,
 	node_out_degree integer,
 	node_route_id integer,
