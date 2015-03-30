@@ -1,6 +1,5 @@
 package datamodel.command;
 
-
 /**
  * This generates the script to add the street network for a city.
  */

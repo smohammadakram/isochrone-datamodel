@@ -1,7 +1,5 @@
 package datamodel.command;
 
-import java.util.Arrays;
-
 public class LinkScriptCommand extends AbstractScriptCommand {
 
 	public LinkScriptCommand(final String folder, final String city) {
@@ -10,12 +8,7 @@ public class LinkScriptCommand extends AbstractScriptCommand {
 
 	@Override
 	public void execute() {
-		final String[] filenames = new String[] {
-			"link_network.sql",
-			"link_nodes_degrees.sql"
-		};
-
-		Arrays.stream(filenames).forEach(CommandUtils.rethrowConsumer(this::createSqlFile));
+		CommandUtils.rethrowConsumer(this::createSqlFile).accept("link_network.sql");
 	}
 
 }
