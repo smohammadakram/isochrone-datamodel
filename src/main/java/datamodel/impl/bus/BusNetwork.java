@@ -41,10 +41,6 @@ public class BusNetwork {
 
 	// Public methods
 
-	public void copyBusCalendarTable() throws SQLException {
-		copyBusCalendarTable(true);
-	}
-
 	public void copyBusCalendarTable(final boolean truncateFirst) throws SQLException {
 		if (truncateFirst) {
 			final String queryTruncate = "TRUNCATE TABLE time_expanded.%s_bus_calendar";
