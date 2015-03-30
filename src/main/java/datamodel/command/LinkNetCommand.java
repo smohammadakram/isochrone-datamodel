@@ -1,7 +1,7 @@
 package datamodel.command;
 
-import datamodel.linknetwork.LinkNetwork;
-import datamodel.util.DbConnector;
+import datamodel.db.DbConnector;
+import datamodel.impl.link.LinkNetwork;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;

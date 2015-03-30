@@ -1,4 +1,4 @@
-package datamodel.streetnetwork;
+package datamodel.impl.street;
 
 import org.postgis.PGgeometry;
 

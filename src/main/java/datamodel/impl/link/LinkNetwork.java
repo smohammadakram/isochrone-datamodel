@@ -1,6 +1,6 @@
-package datamodel.linknetwork;
+package datamodel.impl.link;
 
-import datamodel.util.DbConnector;
+import datamodel.db.DbConnector;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import java.sql.ResultSet;

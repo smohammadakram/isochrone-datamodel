@@ -1,4 +1,4 @@
-package datamodel.streetnetwork;
+package datamodel.impl.street;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -32,7 +32,7 @@ import org.postgis.LineString;
 import org.postgis.PGgeometry;
 import org.postgis.Point;
 
-public class GraphBuilder extends BinaryParser {
+public class StreetNetwork extends BinaryParser {
 
 	private static final int CLIENT_SRID = 4326;
 	private static final Charset FILE_CS = Charset.forName("UTF-8");
@@ -50,7 +50,7 @@ public class GraphBuilder extends BinaryParser {
 	private final File scriptEdges;
 	private final File scriptNodes;
 
-	public GraphBuilder(final String city, final String folder) {
+	public StreetNetwork(final String city, final String folder) {
 		this.city = city;
 		this.scriptEdges = new File(folder + "/" + city + "_street_edges_import.sql");
 		this.scriptNodes = new File(folder + "/" + city + "_street_nodes_import.sql");
@@ -166,10 +166,10 @@ public class GraphBuilder extends BinaryParser {
 
 		System.out.println("Done.");
 		if (newNodes) {
-			buildNodeScript(getStreetNodes(ways.values()));
+			insertNodes2Script(getStreetNodes(ways.values()));
 		}
 
-		buildEdgeScript(addEdges(ways));
+		insertEdges2Script(addEdges(ways));
 	}
 
 	@Override
@@ -209,18 +209,6 @@ public class GraphBuilder extends BinaryParser {
 		return new PGgeometry(new LineString(points.toArray(new Point[points.size()])));
 	}
 
-	private void buildEdgeScript(final Collection<Edge> edgeCollection) {
-		System.out.print("[INFO] Adding edges to script...");
-		insertEdges(edgeCollection);
-		System.out.println("Done.");
-	}
-
-	private void buildNodeScript(final Collection<Node> nodeCollection) {
-		System.out.print("[INFO] Adding nodes to script...");
-		insertNodes(nodeCollection);
-		System.out.println("Done.");
-	}
-
 	private Collection<Node> getStreetNodes(final Collection<Way> ways) {
 		final Map<Long, Node> nodes = new HashMap<>();
 		for (final Way way : ways) {
@@ -254,7 +242,9 @@ public class GraphBuilder extends BinaryParser {
 		return nodes.values();
 	}
 
-	private void insertEdges(final Collection<Edge> edgeCollection) {
+	private void insertEdges2Script(final Collection<Edge> edgeCollection) {
+		System.out.print("[INFO] Adding edges to script...");
+
 		final Collection<String> lines = new ArrayList<>(edgeCollection.size());
 		final String lineTemplate = "INSERT INTO time_expanded.%s_street_edges (edge_source, edge_destination,edge_geometry) VALUES (%d, %d, ST_SetSRID(ST_GeomFromEWKT('%s'), %d))";
 		edgeCollection.forEach(e -> {
@@ -262,9 +252,12 @@ public class GraphBuilder extends BinaryParser {
 		});
 
 		writeLinesToFile(scriptEdges, true, lines.toArray(new String[lines.size()]));
+		System.out.println("Done.");
 	}
 
-	private void insertNodes(final Collection<Node> nodeCollection) {
+	private void insertNodes2Script(final Collection<Node> nodeCollection) {
+		System.out.print("[INFO] Adding nodes to script...");
+
 		final Collection<String> lines = new ArrayList<>(nodeCollection.size());
 		final String lineTemplate = "INSERT INTO time_expanded.%s_street_nodes (node_id, node_geometry) VALUES (%d, ST_GeomFromEWKT('%s'))";
 		nodeCollection.forEach(n -> {
@@ -272,6 +265,7 @@ public class GraphBuilder extends BinaryParser {
 		});
 
 		writeLinesToFile(scriptNodes, true, lines.toArray(new String[lines.size()]));
+		System.out.println("Done.");
 	}
 
 	// Private static methods

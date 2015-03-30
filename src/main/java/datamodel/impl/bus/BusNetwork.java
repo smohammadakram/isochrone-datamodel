@@ -1,6 +1,6 @@
-package datamodel.tmpdb;
+package datamodel.impl.bus;
 
-import datamodel.util.DbConnector;
+import datamodel.db.DbConnector;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import java.io.BufferedReader;
@@ -21,7 +21,7 @@ import java.util.GregorianCalendar;
 import java.util.StringTokenizer;
 
 @SuppressFBWarnings("SQL_NONCONSTANT_STRING_PASSED_TO_EXECUTE")
-public class BusDataParser {
+public class BusNetwork {
 	private static final Charset FILE_CS = Charset.forName("UTF-8");
 	private static final int LENGTH_OF_YEAR = 366;
 	private DbConnector db;
@@ -30,7 +30,7 @@ public class BusDataParser {
 
 	// Constructor
 
-	public BusDataParser(final DbConnector db, final String folder, final String city) {
+	public BusNetwork(final DbConnector db, final String folder, final String city) {
 		this.db = db;
 		this.folder = folder + File.separatorChar;
 		this.city = city;

@@ -1,6 +1,6 @@
-package datamodel.util;
+package datamodel.db;
 
-import datamodel.linknetwork.LinkEdge;
+import datamodel.impl.link.LinkEdge;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import java.sql.Connection;

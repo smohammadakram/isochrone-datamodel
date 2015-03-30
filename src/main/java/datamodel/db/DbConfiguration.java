@@ -1,4 +1,4 @@
-package datamodel.util;
+package datamodel.db;
 
 import com.tngtech.configbuilder.ConfigBuilder;
 import com.tngtech.configbuilder.annotation.propertyloaderconfiguration.PropertiesFiles;

@@ -1,4 +1,4 @@
-package datamodel.util;
+package datamodel.impl;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

@@ -1,6 +1,6 @@
 package datamodel.command;
 
-import datamodel.util.ScriptGenerator;
+import datamodel.impl.ScriptGenerator;
 
 import java.io.File;
 import java.io.IOException;

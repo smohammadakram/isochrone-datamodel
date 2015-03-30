@@ -1,6 +1,6 @@
 package datamodel.command;
 
-import datamodel.streetnetwork.GraphBuilder;
+import datamodel.impl.street.StreetNetwork;
 
 /**
  * This parses the data from OpenStreetMap.
@@ -23,7 +23,7 @@ public class StreetNetCommand implements ICommand {
 		System.out.println("[INFO] Source file: " + file);
 		System.out.println("[INFO] City: " + city);
 
-		final GraphBuilder gb = new GraphBuilder(city, folder);
+		final StreetNetwork gb = new StreetNetwork(city, folder);
 		gb.parsePBF(file);
 
 		System.out.println("[INFO] Graph: " + gb.getNrNodes() + " nodes, " + gb.getNrEdges() + " edges");

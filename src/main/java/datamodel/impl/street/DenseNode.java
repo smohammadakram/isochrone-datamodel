@@ -1,4 +1,4 @@
-package datamodel.streetnetwork;
+package datamodel.impl.street;
 
 public class DenseNode {
 

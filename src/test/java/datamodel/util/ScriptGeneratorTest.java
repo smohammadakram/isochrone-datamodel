@@ -1,5 +1,7 @@
 package datamodel.util;
 
+import datamodel.impl.ScriptGenerator;
+
 import java.io.File;
 import java.io.IOException;
 

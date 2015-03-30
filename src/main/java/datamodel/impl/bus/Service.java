@@ -1,4 +1,4 @@
-package datamodel.tmpdb;
+package datamodel.impl.bus;
 
 class Service {
 

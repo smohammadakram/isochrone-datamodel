@@ -1,4 +1,4 @@
-package datamodel.linknetwork;
+package datamodel.impl.link;
 
 public class LinkEdge {
 
