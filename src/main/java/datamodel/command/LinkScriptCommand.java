@@ -1,6 +1,6 @@
 package datamodel.command;
 
-import java.io.IOException;
+import java.util.Arrays;
 
 public class LinkScriptCommand extends AbstractScriptCommand {
 
@@ -9,11 +9,13 @@ public class LinkScriptCommand extends AbstractScriptCommand {
 	}
 
 	@Override
-	public void execute() throws IOException {
-		createSqlFiles(new String[] {
+	public void execute() {
+		final String[] filenames = new String[] {
 			"link_network.sql",
 			"link_nodes_degrees.sql"
-		});
+		};
+
+		Arrays.stream(filenames).forEach(CommandUtils.rethrowConsumer(this::createSqlFile));
 	}
 
 }

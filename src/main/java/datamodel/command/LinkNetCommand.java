@@ -21,8 +21,10 @@ public class LinkNetCommand implements ICommand {
 	@Override
 	public void execute() {
 		final long start = System.currentTimeMillis();
-		final LinkNetwork ln = new LinkNetwork(new DbConnector(), city);
-		ln.performMapping();
+		try (final DbConnector db = new DbConnector()) {
+			final LinkNetwork ln = new LinkNetwork(db, city);
+			CommandUtils.uncheck(ln::performMapping);
+		}
 
 		final long end = System.currentTimeMillis();
 		final DateFormat df = new SimpleDateFormat("mm:ss");

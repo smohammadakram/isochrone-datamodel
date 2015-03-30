@@ -3,7 +3,6 @@ package datamodel.impl.street;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -79,16 +78,14 @@ public class StreetNetwork extends BinaryParser {
 		System.out.println("[INFO] Complete!");
 	}
 
-	public void parsePBF(final String file) {
+	public Void parsePBF(final String file) throws IOException {
 		try (final InputStream in = new FileInputStream(file)) {
 			final BlockInputStream bIn = new BlockInputStream(in, this);
 			bIn.process();
 			bIn.close();
-		} catch (final FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (final IOException e) {
-			e.printStackTrace();
 		}
+
+		return null;
 	}
 
 	// Protected methods

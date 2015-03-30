@@ -1,6 +1,7 @@
 package datamodel.command;
 
-import java.io.IOException;
+import java.util.Arrays;
+
 
 public class BusScriptCommand extends AbstractScriptCommand {
 
@@ -9,15 +10,17 @@ public class BusScriptCommand extends AbstractScriptCommand {
 	}
 
 	@Override
-	public void execute() throws IOException {
+	public void execute() {
 		System.out.println("[INFO] Output directory: " + getFolder());
 		System.out.println("[INFO] City: " + getCity());
 
-		createSqlFiles(new String[] {
+		final String[] filenames = new String[] {
 			"bus_nodes_edges.sql",
 			"bus_trip_schedule.sql",
 			"bus_network.sql"
-		});
+		};
+
+		Arrays.stream(filenames).forEach(CommandUtils.rethrowConsumer(this::createSqlFile));
 	}
 
 }

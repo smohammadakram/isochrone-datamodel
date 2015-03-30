@@ -13,14 +13,16 @@ import java.nio.charset.Charset;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.GregorianCalendar;
 import java.util.StringTokenizer;
 
-@SuppressFBWarnings("SQL_NONCONSTANT_STRING_PASSED_TO_EXECUTE")
+@SuppressFBWarnings(
+	value = {"SQL_NONCONSTANT_STRING_PASSED_TO_EXECUTE", "SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING"},
+	justification = "Since we need to fill in the name of the city as table name prefix this can not be done in another way"
+)
 public class BusNetwork {
 	private static final Charset FILE_CS = Charset.forName("UTF-8");
 	private static final int LENGTH_OF_YEAR = 366;
@@ -39,147 +41,53 @@ public class BusNetwork {
 	// Public methods
 
 	// TODO: What about deletion of tables before parsing them?
-	public void parseStops() {
-//		System.out.println("[INFO] Parsing bus stops...");
 
-		final StringBuilder script = new StringBuilder();
-		try (final BufferedReader br = getBufferedReader(new File(folder + "stops.txt"))) {
-			br.readLine(); // first line skipped
-			String line = null;
-			while ((line = br.readLine()) != null) {
-				final StringTokenizer st = new StringTokenizer(line, ",");
-				final int id = Integer.parseInt(st.nextToken());
-				final String name = st.nextToken().replace("\'", " ");
-				final String s = st.nextToken() + "." + st.nextToken();
-				final String s1 = st.nextToken() + "." + st.nextToken();
-				final double lat = Double.parseDouble(s.substring(1, s.length() - 2));
-				final double longi = Double.parseDouble(s1.substring(1, s.length() - 2));
-				script.append("INSERT INTO vdv_gtfs_tmp.stops VALUES (" + id + ", '" + name + "', " + lat + ", " + longi + ");");
-			}
-		} catch (final IOException e) {
-			e.printStackTrace();
-			return;
-		}
+	public void createCalendar() throws SQLException {
+		final Collection<Service> services = getCalendars();
+		final Calendar end = new GregorianCalendar();
+		end.setFirstDayOfWeek(Calendar.MONDAY);
 
-		try (Statement stmt = db.getConnection().createStatement()) {
-			stmt.execute(script.toString());
-		} catch (final SQLException e1) {
-			e1.printStackTrace();
-		}
+		final Calendar start = new GregorianCalendar();
+		start.setFirstDayOfWeek(Calendar.MONDAY);
 
-//		System.out.println("[INFO] Done.");
-	}
+		for (final Service s : services) {
+			end.setTimeInMillis(parseDateToMillis(s.getEndDate()));
+			final int doyEnd = end.get(Calendar.DAY_OF_YEAR);
 
-	public void parseRoutes() {
-//		System.out.println("[INFO] Parsing routes...");
+			start.setTimeInMillis(parseDateToMillis(s.getStartDate()));
+			int doyStart = start.get(Calendar.DAY_OF_YEAR);
 
-		final StringBuilder script = new StringBuilder("INSERT INTO vdv_gtfs_tmp.routes VALUES\n");
-		try (final BufferedReader br = getBufferedReader(new File(folder + "routes.txt"))) {
-			br.readLine();
-			String s = br.readLine();
-			while (s != null) {
-				final StringTokenizer st = new StringTokenizer(s, ",");
-				st.nextToken();
-				script.append("('");
-				script.append(Integer.parseInt(st.nextToken()) + "', '");
-				script.append(st.nextToken() + "', '");
-				script.append(st.nextToken());
-				script.append("')");
-//				db.insertRoute(Integer.parseInt(st.nextToken()), st.nextToken(), st.nextToken());
-
-				s = br.readLine();
-				if (s != null) {
-					script.append(",\n");
+			final boolean[] validity = s.getValidity();
+			final Calendar c = (Calendar) start.clone();
+			final int[] validityVector = new int[LENGTH_OF_YEAR];
+			while (doyStart <= doyEnd) {
+				if (validity[c.get(Calendar.DAY_OF_WEEK) - 1]) {
+					validityVector[doyStart - 1] = 1;
 				}
+				c.add(Calendar.DAY_OF_YEAR, +1);
+				doyStart = c.get(Calendar.DAY_OF_YEAR);
 			}
-			script.append(";");
-		} catch (final IOException e) {
-			e.printStackTrace();
-			return;
-		}
 
-		try (final Statement stmt = db.getConnection().createStatement()) {
-			stmt.execute(script.toString());
-		} catch (final SQLException e) {
-			e.printStackTrace();
-		}
+			final StringBuilder dbVector = new StringBuilder();
+			for (int i = 0; i < validityVector.length; i++) {
+				dbVector.append(validityVector[i]);
+			}
 
-//		System.out.println("[INFO] Done.");
+			insertService(s.getId(), s.getStartDate(), s.getEndDate(), dbVector.toString());
+		}
 	}
 
-	public void parseTrips() {
-//		System.out.println("[INFO] Parsing trips...");
-
-		final StringBuilder script = new StringBuilder("INSERT INTO vdv_gtfs_tmp.trips VALUES\n");
-		try (final BufferedReader br = getBufferedReader(new File(folder + "trips.txt"))) {
-			br.readLine();
-			String s = br.readLine();
-			while (s != null) {
-				final StringTokenizer st = new StringTokenizer(s, ",");
-				script.append("('" + Integer.parseInt(st.nextToken()) + "', '" + Integer.parseInt(st.nextToken()) + "', '" + Integer.parseInt(st.nextToken()) + "')");
-
-				s = br.readLine();
-				if (s != null) {
-					script.append(",\n");
-				}
-			}
-			script.append(";");
-		} catch (final IOException e) {
-			e.printStackTrace();
-			return;
-		}
-
-		try (final Statement stmt = db.getConnection().createStatement()) {
-			stmt.execute(script.toString());
-		} catch (final SQLException e) {
-			e.printStackTrace();
-		}
-
-//		System.out.println("[INFO] Done.");
-	}
-
-	public void parseTripSequence() {
-//		System.out.println("[INFO] Parsing trips sequence...");
-
-		final StringBuilder script = new StringBuilder("INSERT INTO vdv_gtfs_tmp.stop_times VALUES\n");
-		try (final BufferedReader br = getBufferedReader(new File(folder + "stop_times.txt"))) {
-			br.readLine();
-			String s = null;
-			while ((s = br.readLine()) != null) {
-				final StringTokenizer st = new StringTokenizer(s, ",");
-				script.append("('");
-				script.append(Integer.parseInt(st.nextToken()) + "', '");
-				script.append(Integer.parseInt(st.nextToken()) + "', '");
-				script.append(st.nextToken() + "', '");
-				script.append(st.nextToken() + "', '");
-				script.append(Integer.parseInt(st.nextToken()));
-				script.append("');");
-			}
-		} catch (final IOException e) {
-			e.printStackTrace();
-			return;
-		}
-
-		try (final Statement stmt = db.getConnection().createStatement()) {
-			stmt.execute(script.toString());
-		} catch (final SQLException e) {
-			e.printStackTrace();
-		}
-
-//		System.out.println("[INFO] Done.");
-	}
-
-	public void parseCalendar() {
+	public String parseCalendar() throws SQLException {
 //		System.out.println("[INFO] Parsing calendar...");
 
-		final StringBuilder script = new StringBuilder("INSERT INTO vdv_gtfs_tmp.calendar(service_id, monday, tuesday, wednesday, thursday, friday, saturday, sunday, start_date, end_date) VALUES\n");
+		final StringBuilder script = new StringBuilder();
 		try (final BufferedReader br = getBufferedReader(new File(folder + "calendar.txt"))) {
 			br.readLine();
 			String s = null;
 			while ((s = br.readLine()) != null) {
 				final StringTokenizer st = new StringTokenizer(s, ",");
-				script.append("('");
-				script.append(Integer.parseInt(st.nextToken()) + "', '");
+				script.append("INSERT INTO vdv_gtfs_tmp.calendar(service_id, monday, tuesday, wednesday, thursday, friday, saturday, sunday, start_date, end_date) VALUES (");
+				script.append(Integer.parseInt(st.nextToken()) + ", '");
 				script.append(isValidDay(st.nextToken()) + "', '");
 				script.append(isValidDay(st.nextToken()) + "', '");
 				script.append(isValidDay(st.nextToken()) + "', '");
@@ -189,11 +97,11 @@ public class BusNetwork {
 				script.append(isValidDay(st.nextToken()) + "', '");
 				script.append(st.nextToken() + "', '");
 				script.append(st.nextToken());
-				script.append("'),\n");
+				script.append("');\n");
 			}
 		} catch (final IOException e) {
 			e.printStackTrace();
-			return;
+			return "";
 		}
 
 		try (final BufferedReader br = getBufferedReader(new File(folder + "calendar_dates.txt"))) {
@@ -231,56 +139,119 @@ public class BusNetwork {
 			script.append(";");
 		} catch (final IOException e) {
 			e.printStackTrace();
-			return;
-		}
-
-		try (final Statement stmt = db.getConnection().createStatement()) {
-			stmt.execute(script.toString());
-		} catch (final SQLException e) {
-			e.printStackTrace();
 		}
 
 //		System.out.println("Done.");
+		return script.toString();
 	}
 
-	public void createCalendar() {
-		final Collection<Service> services = getCalendars();
-		final Calendar end = new GregorianCalendar();
-		end.setFirstDayOfWeek(Calendar.MONDAY);
+	public String parseRoutes() throws SQLException {
+//		System.out.println("[INFO] Parsing routes...");
 
-		final Calendar start = new GregorianCalendar();
-		start.setFirstDayOfWeek(Calendar.MONDAY);
-
-		for (final Service s : services) {
-			end.setTimeInMillis(parseDateToMillis(s.getEndDate()));
-			final int doyEnd = end.get(Calendar.DAY_OF_YEAR);
-
-			start.setTimeInMillis(parseDateToMillis(s.getStartDate()));
-			int doyStart = start.get(Calendar.DAY_OF_YEAR);
-
-			final boolean[] validity = s.getValidity();
-			final Calendar c = (Calendar) start.clone();
-			final int[] validityVector = new int[LENGTH_OF_YEAR];
-			while (doyStart <= doyEnd) {
-				if (validity[c.get(Calendar.DAY_OF_WEEK) - 1]) {
-					validityVector[doyStart - 1] = 1;
-				}
-				c.add(Calendar.DAY_OF_YEAR, +1);
-				doyStart = c.get(Calendar.DAY_OF_YEAR);
+		final StringBuilder script = new StringBuilder();
+		try (final BufferedReader br = getBufferedReader(new File(folder + "routes.txt"))) {
+			br.readLine();
+			String s = null;
+			while ((s =  br.readLine()) != null) {
+				final StringTokenizer st = new StringTokenizer(s, ",");
+				st.nextToken();
+				script.append("INSERT INTO vdv_gtfs_tmp.routes VALUES (");
+				script.append(Integer.parseInt(st.nextToken()) + ", '");
+				script.append(st.nextToken() + "', '");
+				script.append(st.nextToken());
+				script.append("');\n");
 			}
-
-			final StringBuilder dbVector = new StringBuilder();
-			for (int i = 0; i < validityVector.length; i++) {
-				dbVector.append(validityVector[i]);
-			}
-
-			db.insertService(s.getId(), s.getStartDate(), s.getEndDate(), dbVector.toString(), city);
+		} catch (final IOException e) {
+			e.printStackTrace();
 		}
+
+//		System.out.println("[INFO] Done.");
+		return script.toString();
+	}
+
+	public String parseStops() throws SQLException {
+//		System.out.println("[INFO] Parsing bus stops...");
+
+		final StringBuilder script = new StringBuilder();
+		try (final BufferedReader br = getBufferedReader(new File(folder + "stops.txt"))) {
+			br.readLine(); // first line skipped
+			String line = null;
+			while ((line = br.readLine()) != null) {
+				final StringTokenizer st = new StringTokenizer(line, ",");
+				final int id = Integer.parseInt(st.nextToken());
+				final String name = st.nextToken().replace("\'", " ");
+				final String s = st.nextToken() + "." + st.nextToken();
+				final String s1 = st.nextToken() + "." + st.nextToken();
+				final double lat = Double.parseDouble(s.substring(1, s.length() - 2));
+				final double longi = Double.parseDouble(s1.substring(1, s.length() - 2));
+
+				script.append("INSERT INTO vdv_gtfs_tmp.stops VALUES (");
+				script.append(id + ", '");
+				script.append(name + "', ");
+				script.append(lat + ", ");
+				script.append(longi);
+				script.append(");\n");
+			}
+		} catch (final IOException e) {
+			e.printStackTrace();
+		}
+
+//		System.out.println("[INFO] Done.");
+		return script.toString();
+	}
+
+	public String parseTrips() throws SQLException {
+//		System.out.println("[INFO] Parsing trips...");
+
+		final StringBuilder script = new StringBuilder();
+		try (final BufferedReader br = getBufferedReader(new File(folder + "trips.txt"))) {
+			br.readLine();
+			String s = null;
+			while ((s = br.readLine()) != null) {
+				final StringTokenizer st = new StringTokenizer(s, ",");
+				script.append("INSERT INTO vdv_gtfs_tmp.trips VALUES (");
+				script.append(Integer.parseInt(st.nextToken()) + ", ");
+				script.append(Integer.parseInt(st.nextToken()) + ", ");
+				script.append(Integer.parseInt(st.nextToken()));
+				script.append(");\n");
+			}
+			script.append(";");
+		} catch (final IOException e) {
+			e.printStackTrace();
+		}
+
+//		System.out.println("[INFO] Done.");
+		return script.toString();
+	}
+
+	public String parseTripSequence() throws SQLException {
+//		System.out.println("[INFO] Parsing trips sequence...");
+
+		final StringBuilder script = new StringBuilder();
+		try (final BufferedReader br = getBufferedReader(new File(folder + "stop_times.txt"))) {
+			br.readLine();
+			String s = null;
+			while ((s = br.readLine()) != null) {
+				final StringTokenizer st = new StringTokenizer(s, ",");
+				script.append("INSERT INTO vdv_gtfs_tmp.stop_times VALUES (");
+				script.append(Integer.parseInt(st.nextToken()) + ", ");
+				script.append(Integer.parseInt(st.nextToken()) + ", '");
+				script.append(st.nextToken() + "', '");
+				script.append(st.nextToken() + "', ");
+				script.append(Integer.parseInt(st.nextToken()));
+				script.append(");\n");
+			}
+		} catch (final IOException e) {
+			e.printStackTrace();
+		}
+
+//		System.out.println("[INFO] Done.");
+		return script.toString();
 	}
 
 	// Private methods
 
-	private Collection<Service> getCalendars() {
+	private Collection<Service> getCalendars() throws SQLException {
 		final String query = "SELECT * FROM vdv_gtfs_tmp.calendar";
 		final Collection<Service> services = new ArrayList<Service>();
 		try (
@@ -299,11 +270,24 @@ public class BusNetwork {
 					services.add(s);
 				}
 			}
-		} catch (final SQLException e) {
-			e.printStackTrace();
 		}
 
 		return services;
+	}
+
+	private void insertService(final int id, final String start, final String end, final String vector) throws SQLException {
+		final String query = "INSERT INTO time_expanded.%s_bus_calendar(service_id, service_start_date, service_end_date, service_vector) VALUES(?,?,?,?)";
+
+		try (final PreparedStatement stmt = db.getConnection().prepareStatement(String.format(query, city))) {
+			// CHECKSTYLE:OFF MagicNumber
+			stmt.setInt(1, id);
+			stmt.setString(2, start);
+			stmt.setString(3, end);
+			stmt.setString(4, vector);
+			// CHECKSTYLE:ON MagicNumber
+
+			stmt.execute();
+		}
 	}
 
 	// Private static methods
