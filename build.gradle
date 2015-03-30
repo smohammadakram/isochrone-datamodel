@@ -31,11 +31,15 @@ repositories {
 dependencies {
 	compile "com.google.code.findbugs:annotations:$versionFindbugs"
 	compile 'com.tngtech.java:config-builder:+'
+	compile 'org.apache.logging.log4j:log4j-api:2.1'
 	compile 'org.openstreetmap.osmosis:osmosis-pbf:+'
 	compile ('org.postgis:postgis-jdbc:+') {
 		exclude module: 'postgresql'
 	}
 	compile "org.postgresql:postgresql:$versionPostgresql"
+
+	runtime 'org.apache.logging.log4j:log4j-core:2.1'
+	runtime 'org.apache.logging.log4j:log4j-slf4j-impl:2.1'
 
 	testCompile 'org.testng:testng:6+'
 }
