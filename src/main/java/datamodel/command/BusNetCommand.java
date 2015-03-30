@@ -1,6 +1,6 @@
 package datamodel.command;
 
-import datamodel.command.CommandUtils.Supplier_WithExceptions;
+import datamodel.command.CommandUtils.SupplierWithExceptions;
 import datamodel.db.DbConnector;
 import datamodel.impl.bus.BusNetwork;
 
@@ -49,8 +49,8 @@ public class BusNetCommand implements ICommand {
 
 	// Private static methods
 
-	private static void executeSQL(final DbConnector db, final Supplier_WithExceptions<String> supplier) {
+	private static void executeSQL(final DbConnector db, final SupplierWithExceptions<String> supplier) {
 		final String sql = CommandUtils.uncheck(supplier);
-		CommandUtils.rethrowConsumer(db::execute).accept(sql);;
+		CommandUtils.rethrowConsumer(db::execute).accept(sql);
 	}
 }

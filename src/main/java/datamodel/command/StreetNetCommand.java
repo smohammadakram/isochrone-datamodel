@@ -24,7 +24,7 @@ public class StreetNetCommand implements ICommand {
 		System.out.println("[INFO] City: " + city);
 
 		final StreetNetwork gb = new StreetNetwork(city, folder);
-		CommandUtils.rethrowConsumer(gb::parsePBF).accept(file);;
+		CommandUtils.rethrowConsumer(gb::parsePBF).accept(file);
 
 		System.out.println("[INFO] Graph: " + gb.getNrNodes() + " nodes, " + gb.getNrEdges() + " edges");
 	}
