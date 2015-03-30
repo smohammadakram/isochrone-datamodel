@@ -4,6 +4,8 @@ import datamodel.command.CommandUtils.Supplier_WithExceptions;
 import datamodel.db.DbConnector;
 import datamodel.impl.bus.BusNetwork;
 
+import java.util.Arrays;
+
 /**
  * This populates the temporary bus database.
  */
@@ -23,14 +25,25 @@ public class BusNetCommand implements ICommand {
 
 	@Override
 	public void execute() {
-		try(final DbConnector db = new DbConnector()) {
+		try (final DbConnector db = new DbConnector()) {
 			final BusNetwork bn = new BusNetwork(db, gtfs, city);
 
-			new Thread(() -> executeSQL(db, bn::parseRoutes)).start();
-			new Thread(() -> executeSQL(db, bn::parseTrips)).start();
-			new Thread(() -> { executeSQL(db, bn::parseCalendar); CommandUtils.uncheck(bn::createCalendar); }).start();
-			new Thread(() -> executeSQL(db, bn::parseStops)).start();
-			new Thread(() -> executeSQL(db, bn::parseTripSequence)).start();
+			// create threads collection
+			final Thread[] threads = new Thread[] {
+				new Thread(() -> executeSQL(db, bn::parseRoutes)),
+				new Thread(() -> executeSQL(db, bn::parseTrips)),
+				new Thread(() -> {
+					executeSQL(db, bn::parseCalendar);
+					executeSQL(db, bn::parseCalendarDates);
+					CommandUtils.uncheck(bn::createCalendar);
+				}),
+				new Thread(() -> executeSQL(db, bn::parseStops)),
+				new Thread(() -> executeSQL(db, bn::parseStopTimes))
+			};
+
+			// start and wait for threads
+			Arrays.stream(threads).forEach(t -> t.start());
+			Arrays.stream(threads).forEach(CommandUtils.rethrowConsumer(t -> t.join()));
 		}
 	}
 
