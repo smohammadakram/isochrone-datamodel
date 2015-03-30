@@ -7,6 +7,8 @@ public class LinkEdge {
 	private long source;
 	private int sourceMode;
 
+	// Constructor
+
 	public LinkEdge(final long source, final int sourceMode, final long destination, final int destinationMode) {
 		super();
 		this.source = source;
@@ -14,6 +16,8 @@ public class LinkEdge {
 		this.destination = destination;
 		this.destinationMode = destinationMode;
 	}
+
+	// Getters
 
 	public long getDestination() {
 		return destination;
@@ -29,22 +33,6 @@ public class LinkEdge {
 
 	public int getSourceMode() {
 		return sourceMode;
-	}
-
-	public void setDestination(final long destination) {
-		this.destination = destination;
-	}
-
-	public void setDestinationMode(final int destinationMode) {
-		this.destinationMode = destinationMode;
-	}
-
-	public void setSource(final long source) {
-		this.source = source;
-	}
-
-	public void setSourceMode(final int sourceMode) {
-		this.sourceMode = sourceMode;
 	}
 
 }

@@ -14,7 +14,7 @@ import javax.validation.constraints.NotNull;
 @PropertyLocations(fromClassLoader = true)
 @PropertyExtension("xml")
 @PropertySuffixes(extraSuffixes = { }, hostNames = false)
-public class DbConfiguration {
+public final class DbConfiguration {
 	@NotNull
 	@PropertyValue("db.database")
 	private String database;

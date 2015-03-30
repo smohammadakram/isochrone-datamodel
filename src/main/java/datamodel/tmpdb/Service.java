@@ -7,6 +7,14 @@ class Service {
 	private String startDate;
 	private boolean[] validity;
 
+	// Constructor
+
+	public Service(final int id) {
+		this.id = id;
+	}
+
+	// Getter
+
 	public String getEndDate() {
 		return endDate;
 	}
@@ -23,12 +31,10 @@ class Service {
 		return validity;
 	}
 
+	// Setter
+
 	public void setEndDate(final String endDate) {
 		this.endDate = endDate;
-	}
-
-	public void setId(final int id) {
-		this.id = id;
 	}
 
 	public void setStartDate(final String sDate) {

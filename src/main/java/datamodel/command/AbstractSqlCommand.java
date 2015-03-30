@@ -13,7 +13,7 @@ abstract class AbstractSqlCommand implements ICommand {
 
 	protected AbstractSqlCommand(final String folder, final String city) {
 		this.city = city;
-		this.folder = folder;
+		this.folder = folder + File.separatorChar;
 	}
 
 	// Getter
@@ -29,9 +29,9 @@ abstract class AbstractSqlCommand implements ICommand {
 	// Protected methods
 
 	protected void createSqlFiles(final String... filenames) throws IOException {
-		for (final String f : filenames) {
-			final ScriptGenerator sg = new ScriptGenerator(new File("src/main/resources/" + f), "<city>", city);
-			sg.writeScript(folder + "/" + city + "_" + f);
+		for (final String name : filenames) {
+			final ScriptGenerator sg = new ScriptGenerator(name, "<city>", city);
+			sg.writeScript(folder + city + "_" + name);
 		}
 	}
 }

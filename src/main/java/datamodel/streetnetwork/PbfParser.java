@@ -28,10 +28,27 @@ public class PbfParser extends BinaryParser {
 	private Map<Long, DenseNode> allNodes;
 	private Map<Long, org.openstreetmap.osmosis.core.domain.v0_6.Way> allWays;
 
+	// Constructor
+
 	public PbfParser(final String file) {
 		this.file = file;
 		allNodes = new HashMap<>();
 		allWays = new HashMap<>();
+	}
+
+	// Public methods
+
+	@Override
+	public void complete() {
+		System.out.println("[INFO] Complete!");
+	}
+
+	public Map<Long, DenseNode> getAllNodes() {
+		return allNodes;
+	}
+
+	public Map<Long, org.openstreetmap.osmosis.core.domain.v0_6.Way> getAllWays() {
+		return allWays;
 	}
 
 	public void parsePBF() {
@@ -47,23 +64,7 @@ public class PbfParser extends BinaryParser {
 		}
 	}
 
-	/**
-	 * Gets the osmosis object representing a the user in a given Info protobuf.
-	 *
-	 * @param info The info protobuf.
-	 * @return The OsmUser object
-	 */
-	OsmUser getUser(final Osmformat.Info info) {
-		// System.out.println(info);
-		if (info.hasUid() && info.hasUserSid()) {
-			if (info.getUid() < 0) {
-				return OsmUser.NONE;
-			}
-			return new OsmUser(info.getUid(), getStringById(info.getUserSid()));
-		} else {
-			return OsmUser.NONE;
-		}
-	}
+	// Protected methods
 
 	@Override
 	protected void parseRelations(final List<Osmformat.Relation> rels) {
@@ -155,17 +156,24 @@ public class PbfParser extends BinaryParser {
 		System.out.println("[INFO] Got header block.");
 	}
 
-	@Override
-	public void complete() {
-		System.out.println("[INFO] Complete!");
-	}
+	// Package-private methods
 
-	public Map<Long, DenseNode> getAllNodes() {
-		return allNodes;
-	}
-
-	public Map<Long, org.openstreetmap.osmosis.core.domain.v0_6.Way> getAllWays() {
-		return allWays;
+	/**
+	 * Gets the osmosis object representing a the user in a given Info protobuf.
+	 *
+	 * @param info The info protobuf.
+	 * @return The OsmUser object
+	 */
+	OsmUser getUser(final Osmformat.Info info) {
+		// System.out.println(info);
+		if (info.hasUid() && info.hasUserSid()) {
+			if (info.getUid() < 0) {
+				return OsmUser.NONE;
+			}
+			return new OsmUser(info.getUid(), getStringById(info.getUserSid()));
+		} else {
+			return OsmUser.NONE;
+		}
 	}
 
 }

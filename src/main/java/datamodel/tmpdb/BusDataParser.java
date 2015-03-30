@@ -25,15 +25,14 @@ public class BusDataParser {
 	private static final Charset FILE_CS = Charset.forName("UTF-8");
 	private static final int LENGTH_OF_YEAR = 366;
 	private DbConnector db;
-//	static String GTFS = "gtfs/";
-	private String gtfs;
+	private String folder;
 	private String city;
 
 	// Constructor
 
-	public BusDataParser(final DbConnector db, final String gtfs, final String city) {
+	public BusDataParser(final DbConnector db, final String folder, final String city) {
 		this.db = db;
-		this.gtfs = gtfs + "/";
+		this.folder = folder + File.separatorChar;
 		this.city = city;
 	}
 
@@ -44,7 +43,7 @@ public class BusDataParser {
 //		System.out.println("[INFO] Parsing bus stops...");
 
 		final StringBuilder script = new StringBuilder();
-		try (final BufferedReader br = getBufferedReader(new File(gtfs + "stops.txt"))) {
+		try (final BufferedReader br = getBufferedReader(new File(folder + "stops.txt"))) {
 			br.readLine(); // first line skipped
 			String line = null;
 			while ((line = br.readLine()) != null) {
@@ -75,7 +74,7 @@ public class BusDataParser {
 //		System.out.println("[INFO] Parsing routes...");
 
 		final StringBuilder script = new StringBuilder("INSERT INTO vdv_gtfs_tmp.routes VALUES\n");
-		try (final BufferedReader br = getBufferedReader(new File(gtfs + "routes.txt"))) {
+		try (final BufferedReader br = getBufferedReader(new File(folder + "routes.txt"))) {
 			br.readLine();
 			String s = br.readLine();
 			while (s != null) {
@@ -112,7 +111,7 @@ public class BusDataParser {
 //		System.out.println("[INFO] Parsing trips...");
 
 		final StringBuilder script = new StringBuilder("INSERT INTO vdv_gtfs_tmp.trips VALUES\n");
-		try (final BufferedReader br = getBufferedReader(new File(gtfs + "trips.txt"))) {
+		try (final BufferedReader br = getBufferedReader(new File(folder + "trips.txt"))) {
 			br.readLine();
 			String s = br.readLine();
 			while (s != null) {
@@ -143,7 +142,7 @@ public class BusDataParser {
 //		System.out.println("[INFO] Parsing trips sequence...");
 
 		final StringBuilder script = new StringBuilder("INSERT INTO vdv_gtfs_tmp.stop_times VALUES\n");
-		try (final BufferedReader br = getBufferedReader(new File(gtfs + "stop_times.txt"))) {
+		try (final BufferedReader br = getBufferedReader(new File(folder + "stop_times.txt"))) {
 			br.readLine();
 			String s = null;
 			while ((s = br.readLine()) != null) {
@@ -174,21 +173,30 @@ public class BusDataParser {
 //		System.out.println("[INFO] Parsing calendar...");
 
 		final StringBuilder script = new StringBuilder("INSERT INTO vdv_gtfs_tmp.calendar(service_id, monday, tuesday, wednesday, thursday, friday, saturday, sunday, start_date, end_date) VALUES\n");
-		try (final BufferedReader br = getBufferedReader(new File(gtfs + "calendar.txt"))) {
+		try (final BufferedReader br = getBufferedReader(new File(folder + "calendar.txt"))) {
 			br.readLine();
 			String s = null;
 			while ((s = br.readLine()) != null) {
 				final StringTokenizer st = new StringTokenizer(s, ",");
-				script.append("('" + Integer.parseInt(st.nextToken()) + "', '" + isValidDay(st.nextToken()) + "', '" + isValidDay(st.nextToken()) + "', '" + isValidDay(st.nextToken()) + "', '"
-					+ isValidDay(st.nextToken()) + "', '" + isValidDay(st.nextToken()) + "', '" + isValidDay(st.nextToken()) + "', '" + isValidDay(st.nextToken()) + "', '" + st.nextToken() + "', '"
-					+ st.nextToken() + "'),\n");
+				script.append("('");
+				script.append(Integer.parseInt(st.nextToken()) + "', '");
+				script.append(isValidDay(st.nextToken()) + "', '");
+				script.append(isValidDay(st.nextToken()) + "', '");
+				script.append(isValidDay(st.nextToken()) + "', '");
+				script.append(isValidDay(st.nextToken()) + "', '");
+				script.append(isValidDay(st.nextToken()) + "', '");
+				script.append(isValidDay(st.nextToken()) + "', '");
+				script.append(isValidDay(st.nextToken()) + "', '");
+				script.append(st.nextToken() + "', '");
+				script.append(st.nextToken());
+				script.append("'),\n");
 			}
 		} catch (final IOException e) {
 			e.printStackTrace();
 			return;
 		}
 
-		try (final BufferedReader br = getBufferedReader(new File(gtfs + "calendar_dates.txt"))) {
+		try (final BufferedReader br = getBufferedReader(new File(folder + "calendar_dates.txt"))) {
 			br.readLine();
 			String s = br.readLine();
 			while (s != null) {
@@ -281,9 +289,8 @@ public class BusDataParser {
 		) {
 			if (rs.first()) {
 				while (rs.next()) {
-					final Service s = new Service();
+					final Service s = new Service(rs.getInt(1));
 					// CHECKSTYLE:OFF MagicNumber
-					s.setId(rs.getInt(1));
 					s.setStartDate(rs.getString(2));
 					s.setEndDate(rs.getString(3));
 					s.setValidity(rs.getBoolean(4), rs.getBoolean(5), rs.getBoolean(6), rs.getBoolean(7), rs.getBoolean(8), rs.getBoolean(9), rs.getBoolean(10));
