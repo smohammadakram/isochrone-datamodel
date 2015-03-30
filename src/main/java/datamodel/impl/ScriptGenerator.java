@@ -50,13 +50,23 @@ public final class ScriptGenerator {
 			return;
 		}
 
+		write2File(f, script);
+	}
+
+	// Public static methods
+
+	public static void write2File(final String path, final String str) throws IOException {
+		write2File(new File(path), str);
+	}
+
+	public static void write2File(final File f, final String str) throws IOException {
 		final File p = f.getParentFile();
 		if (!p.exists() && !p.mkdirs()) {
 			throw new IOException("Could not generate output directory");
 		}
 
 		try (final Writer output = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(f), FILE_CS))) {
-			output.write(script);
+			output.write(str);
 		}
 	}
 
