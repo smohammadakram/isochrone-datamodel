@@ -28,19 +28,6 @@ public final class ScriptGenerator {
 
 	// Public methods
 
-	private String readFromFile(final String file) throws IOException {
-		final StringBuilder sb = new StringBuilder();
-
-		try (final BufferedReader r = new BufferedReader(new InputStreamReader(this.getClass().getResourceAsStream(File.separatorChar + file), FILE_CS))) {
-			String s = null;
-			while ((s = r.readLine()) != null) {
-				sb.append(s + "\n");
-			}
-		}
-
-		return sb.toString();
-	}
-
 	public void writeScript(final String path) throws IOException {
 		writeScript(new File(path));
 	}
@@ -68,6 +55,21 @@ public final class ScriptGenerator {
 		try (final Writer output = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(f), FILE_CS))) {
 			output.write(str);
 		}
+	}
+
+	// Private static methods
+
+	private static String readFromFile(final String file) throws IOException {
+		final StringBuilder sb = new StringBuilder();
+
+		try (final BufferedReader r = new BufferedReader(new InputStreamReader(ScriptGenerator.class.getResourceAsStream(File.separatorChar + file), FILE_CS))) {
+			String s = null;
+			while ((s = r.readLine()) != null) {
+				sb.append(s + "\n");
+			}
+		}
+
+		return sb.toString();
 	}
 
 }

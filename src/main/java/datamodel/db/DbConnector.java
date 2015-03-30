@@ -41,16 +41,6 @@ public class DbConnector implements AutoCloseable {
 	}
 
 	@SuppressFBWarnings("SQL_NONCONSTANT_STRING_PASSED_TO_EXECUTE")
-	public ResultSet executeQuery(final String sql) throws SQLException {
-		ResultSet result = null;
-		try (final Statement stmt = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY)) {
-			result = stmt.executeQuery(sql);
-		}
-
-		return result;
-	}
-
-	@SuppressFBWarnings("SQL_NONCONSTANT_STRING_PASSED_TO_EXECUTE")
 	public void execute(final String sql) throws SQLException {
 		try (final Statement stmt = conn.createStatement()) {
 			stmt.execute(sql);
@@ -75,11 +65,14 @@ public class DbConnector implements AutoCloseable {
 		return conn.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 	}
 
-	public boolean executePrepared(final PreparedStatement stmt) throws SQLException {
-		final boolean b = stmt.execute();
+	public void commit() throws SQLException {
 		conn.commit();
-
-		return b;
 	}
+
+	@SuppressFBWarnings("SQL_NONCONSTANT_STRING_PASSED_TO_EXECUTE")
+	public Statement getStatement() throws SQLException {
+		return conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+	}
+
 
 }

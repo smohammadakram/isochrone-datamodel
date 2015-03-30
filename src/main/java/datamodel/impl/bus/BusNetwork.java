@@ -13,6 +13,7 @@ import java.nio.charset.Charset;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -267,18 +268,19 @@ public class BusNetwork {
 	private Collection<Service> getCalendarEntries() throws SQLException {
 		final String query = "SELECT * FROM " + TABLE_NAME + ".calendar";
 		final Collection<Service> services = new ArrayList<Service>();
-		try (final ResultSet rs = db.executeQuery(query)) {
-			if (rs.first()) {
-				while (rs.next()) {
-					final Service s = new Service(rs.getInt(1));
-					// CHECKSTYLE:OFF MagicNumber
-					s.setStartDate(rs.getString(2));
-					s.setEndDate(rs.getString(3));
-					s.setValidity(rs.getBoolean(4), rs.getBoolean(5), rs.getBoolean(6), rs.getBoolean(7), rs.getBoolean(8), rs.getBoolean(9), rs.getBoolean(10));
-					// CHECKSTYLE:ON MagicNumber
+		try (
+			final Statement stmt = db.getStatement();
+			final ResultSet rs = stmt.executeQuery(query)
+		) {
+			while (rs.next()) {
+				final Service s = new Service(rs.getInt(1));
+				// CHECKSTYLE:OFF MagicNumber
+				s.setStartDate(rs.getString(2));
+				s.setEndDate(rs.getString(3));
+				s.setValidity(rs.getBoolean(4), rs.getBoolean(5), rs.getBoolean(6), rs.getBoolean(7), rs.getBoolean(8), rs.getBoolean(9), rs.getBoolean(10));
+				// CHECKSTYLE:ON MagicNumber
 
-					services.add(s);
-				}
+				services.add(s);
 			}
 		}
 

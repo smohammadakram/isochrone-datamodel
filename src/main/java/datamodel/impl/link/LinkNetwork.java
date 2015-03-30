@@ -6,6 +6,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -60,8 +61,11 @@ public class LinkNetwork {
 	private void buildInterBusLinks() throws SQLException {
 		System.out.print("[INFO] Building inter-bus nodes links...");
 
-		try (final ResultSet rs = db.executeQuery(LinkQuery.getInterBusLinks(city))) {
-			rs.beforeFirst();
+		final String query = LinkQuery.getInterBusLinks(city);
+		try (
+			final Statement stmt = db.getStatement();
+			final ResultSet rs = stmt.executeQuery(query);
+		) {
 			while (rs.next()) {
 				LinkEdge le = new LinkEdge(rs.getInt("id_1"), 0, rs.getInt("id_2"), 0);
 				linkEdges.add(le);
@@ -76,10 +80,13 @@ public class LinkNetwork {
 	private void fillBusNodes() throws SQLException {
 		System.out.print("[INFO] Extracting bus nodes...");
 
-		try (final ResultSet nodes = db.executeQuery(LinkQuery.getBusNodes(city))) {
-			nodes.beforeFirst();
-			while (nodes.next()) {
-				busNodes.add(new PGgeometry(PGgeometry.geomFromString(nodes.getString("n_geometry"))));
+		final String query = LinkQuery.getBusNodes(city);
+		try (
+			final Statement stmt = db.getStatement();
+			final ResultSet rs = stmt.executeQuery(query);
+		) {
+			while (rs.next()) {
+				busNodes.add(new PGgeometry(PGgeometry.geomFromString(rs.getString("n_geometry"))));
 			}
 		}
 
@@ -97,8 +104,11 @@ public class LinkNetwork {
 		for (final Entry<String, PointLocation> entry : pointLocation.entrySet()) {
 			final String s = entry.getKey();
 			final PointLocation pl = entry.getValue();
-			try (final ResultSet rs = db.executeQuery(LinkQuery.getIntersectedPoints(city, pl.getLocation(), pl.getEdgeGeom()))) {
-				rs.beforeFirst();
+			final String query = LinkQuery.getIntersectedPoints(city, pl.getLocation(), pl.getEdgeGeom());
+			try (
+				final Statement stmt = db.getStatement();
+				final ResultSet rs = stmt.executeQuery(query);
+			) {
 				while (rs.next()) {
 					//new node for link table
 					final PGgeometry geom = new PGgeometry(PGgeometry.geomFromString(rs.getString("geom")));
@@ -127,9 +137,14 @@ public class LinkNetwork {
 		}
 
 		for (final PGgeometry geom : busNodes) {
-			try (final ResultSet rs = db.executeQuery(LinkQuery.getNearestEdge(geom.toString(), city))) {
-				rs.first();
-				nearestEdge.put(geom.toString(), rs.getString("edge_geometry"));
+			final String query = LinkQuery.getNearestEdge(geom.toString(), city);
+			try (
+				final Statement stmt = db.getStatement();
+				final ResultSet rs = stmt.executeQuery(query);
+			) {
+				if (rs.first()) {
+					nearestEdge.put(geom.toString(), rs.getString("edge_geometry"));
+				}
 			}
 		}
 		System.out.println("Done.");
@@ -144,10 +159,15 @@ public class LinkNetwork {
 		for (final Entry<String, String> entry : nearestEdge.entrySet()) {
 			final String s = entry.getKey();
 			final String nEdge = entry.getValue();
-			try (final ResultSet rs = db.executeQuery(LinkQuery.getPointLocation(city, nEdge, s))) {
-				rs.first();
-				final PointLocation pl = new PointLocation(s, rs.getFloat("p_loc"), rs.getString("edge_geometry"));
-				pointLocation.put(s, pl);
+			final String query = LinkQuery.getPointLocation(city, nEdge, s);
+			try (
+				final Statement stmt = db.getStatement();
+				final ResultSet rs = stmt.executeQuery(query);
+			) {
+				if (rs.first()) {
+					final PointLocation pl = new PointLocation(s, rs.getFloat("p_loc"), rs.getString("edge_geometry"));
+					pointLocation.put(s, pl);
+				}
 			}
 		}
 		System.out.println("Done.");
@@ -158,7 +178,6 @@ public class LinkNetwork {
 		try (final PreparedStatement stmt = db.getPreparedStatement(LinkQuery.getBusNodeByGeom(city))) {
 			stmt.setString(1, geom);
 			try (final ResultSet rs = stmt.executeQuery()) {
-				rs.beforeFirst();
 				while (rs.next()) {
 					result.add(rs.getInt("node_id"));
 				}
@@ -170,7 +189,11 @@ public class LinkNetwork {
 
 	private long getLastPedestrianEdgeID() throws SQLException {
 		long result = -1L;
-		try (final ResultSet rs = db.executeQuery(LinkQuery.getLastPedestrainEdgeId(city))) {
+		final String query = LinkQuery.getLastPedestrainEdgeId(city);
+		try (
+			final Statement stmt = db.getStatement();
+			final ResultSet rs = stmt.executeQuery(query);
+		) {
 			if (rs.first()) {
 				result = rs.getLong("edge_id");
 			}
@@ -181,16 +204,20 @@ public class LinkNetwork {
 
 	private Map<Long, Integer> getMapCount(final String query, final String... queries) throws SQLException {
 		final Map<Long, Integer> result = new HashMap<Long, Integer>();
-		try (ResultSet rs = db.executeQuery(query)) {
-			rs.beforeFirst();
+		try (
+			final Statement stmt = db.getStatement();
+			final ResultSet rs = stmt.executeQuery(query);
+		) {
 			while (rs.next()) {
 				result.put(rs.getLong("node_id"), rs.getInt("cnt"));
 			}
 		}
 
 		for (final String q : queries) {
-			try (final ResultSet rs = db.executeQuery(q)) {
-				rs.beforeFirst();
+			try (
+				final Statement stmt = db.getStatement();
+				final ResultSet rs = stmt.executeQuery(q);
+			) {
 				while (rs.next()) {
 					if (result.get(rs.getLong("node_id")) != null) {
 						final int oldDegree = result.get(rs.getLong("node_id"));
@@ -207,7 +234,11 @@ public class LinkNetwork {
 
 	private long getMaxStreetNodeID() throws SQLException {
 		long result = -1L;
-		try (final ResultSet rs = db.executeQuery(LinkQuery.getMaxStreetNodeId(city))) {
+		final String query = LinkQuery.getMaxStreetNodeId(city);
+		try (
+			final Statement stmt = db.getStatement();
+			final ResultSet rs = stmt.executeQuery(query);
+		) {
 			if (rs.first()) {
 				result = rs.getLong("node_id");
 			}
@@ -221,8 +252,9 @@ public class LinkNetwork {
 		try (final PreparedStatement stmt = db.getPreparedStatement(LinkQuery.getNodeGeometry(city))) {
 			stmt.setLong(1, id);
 			try (final ResultSet rs = stmt.executeQuery()) {
-				rs.first();
-				result = rs.getString("node_geometry");
+				if (rs.first()) {
+					result = rs.getString("node_geometry");
+				}
 			}
 		}
 
@@ -239,7 +271,8 @@ public class LinkNetwork {
 			stmt.setInt(4, le.getDestinationMode());
 			// CHECKSTYLE:ON MagicNumber
 
-			result = db.executePrepared(stmt);
+			result = stmt.execute();
+			db.commit();
 		}
 
 		return result;
@@ -260,7 +293,8 @@ public class LinkNetwork {
 			stmt.setLong(1, id);
 			stmt.setString(2, geom);
 
-			result = db.executePrepared(stmt);
+			result = stmt.execute();
+			db.commit();
 		}
 
 		return result;
@@ -292,8 +326,11 @@ public class LinkNetwork {
 			final Long l = entry.getKey();
 			final String v = entry.getValue();
 			final String geom = getNodeGeometry(l);
-			try (final ResultSet rs = db.executeQuery(LinkQuery.getStreetUpdateSelect(city, entry.getValue()))) {
-				rs.beforeFirst();
+			final String query = LinkQuery.getStreetUpdateSelect(city, entry.getValue());
+			try (
+				final Statement stmt = db.getStatement();
+				final ResultSet rs = stmt.executeQuery(query);
+			) {
 				while (rs.next()) {
 					final long eId = rs.getLong("edge_id");
 					final long eDest = rs.getLong("edge_destination");
