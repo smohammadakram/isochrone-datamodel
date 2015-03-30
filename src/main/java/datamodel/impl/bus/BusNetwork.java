@@ -101,13 +101,20 @@ public class BusNetwork {
 			}
 		} catch (final IOException e) {
 			e.printStackTrace();
-			return "";
 		}
 
+//		System.out.println("Done.");
+		return script.toString();
+	}
+
+	public String parseCalendarDates() throws SQLException {
+//		System.out.println("[INFO] Parsing calendar dates...");
+
+		final StringBuilder script = new StringBuilder();
 		try (final BufferedReader br = getBufferedReader(new File(folder + "calendar_dates.txt"))) {
 			br.readLine();
-			String s = br.readLine();
-			while (s != null) {
+			String s = null;
+			while ((s = br.readLine()) != null) {
 				final StringTokenizer st = new StringTokenizer(s, ",");
 				final int id = Integer.parseInt(st.nextToken());
 				final String date = st.nextToken();
@@ -117,8 +124,8 @@ public class BusNetwork {
 				v[c.get(Calendar.DAY_OF_WEEK) - 1] = true;
 
 				// CHECKSTYLE:OFF MagicNumber
-				script.append("('");
-				script.append(id + "', '");
+				script.append("INSERT INTO vdv_gtfs_tmp.calendar(service_id, monday, tuesday, wednesday, thursday, friday, saturday, sunday, start_date, end_date) VALUES (");
+				script.append(id + ", '");
 				script.append(v[0] + "', '");
 				script.append(v[1] + "', '");
 				script.append(v[2] + "', '");
@@ -128,15 +135,9 @@ public class BusNetwork {
 				script.append(v[6] + "', '");
 				script.append(date + "', '");
 				script.append(date);
-				script.append("')");
+				script.append("');\n");
 				// CHECKSTYLE:ON MagicNumber
-
-				s = br.readLine();
-				if (s != null) {
-					script.append(",\n");
-				}
 			}
-			script.append(";");
 		} catch (final IOException e) {
 			e.printStackTrace();
 		}
@@ -215,7 +216,6 @@ public class BusNetwork {
 				script.append(Integer.parseInt(st.nextToken()));
 				script.append(");\n");
 			}
-			script.append(";");
 		} catch (final IOException e) {
 			e.printStackTrace();
 		}
@@ -224,8 +224,8 @@ public class BusNetwork {
 		return script.toString();
 	}
 
-	public String parseTripSequence() throws SQLException {
-//		System.out.println("[INFO] Parsing trips sequence...");
+	public String parseStopTimes() throws SQLException {
+//		System.out.println("[INFO] Parsing stop times...");
 
 		final StringBuilder script = new StringBuilder();
 		try (final BufferedReader br = getBufferedReader(new File(folder + "stop_times.txt"))) {
