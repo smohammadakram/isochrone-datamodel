@@ -14,6 +14,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 public class BusNetworkTest {
+	private boolean performInserts = false;
 	private DbConnector db;
 	private BusNetwork bn;
 
@@ -30,14 +31,15 @@ public class BusNetworkTest {
 		}
 	}
 
+	// Test methods
+
 	@Test
 	public void testCalendar() throws SQLException, IOException {
 		final String sql = bn.parseCalendar();
 
 		Assert.assertNotNull(sql);
 		Assert.assertTrue(sql.length() > 0);
-
-		ScriptGenerator.write2File(TestHelper.TEST_OUTPUT + File.separatorChar + "gtfs_calendar.sql", sql);
+		postProcess(TestHelper.TEST_OUTPUT + File.separatorChar + "gtfs_calendar.sql", sql);
 	}
 
 	@Test
@@ -47,7 +49,7 @@ public class BusNetworkTest {
 		Assert.assertNotNull(sql);
 		Assert.assertTrue(sql.length() > 0);
 
-		ScriptGenerator.write2File(TestHelper.TEST_OUTPUT + File.separatorChar + "gtfs_calendar_dates.sql", sql);
+		postProcess(TestHelper.TEST_OUTPUT + File.separatorChar + "gtfs_calendar_dates.sql", sql);
 	}
 
 	@Test
@@ -57,7 +59,7 @@ public class BusNetworkTest {
 		Assert.assertNotNull(sql);
 		Assert.assertTrue(sql.length() > 0);
 
-		ScriptGenerator.write2File(TestHelper.TEST_OUTPUT + File.separatorChar + "gtfs_routes.sql", sql);
+		postProcess(TestHelper.TEST_OUTPUT + File.separatorChar + "gtfs_routes.sql", sql);
 	}
 
 	@Test
@@ -67,7 +69,7 @@ public class BusNetworkTest {
 		Assert.assertNotNull(sql);
 		Assert.assertTrue(sql.length() > 0);
 
-		ScriptGenerator.write2File(TestHelper.TEST_OUTPUT + File.separatorChar + "gtfs_stops.sql", sql);
+		postProcess(TestHelper.TEST_OUTPUT + File.separatorChar + "gtfs_stops.sql", sql);
 	}
 
 	@Test
@@ -77,7 +79,7 @@ public class BusNetworkTest {
 		Assert.assertNotNull(sql);
 		Assert.assertTrue(sql.length() > 0);
 
-		ScriptGenerator.write2File(TestHelper.TEST_OUTPUT + File.separatorChar + "gtfs_stop_times.sql", sql);
+		postProcess(TestHelper.TEST_OUTPUT + File.separatorChar + "gtfs_stop_times.sql", sql);
 	}
 
 	@Test
@@ -87,7 +89,21 @@ public class BusNetworkTest {
 		Assert.assertNotNull(sql);
 		Assert.assertTrue(sql.length() > 0);
 
-		ScriptGenerator.write2File(TestHelper.TEST_OUTPUT + File.separatorChar + "gtfs_trips.sql", sql);
+		postProcess(TestHelper.TEST_OUTPUT + File.separatorChar + "gtfs_trips.sql", sql);
+	}
+
+	// Private methods
+
+	private void postProcess(final String filename, final String sql) throws SQLException, IOException {
+		ScriptGenerator.write2File(TestHelper.TEST_OUTPUT + File.separatorChar + "gtfs_calendar_dates.sql", sql);
+
+		if (db != null && performInserts) {
+			try {
+				db.executeBatch(sql.split(";"));
+			} catch (final SQLException e) {
+				throw e;
+			}
+		}
 	}
 
 }
