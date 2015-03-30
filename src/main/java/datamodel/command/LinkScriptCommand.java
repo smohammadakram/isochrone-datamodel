@@ -2,7 +2,7 @@ package datamodel.command;
 
 import java.io.IOException;
 
-public class LinkScriptCommand extends AbstractSqlCommand {
+public class LinkScriptCommand extends AbstractScriptCommand {
 
 	public LinkScriptCommand(final String folder, final String city) {
 		super(folder, city);

@@ -5,13 +5,13 @@ import datamodel.util.ScriptGenerator;
 import java.io.File;
 import java.io.IOException;
 
-abstract class AbstractSqlCommand implements ICommand {
+abstract class AbstractScriptCommand implements ICommand {
 	private String folder;
 	private String city;
 
 	// Constructor
 
-	protected AbstractSqlCommand(final String folder, final String city) {
+	protected AbstractScriptCommand(final String folder, final String city) {
 		this.city = city;
 		this.folder = folder + File.separatorChar;
 	}

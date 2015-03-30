@@ -1,23 +1,30 @@
 package datamodel.command;
 
-import java.io.IOException;
+import datamodel.tmpdb.BusDataParser;
+import datamodel.util.DbConnector;
 
-public class BusNetCommand extends AbstractSqlCommand {
+/**
+ * This populates the temporary bus database.
+ */
+public class BusNetCommand implements ICommand {
+	private final String city;
+	private final String gtfs;
 
-	public BusNetCommand(final String folder, final String city) {
-		super(folder, city);
+	public BusNetCommand(final String gtfs, final String city) {
+		super();
+		this.city = city;
+		this.gtfs = gtfs;
 	}
 
 	@Override
-	public void execute() throws IOException {
-		System.out.println("[INFO] Output directory: " + getFolder());
-		System.out.println("[INFO] City: " + getCity());
-
-		createSqlFiles(new String[] {
-			"bus_nodes_edges.sql",
-			"bus_trip_schedule.sql",
-			"bus_network.sql"
-		});
+	public void execute() {
+		final DbConnector db = new DbConnector();
+		final BusDataParser bdp = new BusDataParser(db, gtfs, city);
+		new Thread(() -> bdp.parseRoutes()).start();
+		new Thread(() -> bdp.parseTrips()).start();
+		new Thread(() -> { bdp.parseCalendar(); bdp.createCalendar(); }).start();
+		new Thread(() -> bdp.parseStops()).start();
+		new Thread(() -> bdp.parseTripSequence()).start();
 	}
 
 }

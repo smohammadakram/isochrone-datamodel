@@ -5,12 +5,11 @@ import java.util.Locale;
 public abstract class CommandFactory {
 	enum Command {
 		BUSNET,
+		BUSSCRIPT,
 		LINKNET,
 		LINKSCRIPT,
 		STREETNET,
-		SCRIPTGEN,
-		TMPDB,
-		VDVNAMES;
+		STREETSCRIPT
 	}
 
 	// Public static factory method
@@ -30,23 +29,24 @@ public abstract class CommandFactory {
 		ICommand cmdO = null;
 
 		switch (cmd) {
-			case BUSNET:
-				cmdO = new BusNetCommand(args[0], args[1]);
+			case BUSSCRIPT:
+				cmdO = new BusScriptCommand(args[0], args[1]);
+				break;
+			case LINKNET:
+				cmdO = new LinkNetCommand(args[0]);
 				break;
 			case LINKSCRIPT:
 				cmdO = new LinkScriptCommand(args[0], args[1]);
 				break;
-			case SCRIPTGEN:
-				cmdO = new ScriptGenCommand(args[0], args[1]);
-				break;
 			case STREETNET:
 				cmdO = new StreetNetCommand(args[0], args[1], args[2]);
 				break;
-			case TMPDB:
-				cmdO = new TmpDbCommand(args[0], args[1]);
+			case STREETSCRIPT:
+				cmdO = new StreetScriptCommand(args[0], args[1]);
 				break;
+			case BUSNET:
 			default:
-				cmdO = new VdvNameCommand(args[0]);
+				cmdO = new BusNetCommand(args[0], args[1]);
 		}
 
 		return cmdO;

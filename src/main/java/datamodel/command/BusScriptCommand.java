@@ -2,12 +2,9 @@ package datamodel.command;
 
 import java.io.IOException;
 
-/**
- * This generates the script to add the street network for a city.
- */
-public class ScriptGenCommand extends AbstractSqlCommand {
+public class BusScriptCommand extends AbstractScriptCommand {
 
-	public ScriptGenCommand(final String folder, final String city) {
+	public BusScriptCommand(final String folder, final String city) {
 		super(folder, city);
 	}
 
@@ -16,7 +13,11 @@ public class ScriptGenCommand extends AbstractSqlCommand {
 		System.out.println("[INFO] Output directory: " + getFolder());
 		System.out.println("[INFO] City: " + getCity());
 
-		createSqlFiles("street_network.sql");
+		createSqlFiles(new String[] {
+			"bus_nodes_edges.sql",
+			"bus_trip_schedule.sql",
+			"bus_network.sql"
+		});
 	}
 
 }
