@@ -15,9 +15,9 @@ public class BusScriptCommand extends AbstractScriptCommand {
 		System.out.println("[INFO] City: " + getCity());
 
 		final String[] filenames = new String[] {
+			"bus_network.sql",
 			"bus_nodes_edges.sql",
-			"bus_trip_schedule.sql",
-			"bus_network.sql"
+			"bus_trip_schedule.sql"
 		};
 
 		Arrays.stream(filenames).forEach(CommandUtils.rethrowConsumer(this::createSqlFile));
