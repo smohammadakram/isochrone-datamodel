@@ -35,7 +35,7 @@ public class BusNetCommand implements ICommand {
 				new Thread(() -> {
 					executeSQL(db, bn::parseCalendar);
 					executeSQL(db, bn::parseCalendarDates);
-					CommandUtils.rethrowConsumer(bn::copyBusCalendarTable).accept(true);
+					CommandUtils.rethrowConsumer(bn::copyBusCalendarTable).accept(false);
 				}),
 				new Thread(() -> executeSQL(db, bn::parseStops)),
 				new Thread(() -> executeSQL(db, bn::parseStopTimes))

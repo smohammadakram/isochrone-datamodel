@@ -42,6 +42,8 @@ public class BusNetwork {
 	// Public methods
 
 	public void copyBusCalendarTable(final boolean truncateFirst) throws SQLException {
+//		System.out.println("[INFO] Copying bus calendar to time_expanded." + city + "_bus_calendar...");
+
 		if (truncateFirst) {
 			final String queryTruncate = "TRUNCATE TABLE time_expanded.%s_bus_calendar";
 			db.execute(String.format(queryTruncate, city));
@@ -64,6 +66,8 @@ public class BusNetwork {
 
 			stmt.executeBatch();
 		}
+
+//		System.out.println("[INFO] Done.");
 	}
 
 	public String parseCalendar() throws SQLException {
