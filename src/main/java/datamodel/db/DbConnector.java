@@ -16,22 +16,17 @@ public class DbConnector implements AutoCloseable {
 
 	public DbConnector() {
 		try {
-			Class.forName("org.postgresql.Driver");
 			final DbConfiguration config = DbConfiguration.getInstance();
+			Class.forName("org.postgresql.Driver");
+
 			conn = DriverManager.getConnection(config.getConnectionString(), config.getDbUser(), config.getDbPassword());
+			conn.setAutoCommit(false);
 		} catch (final SQLException e) {
 			System.out.println("[ERROR] Database does not exist. Please create it or change the database configuration.");
 		} catch (final ClassNotFoundException e) {
 			e.printStackTrace();
 			System.out.println("[ERROR] Database driver was not found!");
 		}
-	}
-
-
-	// Getter
-
-	public Connection getConnection() {
-		return conn;
 	}
 
 	// Public methods
@@ -45,12 +40,11 @@ public class DbConnector implements AutoCloseable {
 		}
 	}
 
-	@SuppressFBWarnings("SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING")
+	@SuppressFBWarnings("SQL_NONCONSTANT_STRING_PASSED_TO_EXECUTE")
 	public ResultSet executeQuery(final String sql) throws SQLException {
 		ResultSet result = null;
-		try (final PreparedStatement stmt = conn.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY)) {
-			final ResultSet rs = stmt.executeQuery();
-			result = rs;
+		try (final Statement stmt = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY)) {
+			result = stmt.executeQuery(sql);
 		}
 
 		return result;
@@ -60,7 +54,32 @@ public class DbConnector implements AutoCloseable {
 	public void execute(final String sql) throws SQLException {
 		try (final Statement stmt = conn.createStatement()) {
 			stmt.execute(sql);
+			conn.commit();
 		}
+	}
+
+	@SuppressFBWarnings("SQL_NONCONSTANT_STRING_PASSED_TO_EXECUTE")
+	public void executeBatch(final String[] sql) throws SQLException {
+		try (final Statement stmt = conn.createStatement()) {
+			for (final String s : sql) {
+				stmt.addBatch(s);
+			}
+
+			stmt.executeBatch();
+			conn.commit();
+		}
+	}
+
+	@SuppressFBWarnings("SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING")
+	public PreparedStatement getPreparedStatement(final String sql) throws SQLException {
+		return conn.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+	}
+
+	public boolean executePrepared(final PreparedStatement stmt) throws SQLException {
+		final boolean b = stmt.execute();
+		conn.commit();
+
+		return b;
 	}
 
 }

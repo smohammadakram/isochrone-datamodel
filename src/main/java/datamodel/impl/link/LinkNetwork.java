@@ -155,7 +155,7 @@ public class LinkNetwork {
 
 	private List<Integer> getBusNodeByGeometry(final String geom) throws SQLException {
 		final List<Integer> result = new ArrayList<Integer>();
-		try (final PreparedStatement stmt = db.getConnection().prepareStatement(LinkQuery.getBusNodeByGeom(city), ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY)) {
+		try (final PreparedStatement stmt = db.getPreparedStatement(LinkQuery.getBusNodeByGeom(city))) {
 			stmt.setString(1, geom);
 			try (final ResultSet rs = stmt.executeQuery()) {
 				rs.beforeFirst();
@@ -170,10 +170,7 @@ public class LinkNetwork {
 
 	private long getLastPedestrianEdgeID() throws SQLException {
 		long result = -1L;
-		try (
-			final PreparedStatement stmt = db.getConnection().prepareStatement(LinkQuery.getLastPedestrainEdgeId(city), ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-			final ResultSet rs = stmt.executeQuery()
-		) {
+		try (final ResultSet rs = db.executeQuery(LinkQuery.getLastPedestrainEdgeId(city))) {
 			if (rs.first()) {
 				result = rs.getLong("edge_id");
 			}
@@ -210,10 +207,7 @@ public class LinkNetwork {
 
 	private long getMaxStreetNodeID() throws SQLException {
 		long result = -1L;
-		try (
-			final PreparedStatement stmt = db.getConnection().prepareStatement(LinkQuery.getMaxStreetNodeId(city), ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-			final ResultSet rs = stmt.executeQuery();
-		) {
+		try (final ResultSet rs = db.executeQuery(LinkQuery.getMaxStreetNodeId(city))) {
 			if (rs.first()) {
 				result = rs.getLong("node_id");
 			}
@@ -224,7 +218,7 @@ public class LinkNetwork {
 
 	private String getNodeGeometry(final long id) throws SQLException {
 		String result = "";
-		try (final PreparedStatement stmt = db.getConnection().prepareStatement(LinkQuery.getNodeGeometry(city), ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY)) {
+		try (final PreparedStatement stmt = db.getPreparedStatement(LinkQuery.getNodeGeometry(city))) {
 			stmt.setLong(1, id);
 			try (final ResultSet rs = stmt.executeQuery()) {
 				rs.first();
@@ -237,7 +231,7 @@ public class LinkNetwork {
 
 	private boolean insertLinkEdge(final LinkEdge le) throws SQLException {
 		boolean result = false;
-		try (final PreparedStatement stmt = db.getConnection().prepareStatement(LinkQuery.getInsertLinkEdge(city))) {
+		try (final PreparedStatement stmt = db.getPreparedStatement(LinkQuery.getInsertLinkEdge(city))) {
 			// CHECKSTYLE:OFF MagicNumber
 			stmt.setLong(1, le.getSource());
 			stmt.setInt(2, le.getSourceMode());
@@ -245,7 +239,7 @@ public class LinkNetwork {
 			stmt.setInt(4, le.getDestinationMode());
 			// CHECKSTYLE:ON MagicNumber
 
-			result = stmt.execute();
+			result = db.executePrepared(stmt);
 		}
 
 		return result;
@@ -262,11 +256,11 @@ public class LinkNetwork {
 
 	private boolean insertStreetNode(final long id, final String geom) throws SQLException {
 		boolean result = false;
-		try (final PreparedStatement stmt = db.getConnection().prepareStatement(LinkQuery.getInsertStreetNode(city))) {
+		try (final PreparedStatement stmt = db.getPreparedStatement(LinkQuery.getInsertStreetNode(city))) {
 			stmt.setLong(1, id);
 			stmt.setString(2, geom);
 
-			result = stmt.execute();
+			result = db.executePrepared(stmt);
 		}
 
 		return result;

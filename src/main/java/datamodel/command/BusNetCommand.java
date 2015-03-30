@@ -35,7 +35,7 @@ public class BusNetCommand implements ICommand {
 				new Thread(() -> {
 					executeSQL(db, bn::parseCalendar);
 					executeSQL(db, bn::parseCalendarDates);
-					CommandUtils.uncheck(bn::createCalendar);
+					CommandUtils.uncheck(bn::copyBusCalendarTable);
 				}),
 				new Thread(() -> executeSQL(db, bn::parseStops)),
 				new Thread(() -> executeSQL(db, bn::parseStopTimes))
@@ -51,6 +51,6 @@ public class BusNetCommand implements ICommand {
 
 	private static void executeSQL(final DbConnector db, final SupplierWithExceptions<String> supplier) {
 		final String sql = CommandUtils.uncheck(supplier);
-		CommandUtils.rethrowConsumer(db::execute).accept(sql);
+		CommandUtils.rethrowConsumer(db::executeBatch).accept(sql.split(";"));
 	}
 }

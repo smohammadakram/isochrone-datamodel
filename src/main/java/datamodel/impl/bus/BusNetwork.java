@@ -25,7 +25,8 @@ import java.util.StringTokenizer;
 )
 public class BusNetwork {
 	private static final Charset FILE_CS = Charset.forName("UTF-8");
-	private static final int LENGTH_OF_YEAR = 366;
+	private static final String TABLE_NAME = "vdv_gtfs_tmp";
+	private boolean calendarTruncated = false;
 	private DbConnector db;
 	private String folder;
 	private String city;
@@ -40,53 +41,51 @@ public class BusNetwork {
 
 	// Public methods
 
-	// TODO: What about deletion of tables before parsing them?
+	public void copyBusCalendarTable() throws SQLException {
+		copyBusCalendarTable(true);
+	}
 
-	public void createCalendar() throws SQLException {
-		final Collection<Service> services = getCalendars();
-		final Calendar end = new GregorianCalendar();
-		end.setFirstDayOfWeek(Calendar.MONDAY);
+	public void copyBusCalendarTable(final boolean truncateFirst) throws SQLException {
+		if (truncateFirst) {
+			final String queryTruncate = "TRUNCATE TABLE time_expanded.%s_bus_calendar";
+			db.execute(String.format(queryTruncate, city));
+		}
+		final String query = "INSERT INTO time_expanded.%s_bus_calendar(service_id, service_start_date, service_end_date, service_vector) VALUES(?,?,?,?)";
+		final String cQuery = String.format(query, city);
 
-		final Calendar start = new GregorianCalendar();
-		start.setFirstDayOfWeek(Calendar.MONDAY);
+		final Collection<Service> services = getCalendarEntries();
+		try (final PreparedStatement stmt = db.getPreparedStatement(cQuery)) {
+			for (final Service service : services) {
+				// CHECKSTYLE:OFF MagicNumber
+				stmt.setInt(1, service.getId());
+				stmt.setString(2, service.getStartDate());
+				stmt.setString(3, service.getEndDate());
+				stmt.setString(4, service.getValidityVector());
+				// CHECKSTYLE:ON MagicNumber
 
-		for (final Service s : services) {
-			end.setTimeInMillis(parseDateToMillis(s.getEndDate()));
-			final int doyEnd = end.get(Calendar.DAY_OF_YEAR);
-
-			start.setTimeInMillis(parseDateToMillis(s.getStartDate()));
-			int doyStart = start.get(Calendar.DAY_OF_YEAR);
-
-			final boolean[] validity = s.getValidity();
-			final Calendar c = (Calendar) start.clone();
-			final int[] validityVector = new int[LENGTH_OF_YEAR];
-			while (doyStart <= doyEnd) {
-				if (validity[c.get(Calendar.DAY_OF_WEEK) - 1]) {
-					validityVector[doyStart - 1] = 1;
-				}
-				c.add(Calendar.DAY_OF_YEAR, +1);
-				doyStart = c.get(Calendar.DAY_OF_YEAR);
+				stmt.addBatch();
 			}
 
-			final StringBuilder dbVector = new StringBuilder();
-			for (int i = 0; i < validityVector.length; i++) {
-				dbVector.append(validityVector[i]);
-			}
-
-			insertService(s.getId(), s.getStartDate(), s.getEndDate(), dbVector.toString());
+			stmt.executeBatch();
 		}
 	}
 
 	public String parseCalendar() throws SQLException {
 //		System.out.println("[INFO] Parsing calendar...");
 
+		final String sqlCommand = "INSERT INTO " + TABLE_NAME + ".calendar(service_id, monday, tuesday, wednesday, thursday, friday, saturday, sunday, start_date, end_date) VALUES (";
 		final StringBuilder script = new StringBuilder();
+		if (!calendarTruncated) {
+			calendarTruncated = true;
+			script.append("TRUNCATE TABLE " + TABLE_NAME + ".calendar;\n\n");
+		}
+
 		try (final BufferedReader br = getBufferedReader(new File(folder + "calendar.txt"))) {
 			br.readLine();
 			String s = null;
 			while ((s = br.readLine()) != null) {
 				final StringTokenizer st = new StringTokenizer(s, ",");
-				script.append("INSERT INTO vdv_gtfs_tmp.calendar(service_id, monday, tuesday, wednesday, thursday, friday, saturday, sunday, start_date, end_date) VALUES (");
+				script.append(sqlCommand);
 				script.append(Integer.parseInt(st.nextToken()) + ", '");
 				script.append(isValidDay(st.nextToken()) + "', '");
 				script.append(isValidDay(st.nextToken()) + "', '");
@@ -110,7 +109,13 @@ public class BusNetwork {
 	public String parseCalendarDates() throws SQLException {
 //		System.out.println("[INFO] Parsing calendar dates...");
 
+		final String sqlCommand = "INSERT INTO " + TABLE_NAME + ".calendar(service_id, monday, tuesday, wednesday, thursday, friday, saturday, sunday, start_date, end_date) VALUES (";
 		final StringBuilder script = new StringBuilder();
+		if (!calendarTruncated) {
+			calendarTruncated = true;
+			script.append("TRUNCATE TABLE " + TABLE_NAME + ".calendar;\n\n");
+		}
+
 		try (final BufferedReader br = getBufferedReader(new File(folder + "calendar_dates.txt"))) {
 			br.readLine();
 			String s = null;
@@ -124,7 +129,7 @@ public class BusNetwork {
 				v[c.get(Calendar.DAY_OF_WEEK) - 1] = true;
 
 				// CHECKSTYLE:OFF MagicNumber
-				script.append("INSERT INTO vdv_gtfs_tmp.calendar(service_id, monday, tuesday, wednesday, thursday, friday, saturday, sunday, start_date, end_date) VALUES (");
+				script.append(sqlCommand);
 				script.append(id + ", '");
 				script.append(v[0] + "', '");
 				script.append(v[1] + "', '");
@@ -149,14 +154,16 @@ public class BusNetwork {
 	public String parseRoutes() throws SQLException {
 //		System.out.println("[INFO] Parsing routes...");
 
-		final StringBuilder script = new StringBuilder();
+		final String sqlCommand = "INSERT INTO " + TABLE_NAME + ".routes VALUES (";
+		final StringBuilder script = new StringBuilder("TRUNCATE TABLE " + TABLE_NAME + ".routes;\n\n");
+
 		try (final BufferedReader br = getBufferedReader(new File(folder + "routes.txt"))) {
 			br.readLine();
 			String s = null;
 			while ((s =  br.readLine()) != null) {
 				final StringTokenizer st = new StringTokenizer(s, ",");
 				st.nextToken();
-				script.append("INSERT INTO vdv_gtfs_tmp.routes VALUES (");
+				script.append(sqlCommand);
 				script.append(Integer.parseInt(st.nextToken()) + ", '");
 				script.append(st.nextToken() + "', '");
 				script.append(st.nextToken());
@@ -173,7 +180,9 @@ public class BusNetwork {
 	public String parseStops() throws SQLException {
 //		System.out.println("[INFO] Parsing bus stops...");
 
-		final StringBuilder script = new StringBuilder();
+		final String sqlCommand = "INSERT INTO " + TABLE_NAME + ".stops VALUES (";
+		final StringBuilder script = new StringBuilder("TRUNCATE " + TABLE_NAME + ".stops;\n\n");
+
 		try (final BufferedReader br = getBufferedReader(new File(folder + "stops.txt"))) {
 			br.readLine(); // first line skipped
 			String line = null;
@@ -186,7 +195,7 @@ public class BusNetwork {
 				final double lat = Double.parseDouble(s.substring(1, s.length() - 2));
 				final double longi = Double.parseDouble(s1.substring(1, s.length() - 2));
 
-				script.append("INSERT INTO vdv_gtfs_tmp.stops VALUES (");
+				script.append(sqlCommand);
 				script.append(id + ", '");
 				script.append(name + "', ");
 				script.append(lat + ", ");
@@ -204,13 +213,15 @@ public class BusNetwork {
 	public String parseTrips() throws SQLException {
 //		System.out.println("[INFO] Parsing trips...");
 
-		final StringBuilder script = new StringBuilder();
+		final String sqlCommand = "INSERT INTO " + TABLE_NAME + ".trips VALUES (";
+		final StringBuilder script = new StringBuilder("TRUNCATE " + TABLE_NAME + ".trips;\n\n");
+
 		try (final BufferedReader br = getBufferedReader(new File(folder + "trips.txt"))) {
 			br.readLine();
 			String s = null;
 			while ((s = br.readLine()) != null) {
 				final StringTokenizer st = new StringTokenizer(s, ",");
-				script.append("INSERT INTO vdv_gtfs_tmp.trips VALUES (");
+				script.append(sqlCommand);
 				script.append(Integer.parseInt(st.nextToken()) + ", ");
 				script.append(Integer.parseInt(st.nextToken()) + ", ");
 				script.append(Integer.parseInt(st.nextToken()));
@@ -227,13 +238,15 @@ public class BusNetwork {
 	public String parseStopTimes() throws SQLException {
 //		System.out.println("[INFO] Parsing stop times...");
 
-		final StringBuilder script = new StringBuilder();
+		final String sqlCommand = "INSERT INTO " + TABLE_NAME + ".stop_times VALUES (";
+		final StringBuilder script = new StringBuilder("TRUNCATE " + TABLE_NAME + ".stop_times;\n\n");
+
 		try (final BufferedReader br = getBufferedReader(new File(folder + "stop_times.txt"))) {
 			br.readLine();
 			String s = null;
 			while ((s = br.readLine()) != null) {
 				final StringTokenizer st = new StringTokenizer(s, ",");
-				script.append("INSERT INTO vdv_gtfs_tmp.stop_times VALUES (");
+				script.append(sqlCommand);
 				script.append(Integer.parseInt(st.nextToken()) + ", ");
 				script.append(Integer.parseInt(st.nextToken()) + ", '");
 				script.append(st.nextToken() + "', '");
@@ -251,13 +264,10 @@ public class BusNetwork {
 
 	// Private methods
 
-	private Collection<Service> getCalendars() throws SQLException {
-		final String query = "SELECT * FROM vdv_gtfs_tmp.calendar";
+	private Collection<Service> getCalendarEntries() throws SQLException {
+		final String query = "SELECT * FROM " + TABLE_NAME + ".calendar";
 		final Collection<Service> services = new ArrayList<Service>();
-		try (
-			final PreparedStatement stmt = db.getConnection().prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-			final ResultSet rs = stmt.executeQuery()
-		) {
+		try (final ResultSet rs = db.executeQuery(query)) {
 			if (rs.first()) {
 				while (rs.next()) {
 					final Service s = new Service(rs.getInt(1));
@@ -275,21 +285,6 @@ public class BusNetwork {
 		return services;
 	}
 
-	private void insertService(final int id, final String start, final String end, final String vector) throws SQLException {
-		final String query = "INSERT INTO time_expanded.%s_bus_calendar(service_id, service_start_date, service_end_date, service_vector) VALUES(?,?,?,?)";
-
-		try (final PreparedStatement stmt = db.getConnection().prepareStatement(String.format(query, city))) {
-			// CHECKSTYLE:OFF MagicNumber
-			stmt.setInt(1, id);
-			stmt.setString(2, start);
-			stmt.setString(3, end);
-			stmt.setString(4, vector);
-			// CHECKSTYLE:ON MagicNumber
-
-			stmt.execute();
-		}
-	}
-
 	// Private static methods
 
 	private static BufferedReader getBufferedReader(final File f) throws FileNotFoundException {
@@ -304,11 +299,6 @@ public class BusNetwork {
 		// CHECKSTYLE:OFF MagicNumber
 		return new GregorianCalendar(Integer.parseInt(d.substring(0, 4)), Integer.parseInt(d.substring(4, 6)), Integer.parseInt(d.substring(6, 8)));
 		// CHECKSTYLE:ON MagicNumber
-	}
-
-	private static long parseDateToMillis(final String d) {
-		final Calendar c = new GregorianCalendar(Integer.parseInt(d.substring(0, 4)), Integer.parseInt(d.substring(4, 6)), Integer.parseInt(d.substring(6, 8)));
-		return c.getTimeInMillis();
 	}
 
 }
