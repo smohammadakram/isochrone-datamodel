@@ -12,6 +12,7 @@ import org.testng.Assert;
 public final class TestHelper {
 	public static final String TEST_CITY = "ttt";
 	public static final String TEST_GTFS = "gtfs";
+	public static final String TEST_GTFS_ZIP = "gtfs.zip";
 	public static final String TEST_OUTPUT = "build/tmp/scripts";
 
 	private TestHelper() { }

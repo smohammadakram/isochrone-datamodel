@@ -1,12 +1,14 @@
 package datamodel.impl.bus;
 
+import com.google.common.io.ByteStreams;
+
 import datamodel.db.DbConnector;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -19,7 +21,10 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.GregorianCalendar;
+import java.util.Locale;
 import java.util.StringTokenizer;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -33,6 +38,7 @@ public class BusNetwork {
 	private static final Logger LOGGER = LogManager.getLogger(BusNetwork.class);
 	private static final Charset FILE_CS = Charset.forName("UTF-8");
 	private static final String TABLE_NAME = "vdv_gtfs_tmp";
+	private static final String ZIP_EXTENSION = "zip";
 	private boolean calendarTruncated = false;
 	private DbConnector db;
 	private String folder;
@@ -271,11 +277,31 @@ public class BusNetwork {
 
 	// Private methods
 
-	private BufferedReader getBufferedReader(final String filename) throws FileNotFoundException {
-		final String path = folder + File.separatorChar + filename;
+	private BufferedReader getBufferedReader(final String filename) throws IOException {
+		boolean isZip = false;
+		if (folder.toLowerCase(Locale.ENGLISH).endsWith(ZIP_EXTENSION)) {
+			isZip = true;
+		}
+
+		final String path = (isZip) ? folder : folder + File.separatorChar + filename;
 		InputStream in = BusNetwork.class.getResourceAsStream(File.separatorChar + path);
 		if (in == null) {
 			in = new FileInputStream(path);
+		}
+
+		if (isZip) {
+			final ZipInputStream zIn = new ZipInputStream(in);
+
+			ZipEntry e = null;
+			while ((e = zIn.getNextEntry()) != null) {
+				if (!e.isDirectory()) {
+					final String zipFilename = e.getName();
+					if (filename.equals(zipFilename)) {
+						in = new ByteArrayInputStream(ByteStreams.toByteArray(zIn));
+						break;
+					}
+				}
+			}
 		}
 
 		return new BufferedReader(new InputStreamReader(in, FILE_CS));

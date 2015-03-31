@@ -17,11 +17,13 @@ public class BusNetworkTest {
 	private boolean performInserts = false;
 	private DbConnector db;
 	private BusNetwork bn;
+	private BusNetwork bnZip;
 
 	@BeforeClass
 	public void setup() {
 		db = new DbConnector();
 		bn = new BusNetwork(db, TestHelper.TEST_GTFS, TestHelper.TEST_CITY);
+		bnZip = new BusNetwork(db, TestHelper.TEST_GTFS_ZIP, TestHelper.TEST_CITY);
 	}
 
 	@AfterClass
@@ -90,6 +92,65 @@ public class BusNetworkTest {
 		Assert.assertTrue(sql.length() > 0);
 
 		postProcess("trips.sql", sql);
+	}
+
+	@Test
+	public void testZipCalendar() throws SQLException, IOException {
+		final String sql = bnZip.parseCalendar();
+
+		Assert.assertNotNull(sql);
+		Assert.assertTrue(sql.length() > 0);
+		postProcess("calendar_fromZip.sql", sql);
+	}
+
+	@Test
+	public void testZipCalendarDates() throws SQLException, IOException {
+		final String sql = bnZip.parseCalendarDates();
+
+		Assert.assertNotNull(sql);
+		Assert.assertTrue(sql.length() > 0);
+
+		postProcess("calendar_dates_fromZip.sql", sql);
+	}
+
+	@Test
+	public void testZipRoutes() throws SQLException, IOException {
+		final String sql = bnZip.parseRoutes();
+
+		Assert.assertNotNull(sql);
+		Assert.assertTrue(sql.length() > 0);
+
+		postProcess("routes_fromZip.sql", sql);
+	}
+
+	@Test
+	public void testZipStops() throws SQLException, IOException {
+		final String sql = bnZip.parseStops();
+
+		Assert.assertNotNull(sql);
+		Assert.assertTrue(sql.length() > 0);
+
+		postProcess("stops_fromZip.sql", sql);
+	}
+
+	@Test
+	public void testZipStopTimes() throws SQLException, IOException {
+		final String sql = bnZip.parseStopTimes();
+
+		Assert.assertNotNull(sql);
+		Assert.assertTrue(sql.length() > 0);
+
+		postProcess("stop_times_fromZip.sql", sql);
+	}
+
+	@Test
+	public void testZipTrips() throws SQLException, IOException {
+		final String sql = bnZip.parseTrips();
+
+		Assert.assertNotNull(sql);
+		Assert.assertTrue(sql.length() > 0);
+
+		postProcess("trips_fromZip.sql", sql);
 	}
 
 	// Private methods
