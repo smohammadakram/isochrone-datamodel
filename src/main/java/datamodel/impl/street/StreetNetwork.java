@@ -100,7 +100,7 @@ public class StreetNetwork extends BinaryParser {
 
 	@Override
 	protected void parseDense(final DenseNodes nodes) {
-		System.out.print("[INFO] Parsing dense nodes...");
+		LOGGER.info("Parsing dense nodes...");
 		newNodes = true;
 		long lastId = 0;
 		long lastLat = 0;
@@ -123,7 +123,7 @@ public class StreetNetwork extends BinaryParser {
 
 	@Override
 	protected void parseWays(final List<Osmformat.Way> wayList) {
-		System.out.print("[INFO] Parsing ways...");
+		LOGGER.info("Parsing ways...");
 
 		final Map<Long, Way> ways = new HashMap<Long, Way>();
 		for (final Osmformat.Way i : wayList) {
@@ -243,7 +243,7 @@ public class StreetNetwork extends BinaryParser {
 	}
 
 	private void insertEdges2Script(final Collection<Edge> edgeCollection) {
-		System.out.print("[INFO] Adding edges to script...");
+		LOGGER.info("Adding edges to script...");
 
 		final Collection<String> lines = new ArrayList<>(edgeCollection.size());
 		final String lineTemplate = "INSERT INTO time_expanded.%s_street_edges (edge_source, edge_destination,edge_geometry) VALUES (%d, %d, ST_SetSRID(ST_GeomFromEWKT('%s'), %d))";
@@ -256,7 +256,7 @@ public class StreetNetwork extends BinaryParser {
 	}
 
 	private void insertNodes2Script(final Collection<Node> nodeCollection) {
-		System.out.print("[INFO] Adding nodes to script...");
+		LOGGER.info("Adding nodes to script...");
 
 		final Collection<String> lines = new ArrayList<>(nodeCollection.size());
 		final String lineTemplate = "INSERT INTO time_expanded.%s_street_nodes (node_id, node_geometry) VALUES (%d, ST_GeomFromEWKT('%s'))";
