@@ -3,8 +3,10 @@ package datamodel.impl;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
@@ -60,10 +62,15 @@ public final class ScriptGenerator {
 
 	// Private static methods
 
-	private static String readFromFile(final String file) throws IOException {
+	private static String readFromFile(final String path) throws IOException {
 		final StringBuilder sb = new StringBuilder();
 
-		try (final BufferedReader r = new BufferedReader(new InputStreamReader(ScriptGenerator.class.getResourceAsStream(File.separatorChar + file), FILE_CS))) {
+		InputStream in = ScriptGenerator.class.getResourceAsStream(File.separatorChar + path);
+		if (in == null) {
+			in = new FileInputStream(path);
+		}
+
+		try (final BufferedReader r = new BufferedReader(new InputStreamReader(in, FILE_CS))) {
 			String s = null;
 			while ((s = r.readLine()) != null) {
 				sb.append(s + "\n");

@@ -5,8 +5,10 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.sql.PreparedStatement;
@@ -19,11 +21,16 @@ import java.util.Collection;
 import java.util.GregorianCalendar;
 import java.util.StringTokenizer;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 @SuppressFBWarnings(
 	value = {"SQL_NONCONSTANT_STRING_PASSED_TO_EXECUTE", "SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING"},
 	justification = "Since we need to fill in the name of the city as table name prefix this can not be done in another way"
 )
 public class BusNetwork {
+
+	private static final Logger LOGGER = LogManager.getLogger(BusNetwork.class);
 	private static final Charset FILE_CS = Charset.forName("UTF-8");
 	private static final String TABLE_NAME = "vdv_gtfs_tmp";
 	private boolean calendarTruncated = false;
@@ -42,7 +49,7 @@ public class BusNetwork {
 	// Public methods
 
 	public void copyBusCalendarTable(final boolean truncateFirst) throws SQLException {
-//		LOGGER.info("Copying bus calendar to time_expanded." + city + "_bus_calendar...");
+		LOGGER.info("Copying bus calendar to time_expanded." + city + "_bus_calendar...");
 
 		if (truncateFirst) {
 			final String queryTruncate = "TRUNCATE TABLE time_expanded.%s_bus_calendar";
@@ -67,11 +74,11 @@ public class BusNetwork {
 			stmt.executeBatch();
 		}
 
-//		LOGGER.info("Done.");
+		LOGGER.info("Done.");
 	}
 
 	public String parseCalendar() throws SQLException {
-//		LOGGER.info("Parsing calendar...");
+		LOGGER.info("Parsing calendar...");
 
 		final String sqlCommand = "INSERT INTO " + TABLE_NAME + ".calendar(service_id, monday, tuesday, wednesday, thursday, friday, saturday, sunday, start_date, end_date) VALUES (";
 		final StringBuilder script = new StringBuilder();
@@ -102,12 +109,12 @@ public class BusNetwork {
 			e.printStackTrace();
 		}
 
-//		LOGGER.info("Done.");
+		LOGGER.info("Done.");
 		return script.toString();
 	}
 
 	public String parseCalendarDates() throws SQLException {
-//		LOGGER.info("Parsing calendar dates...");
+		LOGGER.info("Parsing calendar dates...");
 
 		final String sqlCommand = "INSERT INTO " + TABLE_NAME + ".calendar(service_id, monday, tuesday, wednesday, thursday, friday, saturday, sunday, start_date, end_date) VALUES (";
 		final StringBuilder script = new StringBuilder();
@@ -147,12 +154,12 @@ public class BusNetwork {
 			e.printStackTrace();
 		}
 
-//		LOGGER.info("Done.");
+		LOGGER.info("Done.");
 		return script.toString();
 	}
 
 	public String parseRoutes() throws SQLException {
-//		LOGGER.info("Parsing routes...");
+		LOGGER.info("Parsing routes...");
 
 		final String sqlCommand = "INSERT INTO " + TABLE_NAME + ".routes VALUES (";
 		final StringBuilder script = new StringBuilder("TRUNCATE TABLE " + TABLE_NAME + ".routes;\n\n");
@@ -173,12 +180,12 @@ public class BusNetwork {
 			e.printStackTrace();
 		}
 
-//		LOGGER.info("Done.");
+		LOGGER.info("Done.");
 		return script.toString();
 	}
 
 	public String parseStops() throws SQLException {
-//		LOGGER.info("Parsing bus stops...");
+		LOGGER.info("Parsing bus stops...");
 
 		final String sqlCommand = "INSERT INTO " + TABLE_NAME + ".stops VALUES (";
 		final StringBuilder script = new StringBuilder("TRUNCATE " + TABLE_NAME + ".stops;\n\n");
@@ -206,12 +213,12 @@ public class BusNetwork {
 			e.printStackTrace();
 		}
 
-//		LOGGER.info("Done.");
+		LOGGER.info("Done.");
 		return script.toString();
 	}
 
 	public String parseTrips() throws SQLException {
-//		LOGGER.info("Parsing trips...");
+		LOGGER.info("Parsing trips...");
 
 		final String sqlCommand = "INSERT INTO " + TABLE_NAME + ".trips VALUES (";
 		final StringBuilder script = new StringBuilder("TRUNCATE " + TABLE_NAME + ".trips;\n\n");
@@ -231,12 +238,12 @@ public class BusNetwork {
 			e.printStackTrace();
 		}
 
-//		LOGGER.info("Done.");
+		LOGGER.info("Done.");
 		return script.toString();
 	}
 
 	public String parseStopTimes() throws SQLException {
-//		LOGGER.info("Parsing stop times...");
+		LOGGER.info("Parsing stop times...");
 
 		final String sqlCommand = "INSERT INTO " + TABLE_NAME + ".stop_times VALUES (";
 		final StringBuilder script = new StringBuilder("TRUNCATE " + TABLE_NAME + ".stop_times;\n\n");
@@ -258,14 +265,20 @@ public class BusNetwork {
 			e.printStackTrace();
 		}
 
-//		LOGGER.info("Done.");
+		LOGGER.info("Done.");
 		return script.toString();
 	}
 
 	// Private methods
 
 	private BufferedReader getBufferedReader(final String filename) throws FileNotFoundException {
-		return new BufferedReader(new InputStreamReader(BusNetwork.class.getResourceAsStream(File.separatorChar + folder + File.separatorChar + filename), FILE_CS));
+		final String path = folder + File.separatorChar + filename;
+		InputStream in = BusNetwork.class.getResourceAsStream(File.separatorChar + path);
+		if (in == null) {
+			in = new FileInputStream(path);
+		}
+
+		return new BufferedReader(new InputStreamReader(in, FILE_CS));
 	}
 
 	private Collection<Service> getCalendarEntries() throws SQLException {

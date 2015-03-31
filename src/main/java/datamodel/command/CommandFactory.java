@@ -2,8 +2,13 @@ package datamodel.command;
 
 import java.util.Locale;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public abstract class CommandFactory {
-	enum Command {
+
+	private static final Logger LOGGER = LogManager.getLogger(CommandFactory.class);
+	private enum Command {
 		BUSNET,
 		BUSSCRIPT,
 		LINKNET,
@@ -26,6 +31,7 @@ public abstract class CommandFactory {
 	// Package-private factory method (using the command object)
 
 	static ICommand createCommand(final Command cmd, final String... args) {
+		LOGGER.info("Got command {}", cmd.name());
 		ICommand cmdO = null;
 
 		switch (cmd) {
@@ -47,6 +53,10 @@ public abstract class CommandFactory {
 			case BUSNET:
 			default:
 				cmdO = new BusNetCommand(args[0], args[1]);
+		}
+
+		if (LOGGER.isDebugEnabled()) {
+			LOGGER.debug("Created class {} from command", cmdO.getClass().getSimpleName());
 		}
 
 		return cmdO;
