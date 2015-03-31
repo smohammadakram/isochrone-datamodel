@@ -290,17 +290,21 @@ public class BusNetwork {
 		}
 
 		if (isZip) {
-			final ZipInputStream zIn = new ZipInputStream(in);
-
-			ZipEntry e = null;
-			while ((e = zIn.getNextEntry()) != null) {
-				if (!e.isDirectory()) {
-					final String zipFilename = e.getName();
-					if (filename.equals(zipFilename)) {
-						in = new ByteArrayInputStream(ByteStreams.toByteArray(zIn));
-						break;
+			byte[] data = null;
+			try (final ZipInputStream zIn = new ZipInputStream(in)) {
+				ZipEntry e = null;
+				while ((e = zIn.getNextEntry()) != null) {
+					if (!e.isDirectory()) {
+						final String zipFilename = e.getName();
+						if (filename.equals(zipFilename)) {
+							data = ByteStreams.toByteArray(zIn);
+							break;
+						}
 					}
 				}
+			}
+			if (data != null) {
+				in = new ByteArrayInputStream(data);
 			}
 		}
 
