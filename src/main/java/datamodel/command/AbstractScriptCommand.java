@@ -13,7 +13,7 @@ abstract class AbstractScriptCommand implements ICommand {
 
 	protected AbstractScriptCommand(final String folder, final String city) {
 		this.city = city;
-		this.folder = folder + File.separatorChar;
+		this.folder = folder;
 	}
 
 	// Getter
@@ -30,6 +30,6 @@ abstract class AbstractScriptCommand implements ICommand {
 
 	protected void createSqlFile(final String filename) throws IOException {
 		final ScriptGenerator sg = new ScriptGenerator(filename, "<city>", city);
-		sg.writeScript(folder + city + "_" + filename);
+		sg.writeScript(folder + File.separatorChar + city + "_" + filename);
 	}
 }

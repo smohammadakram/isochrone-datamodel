@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.postgis.PGgeometry;
 
 @SuppressFBWarnings(
@@ -21,6 +23,7 @@ import org.postgis.PGgeometry;
 )
 public class LinkNetwork {
 
+	private static final Logger LOGGER = LogManager.getLogger(LinkNetwork.class);
 	private DbConnector db;
 	private String city;
 	private List<PGgeometry> busNodes;
@@ -59,7 +62,7 @@ public class LinkNetwork {
 	// Private methods
 
 	private void buildInterBusLinks() throws SQLException {
-		System.out.print("[INFO] Building inter-bus nodes links...");
+		LOGGER.info("Building inter-bus nodes links...");
 
 		final String query = LinkQuery.getInterBusLinks(city);
 		try (
@@ -74,11 +77,11 @@ public class LinkNetwork {
 			}
 		}
 
-		System.out.println("Done.");
+		LOGGER.info("Done.");
 	}
 
 	private void fillBusNodes() throws SQLException {
-		System.out.print("[INFO] Extracting bus nodes...");
+		LOGGER.info("Extracting bus nodes...");
 
 		final String query = LinkQuery.getBusNodes(city);
 		try (
@@ -90,11 +93,11 @@ public class LinkNetwork {
 			}
 		}
 
-		System.out.println("Done.");
+		LOGGER.info("Done.");
 	}
 
 	private void fillIntersectedPoints() throws SQLException {
-		System.out.print("[INFO] Extracting new points...");
+		LOGGER.info("Extracting new points...");
 		if (pointLocation.isEmpty()) {
 			throw new IllegalStateException("Fill the point locations before filling additional nodespriv");
 		}
@@ -127,11 +130,11 @@ public class LinkNetwork {
 			}
 
 		}
-		System.out.println("Done.");
+		LOGGER.info("Done.");
 	}
 
 	private void fillNearestEdges() throws SQLException {
-		System.out.print("[INFO] Extracting nearest edges...");
+		LOGGER.info("Extracting nearest edges...");
 		if (busNodes.isEmpty()) {
 			throw new IllegalStateException("Fill the bus nodes before tryong to get nearest street edges");
 		}
@@ -147,11 +150,11 @@ public class LinkNetwork {
 				}
 			}
 		}
-		System.out.println("Done.");
+		LOGGER.info("Done.");
 	}
 
 	private void fillPointLocations() throws SQLException {
-		System.out.print("[INFO] Extracting point location...");
+		LOGGER.info("Extracting point location...");
 		if (nearestEdge.isEmpty()) {
 			throw new IllegalStateException("Fill the nearest edges before trying to get point locations");
 		}
@@ -170,7 +173,7 @@ public class LinkNetwork {
 				}
 			}
 		}
-		System.out.println("Done.");
+		LOGGER.info("Done.");
 	}
 
 	private List<Integer> getBusNodeByGeometry(final String geom) throws SQLException {
@@ -279,12 +282,12 @@ public class LinkNetwork {
 	}
 
 	private void insertLinkEdges() throws SQLException {
-		System.out.println("[INFO] Link count: " + linkEdges.size());
-		System.out.print("[INFO] Adding links...");
+		LOGGER.info("Link count: " + linkEdges.size());
+		LOGGER.info("Adding links...");
 		for (final LinkEdge le : linkEdges) {
 			insertLinkEdge(le);
 		}
-		System.out.println("Done.");
+		LOGGER.info("Done.");
 	}
 
 	private boolean insertStreetNode(final long id, final String geom) throws SQLException {
@@ -301,7 +304,7 @@ public class LinkNetwork {
 	}
 
 	private void updateBusNodes() throws SQLException {
-		System.out.print("[INFO] Updating bus nodes in/out degree...");
+		LOGGER.info("Updating bus nodes in/out degree...");
 
 		// update indegree of bus nodes
 		final Map<Long, Integer> inDegree = getMapCount(LinkQuery.getBusNodesLinkIndegree(city), LinkQuery.getBusNodesStreetIndegree(city));
@@ -315,11 +318,11 @@ public class LinkNetwork {
 			db.execute(LinkQuery.getBusNodesUpdateOutdegree(city, e));
 		}
 
-		System.out.println("Done.");
+		LOGGER.info("Done.");
 	}
 
 	private void updateStreetEdges() throws SQLException {
-		System.out.print("[INFO] Updating street edges...");
+		LOGGER.info("Updating street edges...");
 
 		long lastIndex = getLastPedestrianEdgeID();
 		for (final Entry<Long, String> entry : additionalNodes.entrySet()) {
@@ -340,11 +343,11 @@ public class LinkNetwork {
 			}
 		}
 
-		System.out.println("Done.");
+		LOGGER.info("Done.");
 	}
 
 	private void updateStreetNodes() throws SQLException {
-		System.out.print("[INFO] Updating street nodes in/out degree...");
+		LOGGER.info("Updating street nodes in/out degree...");
 
 		// update indegree of street nodes
 		final Map<Long, Integer> inDegree = getMapCount(LinkQuery.getStreetNodesLinkIndegree(city), LinkQuery.getStreetNodesStreetIndegree(city));
@@ -358,7 +361,7 @@ public class LinkNetwork {
 			db.execute(LinkQuery.getStreetNodesUpdateOutdegree(city, e));
 		}
 
-		System.out.println("Done.");
+		LOGGER.info("Done.");
 	}
 
 }

@@ -2,11 +2,16 @@ package datamodel.command;
 
 import datamodel.impl.street.StreetNetwork;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 /**
  * This parses the data from OpenStreetMap.
  * It inserts nodes and edges into the database.
  */
 public class StreetNetCommand implements ICommand {
+	private static final Logger LOGGER = LogManager.getLogger(StreetNetCommand.class);
+
 	private final String city;
 	private final String file;
 	private final String folder;
@@ -20,13 +25,10 @@ public class StreetNetCommand implements ICommand {
 
 	@Override
 	public void execute() {
-		System.out.println("[INFO] Source file: " + file);
-		System.out.println("[INFO] City: " + city);
-
 		final StreetNetwork gb = new StreetNetwork(city, folder);
 		CommandUtils.rethrowConsumer(gb::parsePBF).accept(file);
 
-		System.out.println("[INFO] Graph: " + gb.getNrNodes() + " nodes, " + gb.getNrEdges() + " edges");
+		LOGGER.info("Graph: " + gb.getNrNodes() + " nodes, " + gb.getNrEdges() + " edges");
 	}
 
 }

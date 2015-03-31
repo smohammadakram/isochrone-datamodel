@@ -39,7 +39,7 @@ public class BusNetworkTest {
 
 		Assert.assertNotNull(sql);
 		Assert.assertTrue(sql.length() > 0);
-		postProcess(TestHelper.TEST_OUTPUT + File.separatorChar + "gtfs_calendar.sql", sql);
+		postProcess("calendar.sql", sql);
 	}
 
 	@Test
@@ -49,7 +49,7 @@ public class BusNetworkTest {
 		Assert.assertNotNull(sql);
 		Assert.assertTrue(sql.length() > 0);
 
-		postProcess(TestHelper.TEST_OUTPUT + File.separatorChar + "gtfs_calendar_dates.sql", sql);
+		postProcess("calendar_dates.sql", sql);
 	}
 
 	@Test
@@ -59,7 +59,7 @@ public class BusNetworkTest {
 		Assert.assertNotNull(sql);
 		Assert.assertTrue(sql.length() > 0);
 
-		postProcess(TestHelper.TEST_OUTPUT + File.separatorChar + "gtfs_routes.sql", sql);
+		postProcess("routes.sql", sql);
 	}
 
 	@Test
@@ -69,7 +69,7 @@ public class BusNetworkTest {
 		Assert.assertNotNull(sql);
 		Assert.assertTrue(sql.length() > 0);
 
-		postProcess(TestHelper.TEST_OUTPUT + File.separatorChar + "gtfs_stops.sql", sql);
+		postProcess("stops.sql", sql);
 	}
 
 	@Test
@@ -79,7 +79,7 @@ public class BusNetworkTest {
 		Assert.assertNotNull(sql);
 		Assert.assertTrue(sql.length() > 0);
 
-		postProcess(TestHelper.TEST_OUTPUT + File.separatorChar + "gtfs_stop_times.sql", sql);
+		postProcess("stop_times.sql", sql);
 	}
 
 	@Test
@@ -89,13 +89,14 @@ public class BusNetworkTest {
 		Assert.assertNotNull(sql);
 		Assert.assertTrue(sql.length() > 0);
 
-		postProcess(TestHelper.TEST_OUTPUT + File.separatorChar + "gtfs_trips.sql", sql);
+		postProcess("trips.sql", sql);
 	}
 
 	// Private methods
 
 	private void postProcess(final String filename, final String sql) throws SQLException, IOException {
-		ScriptGenerator.write2File(TestHelper.TEST_OUTPUT + File.separatorChar + "gtfs_calendar_dates.sql", sql);
+		final String resultFolder = TestHelper.TEST_OUTPUT + File.separatorChar + TestHelper.TEST_CITY + "_gtfs";
+		ScriptGenerator.write2File(resultFolder + File.separatorChar + filename, sql);
 
 		if (db != null && performInserts) {
 			try {

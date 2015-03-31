@@ -54,6 +54,7 @@ public final class ScriptGenerator {
 
 		try (final Writer output = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(f), FILE_CS))) {
 			output.write(str);
+			output.flush();
 		}
 	}
 

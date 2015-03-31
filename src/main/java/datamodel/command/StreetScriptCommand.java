@@ -11,9 +11,6 @@ public class StreetScriptCommand extends AbstractScriptCommand {
 
 	@Override
 	public void execute() {
-		System.out.println("[INFO] Output directory: " + getFolder());
-		System.out.println("[INFO] City: " + getCity());
-
 		CommandUtils.rethrowConsumer(this::createSqlFile).accept("street_network.sql");
 	}
 

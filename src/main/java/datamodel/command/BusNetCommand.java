@@ -11,14 +11,14 @@ import java.util.Arrays;
  */
 public class BusNetCommand implements ICommand {
 	private final String city;
-	private final String gtfs;
+	private final String folder;
 
 	// Constructor
 
-	public BusNetCommand(final String gtfs, final String city) {
+	public BusNetCommand(final String folder, final String city) {
 		super();
 		this.city = city;
-		this.gtfs = gtfs;
+		this.folder = folder;
 	}
 
 	// Public methods
@@ -26,7 +26,7 @@ public class BusNetCommand implements ICommand {
 	@Override
 	public void execute() {
 		try (final DbConnector db = new DbConnector()) {
-			final BusNetwork bn = new BusNetwork(db, gtfs, city);
+			final BusNetwork bn = new BusNetwork(db, folder, city);
 
 			// create threads collection
 			final Thread[] threads = new Thread[] {

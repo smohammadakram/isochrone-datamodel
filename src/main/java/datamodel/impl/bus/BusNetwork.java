@@ -5,7 +5,6 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -36,14 +35,14 @@ public class BusNetwork {
 
 	public BusNetwork(final DbConnector db, final String folder, final String city) {
 		this.db = db;
-		this.folder = folder + File.separatorChar;
+		this.folder = folder;
 		this.city = city;
 	}
 
 	// Public methods
 
 	public void copyBusCalendarTable(final boolean truncateFirst) throws SQLException {
-//		System.out.println("[INFO] Copying bus calendar to time_expanded." + city + "_bus_calendar...");
+//		LOGGER.info("Copying bus calendar to time_expanded." + city + "_bus_calendar...");
 
 		if (truncateFirst) {
 			final String queryTruncate = "TRUNCATE TABLE time_expanded.%s_bus_calendar";
@@ -68,11 +67,11 @@ public class BusNetwork {
 			stmt.executeBatch();
 		}
 
-//		System.out.println("[INFO] Done.");
+//		LOGGER.info("Done.");
 	}
 
 	public String parseCalendar() throws SQLException {
-//		System.out.println("[INFO] Parsing calendar...");
+//		LOGGER.info("Parsing calendar...");
 
 		final String sqlCommand = "INSERT INTO " + TABLE_NAME + ".calendar(service_id, monday, tuesday, wednesday, thursday, friday, saturday, sunday, start_date, end_date) VALUES (";
 		final StringBuilder script = new StringBuilder();
@@ -81,7 +80,7 @@ public class BusNetwork {
 			script.append("TRUNCATE TABLE " + TABLE_NAME + ".calendar;\n\n");
 		}
 
-		try (final BufferedReader br = getBufferedReader(new File(folder + "calendar.txt"))) {
+		try (final BufferedReader br = getBufferedReader("calendar.txt")) {
 			br.readLine();
 			String s = null;
 			while ((s = br.readLine()) != null) {
@@ -103,12 +102,12 @@ public class BusNetwork {
 			e.printStackTrace();
 		}
 
-//		System.out.println("Done.");
+//		LOGGER.info("Done.");
 		return script.toString();
 	}
 
 	public String parseCalendarDates() throws SQLException {
-//		System.out.println("[INFO] Parsing calendar dates...");
+//		LOGGER.info("Parsing calendar dates...");
 
 		final String sqlCommand = "INSERT INTO " + TABLE_NAME + ".calendar(service_id, monday, tuesday, wednesday, thursday, friday, saturday, sunday, start_date, end_date) VALUES (";
 		final StringBuilder script = new StringBuilder();
@@ -117,7 +116,7 @@ public class BusNetwork {
 			script.append("TRUNCATE TABLE " + TABLE_NAME + ".calendar;\n\n");
 		}
 
-		try (final BufferedReader br = getBufferedReader(new File(folder + "calendar_dates.txt"))) {
+		try (final BufferedReader br = getBufferedReader("calendar_dates.txt")) {
 			br.readLine();
 			String s = null;
 			while ((s = br.readLine()) != null) {
@@ -148,17 +147,17 @@ public class BusNetwork {
 			e.printStackTrace();
 		}
 
-//		System.out.println("Done.");
+//		LOGGER.info("Done.");
 		return script.toString();
 	}
 
 	public String parseRoutes() throws SQLException {
-//		System.out.println("[INFO] Parsing routes...");
+//		LOGGER.info("Parsing routes...");
 
 		final String sqlCommand = "INSERT INTO " + TABLE_NAME + ".routes VALUES (";
 		final StringBuilder script = new StringBuilder("TRUNCATE TABLE " + TABLE_NAME + ".routes;\n\n");
 
-		try (final BufferedReader br = getBufferedReader(new File(folder + "routes.txt"))) {
+		try (final BufferedReader br = getBufferedReader("routes.txt")) {
 			br.readLine();
 			String s = null;
 			while ((s =  br.readLine()) != null) {
@@ -174,17 +173,17 @@ public class BusNetwork {
 			e.printStackTrace();
 		}
 
-//		System.out.println("[INFO] Done.");
+//		LOGGER.info("Done.");
 		return script.toString();
 	}
 
 	public String parseStops() throws SQLException {
-//		System.out.println("[INFO] Parsing bus stops...");
+//		LOGGER.info("Parsing bus stops...");
 
 		final String sqlCommand = "INSERT INTO " + TABLE_NAME + ".stops VALUES (";
 		final StringBuilder script = new StringBuilder("TRUNCATE " + TABLE_NAME + ".stops;\n\n");
 
-		try (final BufferedReader br = getBufferedReader(new File(folder + "stops.txt"))) {
+		try (final BufferedReader br = getBufferedReader("stops.txt")) {
 			br.readLine(); // first line skipped
 			String line = null;
 			while ((line = br.readLine()) != null) {
@@ -207,17 +206,17 @@ public class BusNetwork {
 			e.printStackTrace();
 		}
 
-//		System.out.println("[INFO] Done.");
+//		LOGGER.info("Done.");
 		return script.toString();
 	}
 
 	public String parseTrips() throws SQLException {
-//		System.out.println("[INFO] Parsing trips...");
+//		LOGGER.info("Parsing trips...");
 
 		final String sqlCommand = "INSERT INTO " + TABLE_NAME + ".trips VALUES (";
 		final StringBuilder script = new StringBuilder("TRUNCATE " + TABLE_NAME + ".trips;\n\n");
 
-		try (final BufferedReader br = getBufferedReader(new File(folder + "trips.txt"))) {
+		try (final BufferedReader br = getBufferedReader("trips.txt")) {
 			br.readLine();
 			String s = null;
 			while ((s = br.readLine()) != null) {
@@ -232,17 +231,17 @@ public class BusNetwork {
 			e.printStackTrace();
 		}
 
-//		System.out.println("[INFO] Done.");
+//		LOGGER.info("Done.");
 		return script.toString();
 	}
 
 	public String parseStopTimes() throws SQLException {
-//		System.out.println("[INFO] Parsing stop times...");
+//		LOGGER.info("Parsing stop times...");
 
 		final String sqlCommand = "INSERT INTO " + TABLE_NAME + ".stop_times VALUES (";
 		final StringBuilder script = new StringBuilder("TRUNCATE " + TABLE_NAME + ".stop_times;\n\n");
 
-		try (final BufferedReader br = getBufferedReader(new File(folder + "stop_times.txt"))) {
+		try (final BufferedReader br = getBufferedReader("stop_times.txt")) {
 			br.readLine();
 			String s = null;
 			while ((s = br.readLine()) != null) {
@@ -259,11 +258,15 @@ public class BusNetwork {
 			e.printStackTrace();
 		}
 
-//		System.out.println("[INFO] Done.");
+//		LOGGER.info("Done.");
 		return script.toString();
 	}
 
 	// Private methods
+
+	private BufferedReader getBufferedReader(final String filename) throws FileNotFoundException {
+		return new BufferedReader(new InputStreamReader(BusNetwork.class.getResourceAsStream(File.separatorChar + folder + File.separatorChar + filename), FILE_CS));
+	}
 
 	private Collection<Service> getCalendarEntries() throws SQLException {
 		final String query = "SELECT * FROM " + TABLE_NAME + ".calendar";
@@ -288,10 +291,6 @@ public class BusNetwork {
 	}
 
 	// Private static methods
-
-	private static BufferedReader getBufferedReader(final File f) throws FileNotFoundException {
-		return new BufferedReader(new InputStreamReader(new FileInputStream(f), FILE_CS));
-	}
 
 	private static boolean isValidDay(final String valid) {
 		return !valid.equals("0");

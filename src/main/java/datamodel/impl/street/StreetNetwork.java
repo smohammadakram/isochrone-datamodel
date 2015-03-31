@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.openstreetmap.osmosis.core.domain.v0_6.CommonEntityData;
 import org.openstreetmap.osmosis.core.domain.v0_6.OsmUser;
 import org.openstreetmap.osmosis.core.domain.v0_6.Tag;
@@ -33,6 +35,7 @@ import org.postgis.Point;
 
 public class StreetNetwork extends BinaryParser {
 
+	private static final Logger LOGGER = LogManager.getLogger(StreetNetwork.class);
 	private static final int CLIENT_SRID = 4326;
 	private static final Charset FILE_CS = Charset.forName("UTF-8");
 	/** The magic number used to indicate no version number metadata for this entity. */
@@ -75,7 +78,7 @@ public class StreetNetwork extends BinaryParser {
 
 	@Override
 	public void complete() {
-		System.out.println("[INFO] Complete!");
+		LOGGER.info("Complete!");
 	}
 
 	public Void parsePBF(final String file) throws IOException {
@@ -110,7 +113,7 @@ public class StreetNetwork extends BinaryParser {
 			final DenseNode di = new DenseNode(nodes.getDenseinfo().getVersion(i), nodes.getDenseinfo().getTimestamp(i), nodes.getDenseinfo().getChangeset(i), parseLat(lastLat), parseLon(lastLon));
 			denseNodes.put(lastId, di);
 		}
-		System.out.println("Done.");
+		LOGGER.info("Done.");
 	}
 
 	@Override
@@ -161,7 +164,7 @@ public class StreetNetwork extends BinaryParser {
 			ways.put(id, tmp);
 		}
 
-		System.out.println("Done.");
+		LOGGER.info("Done.");
 		if (newNodes) {
 			insertNodes2Script(getStreetNodes(ways.values()));
 		}
@@ -249,7 +252,7 @@ public class StreetNetwork extends BinaryParser {
 		});
 
 		writeLinesToFile(scriptEdges, true, lines.toArray(new String[lines.size()]));
-		System.out.println("Done.");
+		LOGGER.info("Done.");
 	}
 
 	private void insertNodes2Script(final Collection<Node> nodeCollection) {
@@ -262,7 +265,7 @@ public class StreetNetwork extends BinaryParser {
 		});
 
 		writeLinesToFile(scriptNodes, true, lines.toArray(new String[lines.size()]));
-		System.out.println("Done.");
+		LOGGER.info("Done.");
 	}
 
 	// Private static methods

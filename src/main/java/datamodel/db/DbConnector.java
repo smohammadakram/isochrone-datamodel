@@ -9,7 +9,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class DbConnector implements AutoCloseable {
+	private static final Logger LOGGER = LogManager.getLogger(DbConnector.class);
 	private Connection conn;
 
 	// Constructor
@@ -22,10 +26,10 @@ public class DbConnector implements AutoCloseable {
 			conn = DriverManager.getConnection(config.getConnectionString(), config.getDbUser(), config.getDbPassword());
 			conn.setAutoCommit(false);
 		} catch (final SQLException e) {
-			System.out.println("[ERROR] Database does not exist. Please create it or change the database configuration.");
+			LOGGER.info("[ERROR] Database does not exist. Please create it or change the database configuration.");
 		} catch (final ClassNotFoundException e) {
 			e.printStackTrace();
-			System.out.println("[ERROR] Database driver was not found!");
+			LOGGER.info("[ERROR] Database driver was not found!");
 		}
 	}
 

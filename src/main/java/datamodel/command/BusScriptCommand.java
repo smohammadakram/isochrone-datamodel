@@ -2,7 +2,6 @@ package datamodel.command;
 
 import java.util.Arrays;
 
-
 public class BusScriptCommand extends AbstractScriptCommand {
 
 	public BusScriptCommand(final String folder, final String city) {
@@ -11,9 +10,6 @@ public class BusScriptCommand extends AbstractScriptCommand {
 
 	@Override
 	public void execute() {
-		System.out.println("[INFO] Output directory: " + getFolder());
-		System.out.println("[INFO] City: " + getCity());
-
 		final String[] filenames = new String[] {
 			"bus_network.sql",
 			"bus_nodes_edges.sql",
