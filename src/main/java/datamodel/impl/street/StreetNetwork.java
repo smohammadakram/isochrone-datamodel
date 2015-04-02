@@ -248,7 +248,9 @@ public class StreetNetwork extends BinaryParser {
 		final Collection<String> lines = new ArrayList<>(edgeCollection.size());
 		final String lineTemplate = "INSERT INTO time_expanded.%s_street_edges (edge_source, edge_destination,edge_geometry) VALUES (%d, %d, ST_SetSRID(ST_GeomFromEWKT('%s'), %d))";
 		edgeCollection.forEach(e -> {
-			lines.add(String.format(lineTemplate, city, e.getSource(), e.getDestination(), e.getGeometry().toString(), CLIENT_SRID));
+			if (e.getSource() != e.getDestination()) {
+				lines.add(String.format(lineTemplate, city, e.getSource(), e.getDestination(), e.getGeometry().toString(), CLIENT_SRID));
+			}
 		});
 
 		writeLinesToFile(scriptEdges, true, lines.toArray(new String[lines.size()]));
