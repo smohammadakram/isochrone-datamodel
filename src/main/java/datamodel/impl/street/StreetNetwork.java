@@ -185,11 +185,12 @@ public class StreetNetwork extends BinaryParser {
 			final long l = e.getKey();
 			final Way way = e.getValue();
 			final List<WayNode> wayNodes = way.getWayNodes();
-			final Edge edge = new Edge(l, wayNodes.get(0).getNodeId(), (wayNodes.get(way.getWayNodes().size() - 1).getNodeId()), buildEdgeGeometry(wayNodes), 0);
+			final int size = way.getWayNodes().size();
+			final Edge edge = new Edge(l, wayNodes.get(0).getNodeId(), (wayNodes.get(size - 1).getNodeId()), buildEdgeGeometry(wayNodes), size);
 			edgeColection.add(edge);
 
 			Collections.reverse(wayNodes);
-			final Edge edge1 = new Edge(l, wayNodes.get(0).getNodeId(), (wayNodes.get(way.getWayNodes().size() - 1).getNodeId()), buildEdgeGeometry(wayNodes), 0);
+			final Edge edge1 = new Edge(l, wayNodes.get(0).getNodeId(), (wayNodes.get(size - 1).getNodeId()), buildEdgeGeometry(wayNodes), size);
 			edgeColection.add(edge1);
 		}
 
@@ -247,10 +248,8 @@ public class StreetNetwork extends BinaryParser {
 
 		final Collection<String> lines = new ArrayList<>(edgeCollection.size());
 		final String lineTemplate = "INSERT INTO time_expanded.%s_street_edges (edge_source, edge_destination,edge_geometry) VALUES (%d, %d, ST_SetSRID(ST_GeomFromEWKT('%s'), %d))";
-		edgeCollection.forEach(e -> {
-			if (e.getSource() != e.getDestination()) {
-				lines.add(String.format(lineTemplate, city, e.getSource(), e.getDestination(), e.getGeometry().toString(), CLIENT_SRID));
-			}
+		edgeCollection.stream().filter(e -> e.getLength() > 1 && e.getSource() != e.getDestination()).forEach(e -> {
+			lines.add(String.format(lineTemplate, city, e.getSource(), e.getDestination(), e.getGeometry().toString(), CLIENT_SRID));
 		});
 
 		writeLinesToFile(scriptEdges, true, lines.toArray(new String[lines.size()]));
