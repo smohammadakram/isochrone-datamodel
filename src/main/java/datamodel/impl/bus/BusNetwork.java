@@ -12,6 +12,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Locale;
 import java.util.TimeZone;
 
 import org.apache.logging.log4j.LogManager;
@@ -69,10 +70,10 @@ public class BusNetwork {
 
 		if (truncateFirst) {
 			final String queryTruncate = "TRUNCATE TABLE time_expanded.%s_bus_calendar";
-			db.execute(String.format(queryTruncate, city));
+			db.execute(String.format(Locale.ENGLISH, queryTruncate, city));
 		}
 		final String query = "INSERT INTO time_expanded.%s_bus_calendar(service_id, service_start_date, service_end_date, service_vector) VALUES(?,?,?,?)";
-		final String cQuery = String.format(query, city);
+		final String cQuery = String.format(Locale.ENGLISH, query, city);
 
 		final Collection<Service> services = getCalendarEntries();
 		try (final PreparedStatement stmt = db.getPreparedStatement(cQuery)) {

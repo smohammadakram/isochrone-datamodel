@@ -119,12 +119,9 @@ public class LinkNetwork {
 					maxStreetID++;
 					additionalNodes.put(maxStreetID, pl.getEdgeGeom());
 					insertStreetNode(maxStreetID, geom.toString());
-					LinkEdge le;
 					for (final Integer i : getBusNodeByGeometry(s)) {
-						le = new LinkEdge(maxStreetID, 1, i, 0);
-						linkEdges.add(le);
-						le = new LinkEdge(i, 0, maxStreetID, 1);
-						linkEdges.add(le);
+						linkEdges.add(new LinkEdge(maxStreetID, 1, i, 0));
+						linkEdges.add(new LinkEdge(i, 0, maxStreetID, 1));
 					}
 				}
 			}

@@ -14,6 +14,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -249,7 +250,7 @@ public class StreetNetwork extends BinaryParser {
 		final Collection<String> lines = new ArrayList<>(edgeCollection.size());
 		final String lineTemplate = "INSERT INTO time_expanded.%s_street_edges (edge_source, edge_destination,edge_geometry) VALUES (%d, %d, ST_SetSRID(ST_GeomFromEWKT('%s'), %d))";
 		edgeCollection.stream().filter(e -> e.getLength() > 1 && e.getSource() != e.getDestination()).forEach(e -> {
-			lines.add(String.format(lineTemplate, city, e.getSource(), e.getDestination(), e.getGeometry().toString(), CLIENT_SRID));
+			lines.add(String.format(Locale.ENGLISH, lineTemplate, city, e.getSource(), e.getDestination(), e.getGeometry().toString(), CLIENT_SRID));
 		});
 
 		writeLinesToFile(scriptEdges, true, lines.toArray(new String[lines.size()]));
@@ -262,7 +263,7 @@ public class StreetNetwork extends BinaryParser {
 		final Collection<String> lines = new ArrayList<>(nodeCollection.size());
 		final String lineTemplate = "INSERT INTO time_expanded.%s_street_nodes (node_id, node_geometry) VALUES (%d, ST_GeomFromEWKT('%s'))";
 		nodeCollection.forEach(n -> {
-			lines.add(String.format(lineTemplate, city, n.getId(), n.getGeometry().toString()));
+			lines.add(String.format(Locale.ENGLISH, lineTemplate, city, n.getId(), n.getGeometry().toString()));
 		});
 
 		writeLinesToFile(scriptNodes, true, lines.toArray(new String[lines.size()]));
