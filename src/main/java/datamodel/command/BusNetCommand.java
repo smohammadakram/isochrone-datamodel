@@ -26,7 +26,8 @@ public class BusNetCommand implements ICommand {
 	@Override
 	public void execute() {
 		try (final DbConnector db = new DbConnector()) {
-			final BusNetwork bn = new BusNetwork(db, folder, city);
+			final BusNetwork bn = new BusNetwork(db, city);
+			CommandUtils.rethrowConsumer(bn::initGtfs).accept(folder);
 
 			// create threads collection
 			final Thread[] threads = new Thread[] {
@@ -35,7 +36,7 @@ public class BusNetCommand implements ICommand {
 				new Thread(() -> {
 					executeSQL(db, bn::parseCalendar);
 					executeSQL(db, bn::parseCalendarDates);
-					CommandUtils.rethrowConsumer(bn::copyBusCalendarTable).accept(false);
+					CommandUtils.rethrowConsumer(bn::insertBusCalendar).accept(false);
 				}),
 				new Thread(() -> executeSQL(db, bn::parseStops)),
 				new Thread(() -> executeSQL(db, bn::parseStopTimes))

@@ -10,15 +10,16 @@ import java.sql.SQLException;
 import org.testng.Assert;
 
 public final class TestHelper {
-	public static final String TEST_CITY = "ttt";
-	public static final String TEST_GTFS = "gtfs";
-	public static final String TEST_GTFS_ZIP = "gtfs.zip";
-	public static final String TEST_OUTPUT = "build/tmp/scripts";
+	public static final String TEST_CITY = "mebo";
+	public static final String TEST_GTFS = "src/test/resources/gtfs_mebo.zip";
+	public static final String TEST_OUTPUT_ARCHIVE = "build/tmp/archives";
+	public static final String TEST_OUTPUT_SCRIPT = "build/tmp/scripts";
+	public static final String TEST_VDV = "src/test/resources/vdv_mebo.zip";
 
 	private TestHelper() { }
 
 	public static void createTestOutputDirectory() {
-		final File f = new File(TEST_OUTPUT);
+		final File f = new File(TEST_OUTPUT_SCRIPT);
 		if (!f.exists() && !f.mkdirs()) {
 			Assert.fail("Could not generate output directory");
 		}

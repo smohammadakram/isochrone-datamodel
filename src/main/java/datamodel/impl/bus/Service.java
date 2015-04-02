@@ -7,13 +7,13 @@ class Service {
 
 	private static final int LENGTH_OF_YEAR = 366;
 	private String endDate;
-	private int id;
+	private String id;
 	private String startDate;
 	private boolean[] validity;
 
 	// Constructor
 
-	public Service(final int id) {
+	public Service(final String id) {
 		this.id = id;
 	}
 
@@ -23,7 +23,7 @@ class Service {
 		return endDate;
 	}
 
-	public int getId() {
+	public String getId() {
 		return id;
 	}
 
@@ -85,7 +85,18 @@ class Service {
 	// Private static methods
 
 	private static long parseDateToMillis(final String d) {
-		final Calendar c = new GregorianCalendar(Integer.parseInt(d.substring(0, 4)), Integer.parseInt(d.substring(4, 6)), Integer.parseInt(d.substring(6, 8)));
+		Calendar c = null;
+		try {
+			c = new GregorianCalendar(Integer.parseInt(d.substring(0, 4)), Integer.parseInt(d.substring(4, 6)), Integer.parseInt(d.substring(6, 8)));
+		} catch (final NumberFormatException e) {
+			// TODO: Remove me!
+			System.out.println("An error occurred!");
+			System.out.println(" - str: " + d);
+			System.out.println(" - error: " + e.getMessage());
+			c = null;
+			throw e;
+		}
+
 		return c.getTimeInMillis();
 	}
 

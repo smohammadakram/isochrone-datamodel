@@ -6,7 +6,7 @@ DROP TABLE IF EXISTS time_expanded.<city>_link CASCADE;
 DROP TABLE IF EXISTS time_expanded.<city>_trip_schedule CASCADE;
 
 CREATE TABLE time_expanded.<city>_bus_calendar (
-	service_id integer NOT NULL,
+	service_id varchar(32) NOT NULL,
 	service_start_date text NOT NULL,
 	service_end_date text NOT NULL,
 	service_vector varchar(366) NOT NULL,
@@ -14,7 +14,7 @@ CREATE TABLE time_expanded.<city>_bus_calendar (
 );
 
 CREATE TABLE time_expanded.<city>_bus_routes (
-	route_id  integer NOT NULL,
+	route_id varchar(32) NOT NULL,
 	route_descr_long varchar(10) NOT NULL,
 	route_descr_short varchar(10) NOT NULL,
 	PRIMARY KEY (route_id)
@@ -25,36 +25,37 @@ CREATE TABLE time_expanded.<city>_bus_nodes (
 	node_geometry geometry NOT NULL,
 	node_in_degree integer,
 	node_out_degree integer,
-	node_route_id integer,
+	node_route_id varchar(32) NOT NULL,
 	PRIMARY KEY (node_id),
 	FOREIGN KEY (node_route_id) REFERENCES time_expanded.<city>_bus_routes(route_id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE time_expanded.<city>_link (
-	link_id integer  NOT NULL,
-	link_source integer  NOT NULL,
-	link_source_mode integer  NOT NULL,
-	link_destination integer  NOT NULL,
-	link_dest_mode integer  NOT NULL,
+	link_id integer NOT NULL,
+	link_source integer NOT NULL,
+	link_source_mode integer NOT NULL,
+	link_destination integer NOT NULL,
+	link_dest_mode integer NOT NULL,
 	PRIMARY KEY ( link_id )
 );
 
-CREATE TABLE time_expanded.<city>_bus_edges (	edge_id serial NOT NULL,
+CREATE TABLE time_expanded.<city>_bus_edges (
+	edge_id serial NOT NULL,
 	edge_source integer NOT NULL,
 	edge_destination integer NOT NULL,
-	edge_route_id integer NOT NULL,
+	edge_route_id varchar(32) NOT NULL,
 	PRIMARY KEY (edge_id),
 	FOREIGN KEY (edge_source) REFERENCES time_expanded.<city>_bus_nodes(node_id) ON DELETE CASCADE ON UPDATE CASCADE,
 	FOREIGN KEY (edge_destination) REFERENCES time_expanded.<city>_bus_nodes(node_id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE time_expanded.<city>_trip_schedule (
-	trip_id integer NOT NULL,
+	trip_id varchar(32) NOT NULL,
 	trip_edge integer NOT NULL,
-	trip_route_id integer NOT NULL,
+	trip_route_id varchar(32) NOT NULL,
 	trip_time_d text NOT NULL,
 	trip_time_a text NOT NULL,
-	trip_service integer NOT NULL,
+	trip_service varchar(32) NOT NULL,
 	trip_service_s_date text NOT NULL,
 	trip_service_e_date text NOT NULL,
 	trip_seq_nr integer NOT NULL DEFAULT -1,

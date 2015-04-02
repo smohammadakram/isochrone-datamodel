@@ -2,6 +2,7 @@ package datamodel.comand;
 
 import datamodel.TestHelper;
 import datamodel.command.BusNetCommand;
+import datamodel.command.ICommand;
 
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
@@ -17,7 +18,7 @@ public class BusNetCommandTest {
 
 	@Test
 	public void testCommand() {
-		final BusNetCommand cmd = new BusNetCommand(TestHelper.TEST_GTFS, TestHelper.TEST_CITY);
+		final ICommand cmd = new BusNetCommand(TestHelper.TEST_GTFS, TestHelper.TEST_CITY);
 		cmd.execute();
 	}
 

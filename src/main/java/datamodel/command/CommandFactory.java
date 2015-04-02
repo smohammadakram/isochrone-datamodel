@@ -14,7 +14,8 @@ public abstract class CommandFactory {
 		LINKNET,
 		LINKSCRIPT,
 		STREETNET,
-		STREETSCRIPT
+		STREETSCRIPT,
+		VDV2GTFS
 	}
 
 	// Public static factory method
@@ -35,6 +36,9 @@ public abstract class CommandFactory {
 		ICommand cmdO = null;
 
 		switch (cmd) {
+			case BUSNET:
+				cmdO = new BusNetCommand(args[0], args[1]);
+				break;
 			case BUSSCRIPT:
 				cmdO = new BusScriptCommand(args[0], args[1]);
 				break;
@@ -50,9 +54,8 @@ public abstract class CommandFactory {
 			case STREETSCRIPT:
 				cmdO = new StreetScriptCommand(args[0], args[1]);
 				break;
-			case BUSNET:
 			default:
-				cmdO = new BusNetCommand(args[0], args[1]);
+				cmdO = new Vdv2GtfsCommand(args[0], args[1]);
 		}
 
 		if (LOGGER.isDebugEnabled()) {

@@ -26,12 +26,17 @@ ext {
 
 repositories {
 	mavenCentral()
+	maven {
+		url "http://nexus.onebusaway.org/content/repositories/snapshots"
+	}
 }
 
 dependencies {
 	compile "com.google.code.findbugs:annotations:$versionFindbugs"
 	compile 'com.tngtech.java:config-builder:+'
 	compile 'org.apache.logging.log4j:log4j-api:2.1'
+	compile 'org.onebusaway:onebusaway-gtfs:+'
+	compile 'org.onebusaway:onebusaway-vdv452-to-gtfs-converter:+'
 	compile 'org.openstreetmap.osmosis:osmosis-pbf:+'
 	compile ('org.postgis:postgis-jdbc:+') {
 		exclude module: 'postgresql'

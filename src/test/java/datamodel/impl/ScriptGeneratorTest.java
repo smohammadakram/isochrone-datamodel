@@ -20,7 +20,7 @@ public class ScriptGeneratorTest {
 	public void testByReplace() throws IOException {
 		final String testResource = "bus_network.sql";
 
-		final String output = TestHelper.TEST_OUTPUT + File.separatorChar + TestHelper.TEST_CITY + "_" + testResource;
+		final String output = TestHelper.TEST_OUTPUT_SCRIPT + File.separatorChar + TestHelper.TEST_CITY + "_" + testResource;
 		final ScriptGenerator sg = new ScriptGenerator(testResource, "<city>", TestHelper.TEST_CITY);
 		sg.writeScript(output);
 
