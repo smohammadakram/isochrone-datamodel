@@ -15,8 +15,8 @@ CREATE TABLE time_expanded.<city>_bus_calendar (
 
 CREATE TABLE time_expanded.<city>_bus_routes (
 	route_id varchar(32) NOT NULL,
-	route_descr_long varchar(10) NOT NULL,
-	route_descr_short varchar(10) NOT NULL,
+	route_descr_long varchar(64) NOT NULL,
+	route_descr_short varchar(16) NOT NULL,
 	PRIMARY KEY (route_id)
 );
 
