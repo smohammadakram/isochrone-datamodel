@@ -5,16 +5,15 @@ from OpenStreetMap (OSM) and schedules of public transportation systems so
 that the datbase can be used for isochrone calculation.
 The schedules can either use the VDV-452 format or GTFS.   
 
-## 1. REQUIRED PACKAGES
+## 1. Required Packages
 
--Java > 1.8
--PostgreSQL > 9.3
--PostGIS > 2.1 (follow this link: http://postgis.net/install/)
--Osmosis 
--Osmconvert
--RAM >2GB
+- Java > 1.8
+- PostgreSQL > 9.3
+- PostGIS > 2.1 (follow this link: http://postgis.net/install/)
+- Osmosis 
+- Osmconvert
 
-## 2. EXECUTE
+## 2. Executable script (builder.sh)
 
 Run "./builder.sh [OPTIONS...]".
 
