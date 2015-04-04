@@ -33,6 +33,15 @@ URL_GTFS_DATAEXCHANGE="http://www.gtfs-data-exchange.com"
 #-----------
 # FUNCTIONS
 #-----------
+function fn_build_jar {
+	if [ ! -f "$CODE_JAR" ]; then
+		# This builds the CODE_JAR
+		printf "%s" "[INFO] Compiling jar file"
+		"$BASE_DIR/gradlew" -b "$BASE_DIR/build.gradle" jarAll
+		fn_check_status
+	fi
+}
+
 function fn_bus {
 	if [ "$OPTION_BUS" == false ]; then
 		return
@@ -276,7 +285,9 @@ function fn_main {
 	read CITY_NR
 	printf "\n"
 
+	fn_build_jar
 	fn_setup_build_dir
+
 	case $CITY_NR in 
 		1)  fn_street "Barcelona" "Spain" "$URL_GEOFABRIK/europe/spain-latest.osm.pbf" 41.48698 1.91711 41.25923 2.28928 ;;
 		2)  fn_street "OberBayern" "OberBayern" "$URL_GEOFABRIK/europe/oberbayern-latest.osm.pbf" ;;
@@ -404,15 +415,6 @@ if [ $# -lt 1 ]; then
 fi
 
 printf "%s\n" "Welcome to isochrone-datamodel import tool"
-#----------------------------
-# BUILD CODE_JAR (if needed) 
-#----------------------------
-if [ ! -f "$CODE_JAR" ]; then
-	printf "%s" "[INFO] Compiling jar file"
-	"$BASE_DIR/gradlew" -b "$BASE_DIR/build.gradle" jarAll
-	fn_check_status
-fi
-
 #---------------------------------
 # FILL VARIABLES FROM CMD-OPTIONS
 #---------------------------------
