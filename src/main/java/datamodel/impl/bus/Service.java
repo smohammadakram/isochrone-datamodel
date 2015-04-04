@@ -85,18 +85,7 @@ class Service {
 	// Private static methods
 
 	private static long parseDateToMillis(final String d) {
-		Calendar c = null;
-		try {
-			c = new GregorianCalendar(Integer.parseInt(d.substring(0, 4)), Integer.parseInt(d.substring(4, 6)), Integer.parseInt(d.substring(6, 8)));
-		} catch (final NumberFormatException e) {
-			// TODO: Remove me!
-			System.out.println("An error occurred!");
-			System.out.println(" - str: " + d);
-			System.out.println(" - error: " + e.getMessage());
-			c = null;
-			throw e;
-		}
-
+		final Calendar c = new GregorianCalendar(Integer.parseInt(d.substring(0, 4)), Integer.parseInt(d.substring(4, 6)), Integer.parseInt(d.substring(6, 8)));
 		return c.getTimeInMillis();
 	}
 

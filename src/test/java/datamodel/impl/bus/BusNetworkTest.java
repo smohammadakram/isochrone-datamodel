@@ -2,6 +2,7 @@ package datamodel.impl.bus;
 
 import datamodel.TestHelper;
 import datamodel.db.DbConnector;
+import datamodel.db.DbScript;
 import datamodel.impl.ScriptGenerator;
 
 import java.io.File;
@@ -9,8 +10,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
+import java.util.function.Supplier;
 
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
@@ -24,6 +24,10 @@ public class BusNetworkTest {
 
 	@BeforeClass
 	public void setup() throws IOException {
+		// Creates database tables (or truncates existing ones by dropping and re-creating)
+		Assert.assertTrue(ScriptGenerator.executeScript("datamodel/impl/bus/bus_network.sql"), "Setup failed");
+		Assert.assertTrue(ScriptGenerator.executeScript("datamodel/db/tmp-create.sql"), "Setup failed");
+
 		db = new DbConnector();
 		testMap = new HashMap<>(2);
 		testMap.put(TestHelper.TEST_CITY, new BusNetwork(db, TestHelper.TEST_GTFS, TestHelper.TEST_CITY));
@@ -40,101 +44,55 @@ public class BusNetworkTest {
 	// Test methods
 
 	@Test
-	public void testCalendar() throws SQLException, IOException {
-		final Set<Entry<String, BusNetwork>> entrySet = testMap.entrySet();
-		for (final Entry<String, BusNetwork> entry : entrySet) {
-			final String cityName = entry.getKey();
-			final BusNetwork bn = entry.getValue();
-			final String sql = bn.parseCalendar();
-
-			Assert.assertNotNull(sql);
-			Assert.assertTrue(sql.length() > 0);
-			postProcess(cityName + "_calendar.sql", sql);
-		}
+	public void testCalendar() {
+		testMap.entrySet().forEach(e -> testEntry(e.getKey(), e.getValue()::parseCalendar, "calendar.sql"));
 	}
 
 	@Test
-	public void testCalendarDates() throws SQLException, IOException {
-		final Set<Entry<String, BusNetwork>> entrySet = testMap.entrySet();
-		for (final Entry<String, BusNetwork> entry : entrySet) {
-			final String cityName = entry.getKey();
-			final BusNetwork bn = entry.getValue();
-			final String sql = bn.parseCalendarDates();
-
-			Assert.assertNotNull(sql);
-			Assert.assertTrue(sql.length() > 0);
-			postProcess(cityName + "_calendar_dates.sql", sql);
-		}
+	public void testCalendarDates() {
+		testMap.entrySet().forEach(e -> testEntry(e.getKey(), e.getValue()::parseCalendarDates, "calendar_dates.sql"));
 	}
 
 	@Test
-	public void testRoutes() throws SQLException, IOException {
-		final Set<Entry<String, BusNetwork>> entrySet = testMap.entrySet();
-		for (final Entry<String, BusNetwork> entry : entrySet) {
-			final String cityName = entry.getKey();
-			final BusNetwork bn = entry.getValue();
-			final String sql = bn.parseRoutes();
-
-			Assert.assertNotNull(sql);
-			Assert.assertTrue(sql.length() > 0);
-			postProcess(cityName + "_routes.sql", sql);
-		}
+	public void testRoutes() {
+		testMap.entrySet().forEach(e -> testEntry(e.getKey(), e.getValue()::parseRoutes, "routes.sql"));
 	}
 
 	@Test
-	public void testStops() throws SQLException, IOException {
-		final Set<Entry<String, BusNetwork>> entrySet = testMap.entrySet();
-		for (final Entry<String, BusNetwork> entry : entrySet) {
-			final String cityName = entry.getKey();
-			final BusNetwork bn = entry.getValue();
-			final String sql = bn.parseStops();
-
-			Assert.assertNotNull(sql);
-			Assert.assertTrue(sql.length() > 0);
-			postProcess(cityName + "_stops.sql", sql);
-		}
+	public void testStops() {
+		testMap.entrySet().forEach(e -> testEntry(e.getKey(), e.getValue()::parseStops, "stops.sql"));
 	}
 
 	@Test
-	public void testStopTimes() throws SQLException, IOException {
-		final Set<Entry<String, BusNetwork>> entrySet = testMap.entrySet();
-		for (final Entry<String, BusNetwork> entry : entrySet) {
-			final String cityName = entry.getKey();
-			final BusNetwork bn = entry.getValue();
-			final String sql = bn.parseStopTimes();
-
-			Assert.assertNotNull(sql);
-			Assert.assertTrue(sql.length() > 0);
-			postProcess(cityName + "_stop_times.sql", sql);
-		}
+	public void testStopTimes() {
+		testMap.entrySet().forEach(e -> testEntry(e.getKey(), e.getValue()::parseStopTimes, "stop_times.sql"));
 	}
 
 	@Test
-	public void testTrips() throws SQLException, IOException {
-		final Set<Entry<String, BusNetwork>> entrySet = testMap.entrySet();
-		for (final Entry<String, BusNetwork> entry : entrySet) {
-			final String cityName = entry.getKey();
-			final BusNetwork bn = entry.getValue();
-			final String sql = bn.parseTrips();
-
-			Assert.assertNotNull(sql);
-			Assert.assertTrue(sql.length() > 0);
-			postProcess(cityName + "_trips.sql", sql);
-		}
+	public void testTrips() {
+		testMap.entrySet().forEach(e -> testEntry(e.getKey(), e.getValue()::parseTrips, "trips.sql"));
 	}
 
 	// Private methods
+
+	private void testEntry(final String cityName, final Supplier<String> s, final String filename) {
+		final String sql = s.get();
+
+		Assert.assertNotNull(sql);
+		Assert.assertTrue(sql.length() > 0);
+		try {
+			postProcess(cityName + "_" + filename, sql);
+		} catch (final Exception e) {
+			Assert.fail("An exception occurred during post processing", e);
+		}
+	}
 
 	private void postProcess(final String filename, final String sql) throws SQLException, IOException {
 		final String resultFolder = TestHelper.TEST_OUTPUT_SCRIPT + File.separatorChar + TestHelper.TEST_CITY + "_gtfs";
 		ScriptGenerator.write2File(resultFolder + File.separatorChar + filename, sql);
 
 		if (db != null && performInserts) {
-			try {
-				db.executeBatch(sql.split(";"));
-			} catch (final SQLException e) {
-				throw e;
-			}
+			db.executeScript(new DbScript(sql, true));
 		}
 	}
 

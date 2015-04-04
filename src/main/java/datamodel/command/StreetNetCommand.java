@@ -7,7 +7,7 @@ import org.apache.logging.log4j.Logger;
 
 /**
  * This parses the data from OpenStreetMap.
- * It inserts nodes and edges into the database.
+ * It creates .sql files with which one is able to write nodes and edges into the database.
  */
 public class StreetNetCommand implements ICommand {
 	private static final Logger LOGGER = LogManager.getLogger(StreetNetCommand.class);

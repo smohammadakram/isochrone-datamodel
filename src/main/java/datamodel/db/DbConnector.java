@@ -44,24 +44,42 @@ public class DbConnector implements AutoCloseable {
 		}
 	}
 
+	public void execute(final String... sql) throws SQLException {
+		execute(false, sql);
+	}
+
 	@SuppressFBWarnings("SQL_NONCONSTANT_STRING_PASSED_TO_EXECUTE")
-	public void execute(final String sql) throws SQLException {
+	public void execute(final boolean useBatch, final String... sql) throws SQLException {
+		if (sql == null || sql.length <= 0) {
+			return;
+		}
+
 		try (final Statement stmt = conn.createStatement()) {
-			stmt.execute(sql);
+			for (final String s : sql) {
+				if (useBatch) {
+					stmt.addBatch(s);
+				} else {
+					stmt.execute(s);
+				}
+			}
+
+			if (useBatch) {
+				stmt.executeBatch();
+			}
+
 			conn.commit();
 		}
 	}
 
-	@SuppressFBWarnings("SQL_NONCONSTANT_STRING_PASSED_TO_EXECUTE")
-	public void executeBatch(final String[] sql) throws SQLException {
-		try (final Statement stmt = conn.createStatement()) {
-			for (final String s : sql) {
-				stmt.addBatch(s);
-			}
+	public void executeScript(final DbScript script) throws SQLException {
+		final String sName = script.getName();
+		LOGGER.debug("Executing script \"{}\"", sName == null ? "<unnamed>" : sName);
+		LOGGER.trace(" > preparing commands");
+		final String[] commandsArr = script.getCommands();
+		LOGGER.trace(" > executing prepared commands");
 
-			stmt.executeBatch();
-			conn.commit();
-		}
+		execute(commandsArr);
+		LOGGER.debug("Done.");
 	}
 
 	@SuppressFBWarnings("SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING")
@@ -77,6 +95,5 @@ public class DbConnector implements AutoCloseable {
 	public Statement getStatement() throws SQLException {
 		return conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 	}
-
 
 }

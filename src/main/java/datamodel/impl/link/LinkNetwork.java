@@ -24,13 +24,14 @@ import org.postgis.PGgeometry;
 public class LinkNetwork {
 
 	private static final Logger LOGGER = LogManager.getLogger(LinkNetwork.class);
-	private DbConnector db;
-	private String city;
-	private List<PGgeometry> busNodes;
-	private Map<String, String> nearestEdge;
-	private Map<String, PointLocation> pointLocation;
-	private Map<Long, String> additionalNodes;
-	private List<LinkEdge> linkEdges;
+	private final Map<Long, String> additionalNodes;
+	private final List<String> busNodes;
+	private final String city;
+	private final DbConnector db;
+	private final Map<Long, String> intersectedPoints;
+	private final List<LinkEdge> linkEdges;
+	private final Map<String, String> nearestEdge;
+	private final Map<String, PointLocation> pointLocation;
 
 	// Constructor
 
@@ -38,140 +39,32 @@ public class LinkNetwork {
 		this.db = db;
 		this.city = city;
 
+		additionalNodes = new HashMap<>();
 		busNodes = new ArrayList<>();
+		intersectedPoints = new HashMap<>();
+		linkEdges = new ArrayList<>();
 		nearestEdge = new HashMap<>();
 		pointLocation = new HashMap<>();
-		additionalNodes = new HashMap<>();
-		linkEdges = new ArrayList<>();
 	}
 
 	// Public methods
 
 	public void performMapping() throws SQLException {
-		fillBusNodes();
-		fillNearestEdges();
-		fillPointLocations();
-		fillIntersectedPoints();
-		buildInterBusLinks();
+		readBusNodes();
+		readNearestEdges();
+		readPointLocations();
+		readIntersectedPoints();
+		readLinkEdges();
+
+		insertIntersectedPoints();
 		insertLinkEdges();
+
 		updateStreetEdges();
-		updateStreetNodes();
-		updateBusNodes();
+		updateStreetNodeDegrees();
+		updateBusNodeDegrees();
 	}
 
 	// Private methods
-
-	private void buildInterBusLinks() throws SQLException {
-		LOGGER.info("Building inter-bus nodes links...");
-
-		final String query = LinkQuery.getInterBusLinks(city);
-		try (
-			final Statement stmt = db.getStatement();
-			final ResultSet rs = stmt.executeQuery(query);
-		) {
-			while (rs.next()) {
-				LinkEdge le = new LinkEdge(rs.getInt("id_1"), 0, rs.getInt("id_2"), 0);
-				linkEdges.add(le);
-				le = new LinkEdge(rs.getInt("id_2"), 0, rs.getInt("id_1"), 0);
-				linkEdges.add(le);
-			}
-		}
-
-		LOGGER.info("Done.");
-	}
-
-	private void fillBusNodes() throws SQLException {
-		LOGGER.info("Extracting bus nodes...");
-
-		final String query = LinkQuery.getBusNodes(city);
-		try (
-			final Statement stmt = db.getStatement();
-			final ResultSet rs = stmt.executeQuery(query);
-		) {
-			while (rs.next()) {
-				busNodes.add(new PGgeometry(PGgeometry.geomFromString(rs.getString("n_geometry"))));
-			}
-		}
-
-		LOGGER.info("Done.");
-	}
-
-	private void fillIntersectedPoints() throws SQLException {
-		LOGGER.info("Extracting new points...");
-		if (pointLocation.isEmpty()) {
-			throw new IllegalStateException("Fill the point locations before filling additional nodespriv");
-		}
-
-		long maxStreetID = getMaxStreetNodeID();
-
-		for (final Entry<String, PointLocation> entry : pointLocation.entrySet()) {
-			final String s = entry.getKey();
-			final PointLocation pl = entry.getValue();
-			final String query = LinkQuery.getIntersectedPoints(city, pl.getLocation(), pl.getEdgeGeom());
-			try (
-				final Statement stmt = db.getStatement();
-				final ResultSet rs = stmt.executeQuery(query);
-			) {
-				while (rs.next()) {
-					//new node for link table
-					final PGgeometry geom = new PGgeometry(PGgeometry.geomFromString(rs.getString("geom")));
-					//<key=node, value=edge>
-					maxStreetID++;
-					additionalNodes.put(maxStreetID, pl.getEdgeGeom());
-					insertStreetNode(maxStreetID, geom.toString());
-					for (final Integer i : getBusNodeByGeometry(s)) {
-						linkEdges.add(new LinkEdge(maxStreetID, 1, i, 0));
-						linkEdges.add(new LinkEdge(i, 0, maxStreetID, 1));
-					}
-				}
-			}
-
-		}
-		LOGGER.info("Done.");
-	}
-
-	private void fillNearestEdges() throws SQLException {
-		LOGGER.info("Extracting nearest edges...");
-		if (busNodes.isEmpty()) {
-			throw new IllegalStateException("Fill the bus nodes before tryong to get nearest street edges");
-		}
-
-		for (final PGgeometry geom : busNodes) {
-			final String query = LinkQuery.getNearestEdge(geom.toString(), city);
-			try (
-				final Statement stmt = db.getStatement();
-				final ResultSet rs = stmt.executeQuery(query);
-			) {
-				if (rs.first()) {
-					nearestEdge.put(geom.toString(), rs.getString("edge_geometry"));
-				}
-			}
-		}
-		LOGGER.info("Done.");
-	}
-
-	private void fillPointLocations() throws SQLException {
-		LOGGER.info("Extracting point location...");
-		if (nearestEdge.isEmpty()) {
-			throw new IllegalStateException("Fill the nearest edges before trying to get point locations");
-		}
-
-		for (final Entry<String, String> entry : nearestEdge.entrySet()) {
-			final String s = entry.getKey();
-			final String nEdge = entry.getValue();
-			final String query = LinkQuery.getPointLocation(city, nEdge, s);
-			try (
-				final Statement stmt = db.getStatement();
-				final ResultSet rs = stmt.executeQuery(query);
-			) {
-				if (rs.first()) {
-					final PointLocation pl = new PointLocation(s, rs.getFloat("p_loc"), rs.getString("edge_geometry"));
-					pointLocation.put(s, pl);
-				}
-			}
-		}
-		LOGGER.info("Done.");
-	}
 
 	private List<Integer> getBusNodeByGeometry(final String geom) throws SQLException {
 		final List<Integer> result = new ArrayList<Integer>();
@@ -261,46 +154,143 @@ public class LinkNetwork {
 		return result;
 	}
 
-	private boolean insertLinkEdge(final LinkEdge le) throws SQLException {
-		boolean result = false;
-		try (final PreparedStatement stmt = db.getPreparedStatement(LinkQuery.getInsertLinkEdge(city))) {
-			// CHECKSTYLE:OFF MagicNumber
-			stmt.setLong(1, le.getSource());
-			stmt.setInt(2, le.getSourceMode());
-			stmt.setLong(3, le.getDestination());
-			stmt.setInt(4, le.getDestinationMode());
-			// CHECKSTYLE:ON MagicNumber
-
-			result = stmt.execute();
-			db.commit();
-		}
-
-		return result;
-	}
-
-	private void insertLinkEdges() throws SQLException {
-		LOGGER.info("Link count: " + linkEdges.size());
-		LOGGER.info("Adding links...");
-		for (final LinkEdge le : linkEdges) {
-			insertLinkEdge(le);
+	private void insertIntersectedPoints() throws SQLException {
+		LOGGER.info("Inserting intersected points...");
+		try (final PreparedStatement pStmt = db.getPreparedStatement(LinkQuery.getInsertStreetNode(city))) {
+			for (final Entry<Long, String> e : intersectedPoints.entrySet()) {
+				pStmt.setLong(1, e.getKey());
+				pStmt.setString(2, e.getValue());
+				pStmt.addBatch();
+			}
+			pStmt.executeBatch();
 		}
 		LOGGER.info("Done.");
 	}
 
-	private boolean insertStreetNode(final long id, final String geom) throws SQLException {
-		boolean result = false;
-		try (final PreparedStatement stmt = db.getPreparedStatement(LinkQuery.getInsertStreetNode(city))) {
-			stmt.setLong(1, id);
-			stmt.setString(2, geom);
+	private void insertLinkEdges() throws SQLException {
+		LOGGER.info("Adding links (count: {})...", linkEdges.size());
+		for (final LinkEdge le : linkEdges) {
+			try (final PreparedStatement stmt = db.getPreparedStatement(LinkQuery.getInsertLinkEdge(city))) {
+				// CHECKSTYLE:OFF MagicNumber
+				stmt.setLong(1, le.getSource());
+				stmt.setInt(2, le.getSourceMode());
+				stmt.setLong(3, le.getDestination());
+				stmt.setInt(4, le.getDestinationMode());
+				// CHECKSTYLE:ON MagicNumber
 
-			result = stmt.execute();
-			db.commit();
+				stmt.execute();
+				db.commit();
+			}
 		}
-
-		return result;
+		LOGGER.info("Done.");
 	}
 
-	private void updateBusNodes() throws SQLException {
+	private void readBusNodes() throws SQLException {
+		LOGGER.info("Reading bus nodes...");
+
+		final String query = LinkQuery.getBusNodes(city);
+		try (
+			final Statement stmt = db.getStatement();
+			final ResultSet rs = stmt.executeQuery(query);
+		) {
+			while (rs.next()) {
+				busNodes.add(new PGgeometry(PGgeometry.geomFromString(rs.getString("n_geometry"))).toString());
+			}
+		}
+
+		LOGGER.info("Done.");
+	}
+
+	private void readIntersectedPoints() throws SQLException {
+		LOGGER.info("Reading intersected points...");
+		if (pointLocation.isEmpty()) {
+			throw new IllegalStateException("Fill the point locations before filling additional nodespriv");
+		}
+
+		long streetId = getMaxStreetNodeID();
+		for (final Entry<String, PointLocation> entry : pointLocation.entrySet()) {
+			final String s = entry.getKey();
+			final PointLocation pl = entry.getValue();
+			additionalNodes.put(++streetId, pl.getEdgeGeom());
+			for (final Integer i : getBusNodeByGeometry(s)) {
+				linkEdges.add(new LinkEdge(streetId, 1, i, 0));
+				linkEdges.add(new LinkEdge(i, 0, streetId, 1));
+			}
+
+			final String query = LinkQuery.getIntersectedPoints(city, pl.getLocation(), pl.getEdgeGeom());
+			try (
+				final Statement stmt = db.getStatement();
+				final ResultSet rs = stmt.executeQuery(query);
+			) {
+				while (rs.next()) {
+					intersectedPoints.put(streetId, new PGgeometry(PGgeometry.geomFromString(rs.getString("geom"))).toString());
+				}
+			}
+		}
+
+		LOGGER.info("Done.");
+	}
+
+	private void readLinkEdges() throws SQLException {
+		LOGGER.info("Reading inter-bus nodes links...");
+
+		final String query = LinkQuery.getInterBusLinks(city);
+		try (
+			final Statement stmt = db.getStatement();
+			final ResultSet rs = stmt.executeQuery(query);
+		) {
+			while (rs.next()) {
+				linkEdges.add(new LinkEdge(rs.getInt("id_1"), 0, rs.getInt("id_2"), 0));
+				linkEdges.add(new LinkEdge(rs.getInt("id_2"), 0, rs.getInt("id_1"), 0));
+			}
+		}
+
+		LOGGER.info("Done.");
+	}
+
+	private void readNearestEdges() throws SQLException {
+		LOGGER.info("Reading nearest edges...");
+		if (busNodes.isEmpty()) {
+			throw new IllegalStateException("Fill the bus nodes before tryong to get nearest street edges");
+		}
+
+		for (final String geomStr : busNodes) {
+			final String query = LinkQuery.getNearestEdge(geomStr, city);
+			try (
+				final Statement stmt = db.getStatement();
+				final ResultSet rs = stmt.executeQuery(query);
+			) {
+				if (rs.first()) {
+					nearestEdge.put(geomStr, rs.getString("edge_geometry"));
+				}
+			}
+		}
+		LOGGER.info("Done.");
+	}
+
+	private void readPointLocations() throws SQLException {
+		LOGGER.info("Reading point location...");
+		if (nearestEdge.isEmpty()) {
+			throw new IllegalStateException("Fill the nearest edges before trying to get point locations");
+		}
+
+		for (final Entry<String, String> entry : nearestEdge.entrySet()) {
+			final String s = entry.getKey();
+			final String nEdge = entry.getValue();
+			final String query = LinkQuery.getPointLocation(city, nEdge, s);
+			try (
+				final Statement stmt = db.getStatement();
+				final ResultSet rs = stmt.executeQuery(query);
+			) {
+				if (rs.first()) {
+					pointLocation.put(s, new PointLocation(s, rs.getFloat("p_loc"), rs.getString("edge_geometry")));
+				}
+			}
+		}
+		LOGGER.info("Done.");
+	}
+
+	private void updateBusNodeDegrees() throws SQLException {
 		LOGGER.info("Updating bus nodes in/out degree...");
 
 		// update indegree of bus nodes
@@ -343,7 +333,7 @@ public class LinkNetwork {
 		LOGGER.info("Done.");
 	}
 
-	private void updateStreetNodes() throws SQLException {
+	private void updateStreetNodeDegrees() throws SQLException {
 		LOGGER.info("Updating street nodes in/out degree...");
 
 		// update indegree of street nodes

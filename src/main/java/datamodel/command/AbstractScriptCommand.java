@@ -28,8 +28,9 @@ abstract class AbstractScriptCommand implements ICommand {
 
 	// Protected methods
 
-	protected void createSqlFile(final String filename) throws IOException {
-		final ScriptGenerator sg = new ScriptGenerator(filename, "<city>", city);
+	protected void createSqlFile(final String path) throws IOException {
+		final String filename = new File(path).getName();
+		final ScriptGenerator sg = new ScriptGenerator(path, "<city>", city);
 		sg.writeScript(folder + File.separatorChar + city + "_" + filename);
 	}
 }

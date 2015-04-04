@@ -57,6 +57,10 @@ public final class DbConfiguration {
 		return "jdbc:postgresql://" + host + ":" + port + "/" + database;
 	}
 
+	public String getDbCatalog() {
+		return database;
+	}
+
 	public String getDbPassword() {
 		return password;
 	}

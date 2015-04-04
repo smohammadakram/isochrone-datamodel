@@ -107,14 +107,14 @@ public class BusNetwork {
 		final Collection<ServiceCalendar> calendars = entityStore.getAllCalendars();
 		for (final ServiceCalendar c : calendars) {
 			script.append(sqlCommand + "'");
-			script.append(escape(c.getServiceId()) + "', '");
-			script.append(isValidDay(c.getMonday()) + "', '");
-			script.append(isValidDay(c.getTuesday()) + "', '");
-			script.append(isValidDay(c.getWednesday()) + "', '");
-			script.append(isValidDay(c.getThursday()) + "', '");
-			script.append(isValidDay(c.getFriday()) + "', '");
-			script.append(isValidDay(c.getSaturday()) + "', '");
-			script.append(isValidDay(c.getSunday()) + "', '");
+			script.append(escape(c.getServiceId()) + "', ");
+			script.append(isValidDay(c.getMonday()) + ", ");
+			script.append(isValidDay(c.getTuesday()) + ", ");
+			script.append(isValidDay(c.getWednesday()) + ", ");
+			script.append(isValidDay(c.getThursday()) + ", ");
+			script.append(isValidDay(c.getFriday()) + ", ");
+			script.append(isValidDay(c.getSaturday()) + ", ");
+			script.append(isValidDay(c.getSunday()) + ", '");
 			script.append(c.getStartDate().getAsString() + "', '");
 			script.append(c.getEndDate().getAsString());
 			script.append("');\n");
@@ -187,7 +187,7 @@ public class BusNetwork {
 		final StringBuilder script = new StringBuilder("TRUNCATE " + TABLE_NAME + "stops;\n\n");
 
 		final Collection<Stop> stops = entityStore.getAllStops();
-		for (final Stop s : stops ) {
+		for (final Stop s : stops) {
 			script.append(sqlCommand + "'");
 			script.append(escape(s.getId()) + "', '");
 			script.append(escape(s.getName()) + "', ");
@@ -229,9 +229,9 @@ public class BusNetwork {
 		for (final StopTime t : times) {
 			script.append(sqlCommand + "'");
 			script.append(escape(t.getTrip().getId()) + "', '");
-			script.append(escape(t.getStop().getId()) + "', '");
-			script.append(t.getArrivalTime() + "', '");
-			script.append(t.getDepartureTime() + "', ");
+			script.append(escape(t.getStop().getId()) + "', ");
+			script.append(t.getArrivalTime() + ", ");
+			script.append(t.getDepartureTime() + ", ");
 			script.append(t.getStopSequence());
 			script.append(");\n");
 		}

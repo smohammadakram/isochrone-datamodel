@@ -43,14 +43,16 @@ final class LinkQuery {
 	private static final String MAX_STREET_NODE_ID = "SELECT node_id FROM time_expanded.%s_street_nodes ORDER BY node_id DESC LIMIT 1";
 	private static final String NEAREST_EDGE = "SELECT edge_geometry, ST_Distance(edge_geometry, '%s') AS min_dist"
 		+ " FROM time_expanded.%s_street_edges"
-		+ " ORDER BY min_dist ASC";
+		+ " ORDER BY min_dist ASC"
+		+ " LIMIT 1";
 	private static final String NODE_GEOMETRY = "SELECT node_geometry FROM time_expanded.%s_street_nodes WHERE node_id=?";
 	private static final String STREET_NODES_LINK_INDEGREE = "SELECT sn.node_id, count(link_destination) AS cnt"
 		+ " FROM time_expanded.%s_street_nodes sn JOIN time_expanded.%<s_links l"
 		+ " ON sn.node_id = l.link_destination"
 		+ " WHERE l.link_destination_mode = 1"
 		+ " GROUP BY sn.node_id, l.link_destination"
-		+ " ORDER BY sn.node_id";
+		+ " ORDER BY sn.node_id"
+		+ " LIMIT 1";
 	private static final String STREET_NODES_LINK_OUTDEGREE = "SELECT sn.node_id, count(link_source) AS cnt"
 		+ " FROM time_expanded.%s_street_nodes sn JOIN time_expanded.%<s_links l"
 		+ " ON sn.node_id = l.link_source"
@@ -78,7 +80,8 @@ final class LinkQuery {
 	private static final String POINT_LOCATION = "SELECT edge_geometry, ST_Line_Locate_Point('%s', ST_GeomFromEWKT('%s')) AS p_loc"
 		+ " FROM time_expanded.%s_street_edges"
 		+ " WHERE edge_geometry='%s'"
-		+ " ORDER BY edge_geometry";
+		+ " ORDER BY edge_geometry"
+		+ " LIMIT 1";
 
 	// Constructor
 

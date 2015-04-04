@@ -2,6 +2,7 @@ package datamodel.command;
 
 import datamodel.command.CommandUtils.SupplierWithExceptions;
 import datamodel.db.DbConnector;
+import datamodel.db.DbScript;
 import datamodel.impl.bus.BusNetwork;
 
 import java.util.Arrays;
@@ -11,14 +12,14 @@ import java.util.Arrays;
  */
 public class BusNetCommand implements ICommand {
 	private final String city;
-	private final String folder;
+	private final String gtfs;
 
 	// Constructor
 
-	public BusNetCommand(final String folder, final String city) {
+	public BusNetCommand(final String gtfs, final String city) {
 		super();
 		this.city = city;
-		this.folder = folder;
+		this.gtfs = gtfs;
 	}
 
 	// Public methods
@@ -27,7 +28,7 @@ public class BusNetCommand implements ICommand {
 	public void execute() {
 		try (final DbConnector db = new DbConnector()) {
 			final BusNetwork bn = new BusNetwork(db, city);
-			CommandUtils.rethrowConsumer(bn::initGtfs).accept(folder);
+			CommandUtils.rethrowConsumer(bn::initGtfs).accept(gtfs);
 
 			// create threads collection
 			final Thread[] threads = new Thread[] {
@@ -52,6 +53,6 @@ public class BusNetCommand implements ICommand {
 
 	private static void executeSQL(final DbConnector db, final SupplierWithExceptions<String> supplier) {
 		final String sql = CommandUtils.uncheck(supplier);
-		CommandUtils.rethrowConsumer(db::executeBatch).accept(sql.split(";"));
+		CommandUtils.rethrowConsumer(db::executeScript).accept(new DbScript(sql, true));
 	}
 }

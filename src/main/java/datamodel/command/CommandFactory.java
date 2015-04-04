@@ -9,10 +9,13 @@ public abstract class CommandFactory {
 
 	private static final Logger LOGGER = LogManager.getLogger(CommandFactory.class);
 	private enum Command {
+		BUS,
 		BUSNET,
 		BUSSCRIPT,
+		LINK,
 		LINKNET,
 		LINKSCRIPT,
+		STREET,
 		STREETNET,
 		STREETSCRIPT,
 		VDV2GTFS
@@ -36,6 +39,9 @@ public abstract class CommandFactory {
 		ICommand cmdO = null;
 
 		switch (cmd) {
+			case BUS:
+				cmdO = new BusCommand(args[0], args[1], args[2]);
+				break;
 			case BUSNET:
 				cmdO = new BusNetCommand(args[0], args[1]);
 				break;
@@ -45,8 +51,14 @@ public abstract class CommandFactory {
 			case LINKNET:
 				cmdO = new LinkNetCommand(args[0]);
 				break;
+			case LINK:
+				cmdO = new LinkCommand(args[0], args[1]);
+				break;
 			case LINKSCRIPT:
 				cmdO = new LinkScriptCommand(args[0], args[1]);
+				break;
+			case STREET:
+				cmdO = new StreetCommand(args[0], args[1], args[2]);
 				break;
 			case STREETNET:
 				cmdO = new StreetNetCommand(args[0], args[1], args[2]);
