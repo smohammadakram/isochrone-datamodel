@@ -25,8 +25,8 @@ public class BusNetworkTest {
 	@BeforeClass
 	public void setup() throws IOException {
 		// Creates database tables (or truncates existing ones by dropping and re-creating)
-		Assert.assertTrue(ScriptGenerator.executeScript("datamodel/impl/bus/bus_network.sql"), "Setup failed");
-		Assert.assertTrue(ScriptGenerator.executeScript("datamodel/db/tmp-create.sql"), "Setup failed");
+		Assert.assertTrue(TestHelper.executeScript("datamodel/impl/bus/bus_network.sql"), "Setup failed");
+		Assert.assertTrue(TestHelper.executeScript("datamodel/db/tmp-create.sql"), "Setup failed");
 
 		db = new DbConnector();
 		testMap = new HashMap<>(2);

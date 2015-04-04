@@ -3,7 +3,6 @@ package datamodel.comand;
 import datamodel.TestHelper;
 import datamodel.command.ICommand;
 import datamodel.command.StreetNetCommand;
-import datamodel.impl.ScriptGenerator;
 
 import java.io.File;
 import java.util.Arrays;
@@ -22,7 +21,7 @@ public class StreetNetCommandTest {
 	@BeforeClass
 	public void setup() {
 		// Creates database tables (or truncates existing ones by dropping and re-creating)
-		Assert.assertTrue(ScriptGenerator.executeScript("datamodel/impl/street/street_network.sql"), "Setup failed");
+		Assert.assertTrue(TestHelper.executeScript("datamodel/impl/street/street_network.sql"), "Setup failed");
 	}
 
 	@Test

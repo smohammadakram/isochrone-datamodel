@@ -2,6 +2,7 @@ package datamodel;
 
 import datamodel.db.DbConfiguration;
 import datamodel.db.DbConnector;
+import datamodel.impl.ScriptGenerator;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import java.io.File;
@@ -69,6 +70,10 @@ public final class TestHelper {
 		}
 
 		return result;
+	}
+
+	public static boolean executeScript(final String scriptName) {
+		return ScriptGenerator.executeScript(scriptName, TestHelper.TEST_CITY);
 	}
 
 }

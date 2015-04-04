@@ -1,6 +1,5 @@
 package datamodel.impl;
 
-import datamodel.TestHelper;
 import datamodel.db.DbConnector;
 import datamodel.db.DbScript;
 
@@ -55,10 +54,6 @@ public final class ScriptGenerator {
 
 	public static void write2File(final String path, final String str) throws IOException {
 		write2File(new File(path), str);
-	}
-
-	public static boolean executeScript(final String scriptName) {
-		return executeScript(scriptName, TestHelper.TEST_CITY);
 	}
 
 	public static boolean executeScript(final String scriptName, final String cityName) {

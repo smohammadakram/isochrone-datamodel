@@ -28,13 +28,13 @@ public class StreetCommand implements ICommand {
 		final ICommand scriptCommand = new StreetScriptCommand(folder, city);
 		scriptCommand.execute();
 
-		ScriptGenerator.executeScript(scriptPrefix + "street_network.sql");
+		ScriptGenerator.executeScript(scriptPrefix + "street_network.sql", city);
 
 		final ICommand netCommand = new StreetNetCommand(folder, city, file);
 		netCommand.execute();
 
-		ScriptGenerator.executeScript(scriptPrefix + "street_nodes_import.sql");
-		ScriptGenerator.executeScript(scriptPrefix + "street_edges_import.sql");
+		ScriptGenerator.executeScript(scriptPrefix + "street_nodes_import.sql", city);
+		ScriptGenerator.executeScript(scriptPrefix + "street_edges_import.sql", city);
 	}
 
 }

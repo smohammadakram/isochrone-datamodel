@@ -30,16 +30,16 @@ public class BusCommand implements ICommand {
 		final ICommand scriptCommand = new BusScriptCommand(folder, city);
 		scriptCommand.execute();
 
-		ScriptGenerator.executeScript(scriptPrefix + "bus_network.sql");
-		ScriptGenerator.executeScript(resourcePrefix + "tmp-create.sql");
+		ScriptGenerator.executeScript(scriptPrefix + "bus_network.sql", city);
+		ScriptGenerator.executeScript(resourcePrefix + "tmp-create.sql", city);
 
 		final ICommand netCommand = new BusNetCommand(gtfs, city);
 		netCommand.execute();
 
-		ScriptGenerator.executeScript(resourcePrefix + "tmp-views.sql");
-		ScriptGenerator.executeScript(scriptPrefix + "bus_nodes_edges.sql");
-		ScriptGenerator.executeScript(scriptPrefix + "bus_trip_schedule.sql");
-//		ScriptGenerator.executeScript(resourcePrefix + "tmp-drop.sql");
+		ScriptGenerator.executeScript(resourcePrefix + "tmp-views.sql", city);
+		ScriptGenerator.executeScript(scriptPrefix + "bus_nodes_edges.sql", city);
+		ScriptGenerator.executeScript(scriptPrefix + "bus_trip_schedule.sql", city);
+		ScriptGenerator.executeScript(resourcePrefix + "tmp-drop.sql", city);
 	}
 
 }

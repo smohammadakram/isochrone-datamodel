@@ -3,7 +3,6 @@ package datamodel.comand;
 import datamodel.TestHelper;
 import datamodel.command.ICommand;
 import datamodel.command.LinkNetCommand;
-import datamodel.impl.ScriptGenerator;
 
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
@@ -13,7 +12,7 @@ public class LinkNetCommandTest {
 
 	@BeforeClass
 	public void setup() {
-		Assert.assertTrue(ScriptGenerator.executeScript("datamodel/impl/link/link_network.sql"), "Setup failed");
+		Assert.assertTrue(TestHelper.executeScript("datamodel/impl/link/link_network.sql"), "Setup failed");
 		new BusCommandTest().testCommand();
 		new StreetCommandTest().testCommand();
 	}

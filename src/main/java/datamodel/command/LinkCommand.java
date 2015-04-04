@@ -26,7 +26,7 @@ public class LinkCommand implements ICommand {
 		final ICommand scriptCommand = new LinkScriptCommand(folder, city);
 		scriptCommand.execute();
 
-		ScriptGenerator.executeScript(scriptPrefix + "link_network.sql");
+		ScriptGenerator.executeScript(scriptPrefix + "link_network.sql", city);
 
 		final ICommand netCommand = new LinkNetCommand(city);
 		netCommand.execute();

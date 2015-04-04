@@ -3,7 +3,6 @@ package datamodel.comand;
 import datamodel.TestHelper;
 import datamodel.command.BusNetCommand;
 import datamodel.command.ICommand;
-import datamodel.impl.ScriptGenerator;
 
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
@@ -15,13 +14,13 @@ public class BusNetCommandTest {
 	@BeforeClass
 	public void setup() {
 		// Creates database tables (or truncates existing ones by dropping and re-creating)
-		Assert.assertTrue(ScriptGenerator.executeScript("datamodel/impl/bus/bus_network.sql"), "Setup failed");
-		Assert.assertTrue(ScriptGenerator.executeScript("datamodel/db/tmp-create.sql"), "Setup failed");
+		Assert.assertTrue(TestHelper.executeScript("datamodel/impl/bus/bus_network.sql"), "Setup failed");
+		Assert.assertTrue(TestHelper.executeScript("datamodel/db/tmp-create.sql"), "Setup failed");
 	}
 
 	@AfterClass
 	public void tearDown() {
-		Assert.assertTrue(ScriptGenerator.executeScript("datamodel/db/tmp-drop.sql"), "Setup failed");
+		Assert.assertTrue(TestHelper.executeScript("datamodel/db/tmp-drop.sql"), "Setup failed");
 	}
 
 	@Test
