@@ -25,6 +25,7 @@ public class DbConnector implements AutoCloseable {
 
 			conn = DriverManager.getConnection(config.getConnectionString(), config.getDbUser(), config.getDbPassword());
 			conn.setAutoCommit(false);
+			conn.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
 		} catch (final SQLException e) {
 			LOGGER.info("[ERROR] Database does not exist. Please create it or change the database configuration.");
 		} catch (final ClassNotFoundException e) {
@@ -54,7 +55,7 @@ public class DbConnector implements AutoCloseable {
 			return;
 		}
 
-		try (final Statement stmt = conn.createStatement()) {
+		try (final Statement stmt = conn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)) {
 			for (final String s : sql) {
 				if (useBatch) {
 					stmt.addBatch(s);
