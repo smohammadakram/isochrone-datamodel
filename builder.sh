@@ -230,19 +230,19 @@ function fn_database {
 	# Database Setup
 	#----------------
 	printf "%s" "[INFO] Creating database \"spatial\"..."
-	PGPASSWORD="$db_password" psql -h localhost -p 5432 -U $db_user -d postgres -f "sql/db-create.sql" --quiet
+	PGPASSWORD="$db_password" psql -h localhost -p 5432 -U $db_user -d postgres -f "$CODE_SQL/db-create.sql" --quiet
 	fn_check_status
 
 	printf "%s" "[INFO] Removing default schema \"public\"..."
-	PGPASSWORD="$db_password" psql -h localhost -p 5432 -U $db_user -d spatial -f "sql/schema-drop.sql" --quiet
+	PGPASSWORD="$db_password" psql -h localhost -p 5432 -U $db_user -d spatial -f "$CODE_SQL/schema-drop.sql" --quiet
 	fn_check_status
 
 	printf "%s" "[INFO] Creating schemas..."
-	PGPASSWORD="spatial" psql -h localhost -p 5432 -U spatial -d spatial -f "sql/schema-create.sql" --quiet
+	PGPASSWORD="spatial" psql -h localhost -p 5432 -U spatial -d spatial -f "$CODE_SQL/schema-create.sql" --quiet
 	fn_check_status
 
 	printf "%s" "[INFO] Creating extension \"PostGIS\"..."
-	PGPASSWORD="$db_password" psql -h localhost -p 5432 -U $db_user -d spatial -f "sql/extension-create.sql" --quiet
+	PGPASSWORD="$db_password" psql -h localhost -p 5432 -U $db_user -d spatial -f "$CODE_SQL/extension-create.sql" --quiet
 	fn_check_status
 
 	printf "\n"
