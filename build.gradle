@@ -1,5 +1,7 @@
+// Plugin declaration
+
 buildscript {
-	apply from: 'http://www.krismer.de/files/checkstyle.gradle'
+	apply from: 'http://dbis-informatik.uibk.ac.at/static/ma/niko/gradle/checkstyle.gradle'
 }
 
 apply plugin: 'application'
